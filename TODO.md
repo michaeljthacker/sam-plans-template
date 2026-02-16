@@ -44,6 +44,8 @@ Future chat sessions: read `DECISIONS.md` for rationale, `plans/README.md` for t
 - [x] Complete `registry.json` with all 16 actions, inputs, outputs, and gates (7 ready, 9 TODO templates)
 - [x] Rename existing template files to two-segment naming (old `Engineer_*` / `ProjectManager_*` files removed)
 - [x] Update existing template content with new naming convention and `pause_type`
+- [x] Merge `PROMPTS.md` into `README.md` (eliminated redundant file)
+- [x] Create `plans/copilot-instructions.md` — AI bootstrap so human can just say "run the next step"
 - [ ] Write missing templates for new actions (9 remaining):
   - `Product_ProductVision.txt`
   - `Principal_BuildReview.txt`

@@ -46,6 +46,7 @@ Template filenames mirror action IDs with underscores: `Staff_DraftQuestions.txt
 ## System-level vs instance-level files
 ### System-level (reusable; defines how SAM works)
 - `plans/README.md` (this file)
+- `plans/copilot-instructions.md` (AI bootstrap — deploy to `.github/copilot-instructions.md` in your project)
 - `plans/templates/registry.json`
 - `plans/templates/*.txt`
 
@@ -160,14 +161,18 @@ Common references:
 
 ## Quickstart — bootstrapping a new project
 1. Copy the `plans/` directory into your project repo
-2. Write a one-sentence project idea (or a few paragraphs)
-3. Run `Product.ProductVision` → generates root README + `plans/BUILD.md`
-4. Run `Principal.BuildReview` → validates feasibility
-5. Human approves → run `Principal.MilestonePlan` → generates `plans/MILESTONE.md`
-6. `Human.ApproveMilestone` → approve scope
-7. Phase execution begins with `Staff.DraftQuestions` for P1
+2. Copy `plans/copilot-instructions.md` to `.github/copilot-instructions.md` in your project root
+   - This is the file VS Code Copilot reads automatically — it tells the AI how to run SAM
+   - The copy in `plans/` is the template source; `.github/` is where it takes effect
+3. Write a one-sentence project idea (or a few paragraphs)
+4. Run `Product.ProductVision` → generates root README + `plans/BUILD.md`
+5. Run `Principal.BuildReview` → validates feasibility
+6. Human approves → run `Principal.MilestonePlan` → generates `plans/MILESTONE.md`
+7. `Human.ApproveMilestone` → approve scope
+8. Phase execution begins with `Staff.DraftQuestions` for P1
 
-Each step is a separate chat/runner invocation. Read `state.json` to know what's next.
+From step 4 onward, each step is: open a new chat, say "run the next step", and the AI
+reads `state.json` to know what to do. Review its output, then repeat.
 
 ## Where to look next
 - `plans/templates/registry.json` — machine-verifiable action list + gates
