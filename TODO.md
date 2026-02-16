@@ -73,3 +73,4 @@ Future chat sessions: read `DECISIONS.md` for rationale, `plans/README.md` for t
 - [x] Note that `thread.md` is AI-readable, not machine-parseable (documented in README)
 - [x] Clean up "TASK is reserved" vocabulary note (STEP replaces SUBTASK; README updated)
 - [ ] Build a worked example in `example/` showing one full phase cycle with realistic file contents
+  - **Deferred (D-016):** Copy from a real public project at ~B1 M2 P3 S4 rather than fabricating. Waiting for a suitable project.

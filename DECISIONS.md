@@ -184,3 +184,15 @@ Steps 4-5 may loop if the review requires changes.
 **Decision:** This repo (the SAM template itself) uses root-level `DECISIONS.md` and `TODO.md` for its own development, separate from the `plans/` template contents.
 
 **Rationale:** `plans/` is the distributable template — its DECISIONS.md must stay a blank template. This repo needs its own project-level records but can't fully dog-food SAM yet (SAM isn't done). When SAM is complete, this repo may self-host.
+
+---
+
+## D-016 — Example files sourced from a real project, not fabricated
+**Date:** 2026-02-15
+**Decision:** The `example/` directory will be populated by copying files from a real public project once that project reaches ~B1 M2 P3 S4 (i.e., partway through the second milestone). This replaces the original plan to synthesize example content.
+
+**Rationale:**
+- Fabricated examples risk being unrealistic or inconsistent with how the system actually evolves during use.
+- By M2, the templates and workflow will have gone through at least one full milestone cycle, so any early kinks should be resolved.
+- A real project provides authentic thread.md progression, realistic state.json transitions, and natural BUILD/MILESTONE/STATUS content.
+- Waiting costs nothing — the template is usable without the example directory.
