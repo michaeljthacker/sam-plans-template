@@ -62,7 +62,7 @@ Future chat sessions: read `DECISIONS.md` for rationale, `plans/README.md` for t
 - [x] Replace `needs_human` with `pause_type: "continue" | "decision"` in state.json and all templates
 - [x] Add quickstart/bootstrap section to `plans/README.md` showing the copy-and-go sequence
 - [x] Document error semantics in README: unexpected failure → `Human.ResolveBlocker` + blocker entry; expected failures handled within the action
-- [ ] Make BUILD.md and MILESTONE.md outputs of early-lifecycle actions rather than manual fill-in templates (depends on `Product_ProductVision.txt` and `Principal_MilestonePlan.txt` being written)
+- [x] Make BUILD.md and MILESTONE.md outputs of early-lifecycle actions rather than manual fill-in templates (depends on `Product_ProductVision.txt` and `Principal_MilestonePlan.txt` being written)
 - [ ] Define `state.json` JSON Schema (required fields, valid values for `result`, `pause_type`, blocker structure, context structure)
 
 ## P2 — Polish and completeness
