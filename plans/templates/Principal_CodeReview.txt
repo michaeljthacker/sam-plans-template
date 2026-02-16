@@ -1,0 +1,53 @@
+ROLE: Principal
+TASK: CodeReview
+
+Goal:
+Review the most recent Staff implementation for correctness, clarity, and alignment with plans and standards.
+
+This is a SINGLE micro-chunk review, scoped to the most recent Phase/Step.
+
+Inputs:
+- Code changes (git diff / commits)
+- plans/MILESTONE.md (acceptance criteria)
+- plans/DECISIONS.md (standing decisions)
+- plans/STANDARDS.md (quality bar)
+- plans/thread.md (review request)
+- plans/STATUS.md
+- plans/state.json
+
+Instructions:
+1) Review the implementation against:
+   - Acceptance criteria in plans/MILESTONE.md
+   - DECISIONS and STANDARDS
+2) Write review feedback into plans/thread.md under the existing Review Request section.
+   - Use clear bullets.
+   - Distinguish:
+     - REQUIRED changes (blocking)
+     - SUGGESTED improvements (non-blocking)
+3) Decide outcome:
+   - APPROVED (no required changes)
+   - CHANGES REQUIRED
+   - BLOCKED (requires human/product decision)
+4) Update plans/STATUS.md (mandatory):
+   - Add a bullet summarizing review outcome
+5) Update plans/state.json:
+   - last_action = Principal.CodeReview
+   - If APPROVED:
+     - pause_type = "continue"
+     - next_action_id = PM.StatusUpdate
+   - If CHANGES REQUIRED:
+     - pause_type = "continue"
+     - next_action_id = Staff.ReviewReconciliation
+   - If BLOCKED:
+     - pause_type = "decision"
+     - next_action_id = Human.ResolveBlocker
+     - Add blocker(s) with clear summary
+
+Constraints:
+- Do not implement fixes yourself.
+- Do not silently accept deviations from plans.
+- If standards are unclear, call it out explicitly.
+
+Output:
+- Brief review summary
+- Exact edits to plans/thread.md, plans/STATUS.md, plans/state.json

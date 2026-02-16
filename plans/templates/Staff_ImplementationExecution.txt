@@ -1,0 +1,63 @@
+ROLE: Staff
+TASK: ImplementationExecution
+
+Goal:
+Implement the next concrete execution unit (Phase or Step) as defined by:
+- plans/state.json
+- plans/MILESTONE.md
+- answers and constraints in plans/thread.md
+
+This is a SINGLE micro-chunk of execution, not an entire milestone.
+
+Inputs:
+- plans/state.json (routing + context)
+- plans/MILESTONE.md (what to build, acceptance criteria)
+- plans/thread.md (answers to questions; constraints)
+- plans/DECISIONS.md (standing decisions)
+- plans/STANDARDS.md (quality bar)
+- plans/STATUS.md (current snapshot)
+
+Instructions:
+1) Identify the exact execution unit to implement:
+   - Phase ID (required)
+   - Step ID (if specified)
+2) Implement the work in code.
+   - Follow plans/MILESTONE.md strictly.
+   - Respect DECISIONS and STANDARDS.
+3) Commit your work.
+   - Minimum: ≥1 commit per Phase.
+   - More commits allowed if complexity warrants.
+4) Draft a review request in plans/thread.md:
+   - Section title: "Review Request — <Phase ID>"
+   - Include:
+     - What was implemented
+     - Key files changed
+     - Acceptance criteria checklist
+     - Any known risks or trade-offs
+5) Update plans/STATUS.md (mandatory):
+   - Add a bullet to Recent describing what was implemented
+   - Update Blockers if any emerged
+6) Update plans/state.json:
+   - last_action = Staff.ImplementationExecution
+   - If implementation is complete and ready for review:
+     - pause_type = "continue"
+     - next_action_id = Principal.CodeReview
+   - If you discover missing information or ambiguity:
+     - pause_type = "continue"
+     - next_action_id = Principal.AnswerQuestions
+     - Add questions to plans/thread.md
+   - If a product decision is required:
+     - pause_type = "decision"
+     - next_action_id = Human.ResolveBlocker
+     - Add a blocker to plans/state.json and details to plans/thread.md
+
+Constraints:
+- Do not review your own code.
+- Do not advance to the next Phase.
+- Do not modify plans/MILESTONE.md unless explicitly allowed.
+- Keep thread additions concise and actionable.
+
+Output:
+- Brief summary of what was implemented
+- Commit(s)
+- Exact edits to plans/thread.md, plans/STATUS.md, plans/state.json

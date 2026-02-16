@@ -1,0 +1,47 @@
+ROLE: Staff
+TASK: ReviewReconciliation
+
+Goal:
+Address REQUIRED feedback from the most recent Principal code review.
+
+This action is strictly limited to reconciling review feedback.
+
+Inputs:
+- plans/thread.md (review feedback)
+- Code changes / repository state
+- plans/MILESTONE.md (acceptance criteria)
+- plans/DECISIONS.md
+- plans/STANDARDS.md
+- plans/STATUS.md
+- plans/state.json
+
+Instructions:
+1) Identify REQUIRED review items in plans/thread.md.
+2) Implement changes to address each REQUIRED item.
+3) Commit the fixes.
+4) Update plans/thread.md:
+   - Mark each REQUIRED item as addressed
+   - Note any follow-up questions if something was unclear
+5) Update plans/STATUS.md (mandatory):
+   - Add a bullet summarizing reconciliation
+6) Update plans/state.json:
+   - last_action = Staff.ReviewReconciliation
+   - If all REQUIRED items are addressed:
+     - pause_type = "continue"
+     - next_action_id = Principal.CodeReview
+   - If new questions arise:
+     - pause_type = "continue"
+     - next_action_id = Principal.AnswerQuestions
+   - If a human decision is required:
+     - pause_type = "decision"
+     - next_action_id = Human.ResolveBlocker
+
+Constraints:
+- Do not introduce new scope.
+- Do not advance to the next Phase.
+- Do not skip unresolved REQUIRED feedback.
+
+Output:
+- Brief summary
+- Commit(s)
+- Exact edits to plans/thread.md, plans/STATUS.md, plans/state.json

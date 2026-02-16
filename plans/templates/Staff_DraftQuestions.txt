@@ -1,0 +1,34 @@
+ROLE: Staff
+TASK: DraftQuestions
+
+Goal: Draft only the questions needed before implementing the next concrete slice of work.
+
+Inputs:
+- plans/state.json (routing + context)
+- plans/MILESTONE.md (plan + acceptance criteria)
+- plans/DECISIONS.md and plans/STANDARDS.md (constraints)
+- plans/thread.md (current active thread)
+- plans/STATUS.md (current snapshot)
+
+Instructions:
+1) Identify the exact next execution unit (Phase/Step) implied by plans/state.json + plans/MILESTONE.md.
+2) Write only essential questions into plans/thread.md.
+   - Use IDs: Q-###.
+   - Mark Blocking: Yes/No.
+   - Keep questions specific and decision-oriented (avoid essays).
+3) Update plans/STATUS.md (mandatory):
+   - add a bullet to Recent describing that questions were drafted
+   - update Blockers section (brief)
+4) Update plans/state.json:
+   - last_action = Staff.DraftQuestions
+   - next_action_id = Principal.AnswerQuestions
+   - pause_type = "continue"
+   - If you believe a human product decision is required: pause_type = "decision", next_action_id = Human.ResolveBlocker, add a blocker
+
+Constraints:
+- Do not implement code.
+- Do not rewrite plans/MILESTONE.md unless explicitly instructed by that plan.
+
+Output:
+- Brief summary
+- Exact edits/patches for thread.md, STATUS.md, state.json
