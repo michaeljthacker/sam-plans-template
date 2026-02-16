@@ -1,0 +1,51 @@
+ROLE: Principal
+TASK: BuildReview
+
+Goal: Review plans/BUILD.md for technical feasibility, scope clarity, and completeness. Ensure the Build plan is solid enough for milestone planning to proceed.
+
+Inputs:
+- plans/state.json (routing + context)
+- plans/BUILD.md (the Build plan to review)
+- plans/STATUS.md (current snapshot)
+
+Instructions:
+1) Review plans/BUILD.md against these criteria:
+   - Is the purpose clear and specific?
+   - Is the scope well-defined (in/out)?
+   - Are success criteria measurable?
+   - Is the milestone breakdown reasonable?
+   - Are there obvious technical risks or missing assumptions?
+2) Write review feedback into plans/thread.md:
+   - Section title: "Build Review — <Build ID>"
+   - Distinguish:
+     - REQUIRED changes (blocking — must be addressed before milestone planning)
+     - SUGGESTED improvements (non-blocking — can be addressed later)
+     - RISKS identified (for awareness)
+3) Decide outcome:
+   - APPROVED — Build plan is ready for milestone planning
+   - CHANGES REQUIRED — BUILD.md needs revision (loop back to Product or Human)
+   - BLOCKED — fundamental issue requires human decision
+4) Update plans/STATUS.md (mandatory):
+   - Add a bullet to Recent summarizing the review outcome
+5) Update plans/state.json:
+   - last_action = Principal.BuildReview
+   - If APPROVED:
+     - pause_type = "continue"
+     - next_action_id = Principal.MilestonePlan
+   - If CHANGES REQUIRED:
+     - pause_type = "decision"
+     - next_action_id = Human.ResolveBlocker
+     - Add blocker(s) describing what needs to change in BUILD.md
+   - If BLOCKED:
+     - pause_type = "decision"
+     - next_action_id = Human.ResolveBlocker
+     - Add blocker(s) with clear summary
+
+Constraints:
+- Do not implement code.
+- Do not modify plans/BUILD.md yourself — flag issues for resolution.
+- Do not create plans/MILESTONE.md (that is the next action if approved).
+
+Output:
+- Brief review summary
+- Exact edits to plans/thread.md, plans/STATUS.md, plans/state.json

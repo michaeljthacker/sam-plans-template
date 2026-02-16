@@ -46,7 +46,7 @@ Future chat sessions: read `DECISIONS.md` for rationale, `plans/README.md` for t
 - [x] Update existing template content with new naming convention and `pause_type`
 - [x] Merge `PROMPTS.md` into `README.md` (eliminated redundant file)
 - [x] Create `plans/copilot-instructions.md` — AI bootstrap so human can just say "run the next step"
-- [ ] Write missing templates for new actions (9 remaining):
+- [x] Write missing templates for new actions (9 remaining):
   - `Product_ProductVision.txt`
   - `Principal_BuildReview.txt`
   - `Principal_MilestonePlan.txt`

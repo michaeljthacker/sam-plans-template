@@ -1,7 +1,7 @@
 {
   "version": "0.2",
   "action_id_convention": "Role.Task",
-  "note": "Actions marked TODO do not yet have templates. See TODO.md for the implementation backlog.",
+  "note": "All 16 actions have templates. See plans/templates/ for individual action prompts.",
 
   "actions": [
     {
@@ -9,7 +9,7 @@
       "role": "Product",
       "task": "ProductVision",
       "template_path": "plans/templates/Product_ProductVision.txt",
-      "status": "TODO",
+      "status": "ready",
       "inputs": ["plans/state.json", "plans/thread.md"],
       "required_outputs": ["README.md", "plans/BUILD.md", "plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
@@ -19,7 +19,7 @@
       "role": "Principal",
       "task": "BuildReview",
       "template_path": "plans/templates/Principal_BuildReview.txt",
-      "status": "TODO",
+      "status": "ready",
       "inputs": ["plans/state.json", "plans/BUILD.md", "plans/STATUS.md"],
       "required_outputs": ["plans/thread.md", "plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
@@ -29,7 +29,7 @@
       "role": "Principal",
       "task": "MilestonePlan",
       "template_path": "plans/templates/Principal_MilestonePlan.txt",
-      "status": "TODO",
+      "status": "ready",
       "inputs": ["plans/state.json", "plans/BUILD.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/STATUS.md"],
       "required_outputs": ["plans/MILESTONE.md", "plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
@@ -39,7 +39,7 @@
       "role": "Human",
       "task": "ApproveMilestone",
       "template_path": "plans/templates/Human_ApproveMilestone.txt",
-      "status": "TODO",
+      "status": "ready",
       "inputs": ["plans/state.json", "plans/MILESTONE.md", "plans/BUILD.md", "plans/STATUS.md"],
       "required_outputs": ["plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
@@ -99,7 +99,7 @@
       "role": "PM",
       "task": "StatusUpdate",
       "template_path": "plans/templates/PM_StatusUpdate.txt",
-      "status": "TODO",
+      "status": "ready",
       "inputs": ["plans/state.json", "plans/thread.md", "plans/MILESTONE.md", "plans/STATUS.md", "plans/BACKLOG.md", "plans/CHANGELOG.md"],
       "required_outputs": ["plans/STATUS.md", "plans/BACKLOG.md", "plans/CHANGELOG.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
@@ -109,7 +109,7 @@
       "role": "Writer",
       "task": "DocumentationUpdate",
       "template_path": "plans/templates/Writer_DocumentationUpdate.txt",
-      "status": "TODO",
+      "status": "ready",
       "inputs": ["plans/state.json", "plans/MILESTONE.md", "plans/thread.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/STATUS.md"],
       "required_outputs": ["plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
@@ -119,7 +119,7 @@
       "role": "Human",
       "task": "PhaseApproval",
       "template_path": "plans/templates/Human_PhaseApproval.txt",
-      "status": "TODO",
+      "status": "ready",
       "inputs": ["plans/state.json", "plans/STATUS.md", "plans/thread.md", "plans/MILESTONE.md"],
       "required_outputs": ["plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
@@ -129,7 +129,7 @@
       "role": "PM",
       "task": "AdvancePhase",
       "template_path": "plans/templates/PM_AdvancePhase.txt",
-      "status": "TODO",
+      "status": "ready",
       "inputs": ["plans/state.json", "plans/MILESTONE.md", "plans/STATUS.md"],
       "required_outputs": ["plans/state.json", "plans/STATUS.md"],
       "gates": { "update_status_required": true, "tests_required": false }
@@ -139,7 +139,7 @@
       "role": "PM",
       "task": "MilestoneCloseout",
       "template_path": "plans/templates/PM_MilestoneCloseout.txt",
-      "status": "TODO",
+      "status": "ready",
       "inputs": ["plans/state.json", "plans/MILESTONE.md", "plans/STATUS.md", "plans/BACKLOG.md", "plans/CHANGELOG.md", "plans/thread.md"],
       "required_outputs": ["plans/STATUS.md", "plans/BACKLOG.md", "plans/CHANGELOG.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }

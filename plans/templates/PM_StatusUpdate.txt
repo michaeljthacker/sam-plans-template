@@ -1,0 +1,51 @@
+ROLE: PM
+TASK: StatusUpdate
+
+Goal: Update plans/STATUS.md, plans/BACKLOG.md, and plans/CHANGELOG.md to reflect the current state of the project after a Phase's implementation and review cycle is complete.
+
+This action runs after Principal.CodeReview approves (or after Staff.ReviewReconciliation is approved). It captures what was accomplished and surfaces any new work items.
+
+Inputs:
+- plans/state.json (routing + context)
+- plans/thread.md (implementation details, review feedback, decisions)
+- plans/MILESTONE.md (acceptance criteria to check off)
+- plans/STATUS.md (current snapshot)
+- plans/BACKLOG.md (pending work)
+- plans/CHANGELOG.md (change history)
+
+Instructions:
+1) Review plans/thread.md for what was implemented and any review outcomes.
+2) Update plans/STATUS.md (mandatory):
+   - Now: update Phase ID to reflect current state
+   - Blockers: clear resolved blockers, add any new ones
+   - Recent: summarize what was implemented, reviewed, and approved in this Phase
+   - Next: indicate what happens next (documentation, phase approval, etc.)
+3) Update plans/BACKLOG.md:
+   - Remove completed items that were addressed in this Phase
+   - Add any new items discovered during implementation or review
+     (tech debt, follow-ups, non-blocking suggestions from code review)
+   - Prioritize: P0 = do next, P1 = important, P2 = nice-to-have
+4) Update plans/CHANGELOG.md:
+   - Add an entry under "Unreleased" describing the Phase's changes
+   - Include: what changed, key files affected, and brief rationale
+5) Update plans/state.json:
+   - last_action = PM.StatusUpdate
+   - If documentation should be updated:
+     - pause_type = "continue"
+     - next_action_id = Writer.DocumentationUpdate
+   - If documentation can be skipped (no user-facing changes):
+     - pause_type = "continue"
+     - next_action_id = Human.PhaseApproval
+   - If a blocker is discovered:
+     - pause_type = "decision"
+     - next_action_id = Human.ResolveBlocker
+
+Constraints:
+- Do not implement code.
+- Do not modify plans/MILESTONE.md (acceptance criteria stay as-is for Phase approval).
+- Keep CHANGELOG entries concise — one to three bullets per Phase.
+- Keep BACKLOG items actionable — no vague "improve X" without specifics.
+
+Output:
+- Brief summary
+- Exact edits to plans/STATUS.md, plans/BACKLOG.md, plans/CHANGELOG.md, plans/state.json

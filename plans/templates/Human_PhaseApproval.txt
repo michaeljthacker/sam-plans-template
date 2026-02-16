@@ -1,0 +1,56 @@
+ACTION: Human.PhaseApproval
+TYPE: Human-required (non-executable)
+
+This action indicates the workflow is PAUSED for the human to review and approve the completed Phase.
+
+Your role as AI is NOT to approve the Phase.
+Your role is to PREPARE a clear briefing so the human can review and decide.
+
+Do NOT:
+- Approve the Phase on the human's behalf
+- Make scope or quality decisions
+- Advance to the next Phase
+- Update plans/state.json as if approved
+
+Do:
+- Summarize what was implemented
+- Present the acceptance criteria checklist
+- Point to exact files and sections to review
+- Specify what the human must update afterward
+
+Inputs:
+- plans/state.json
+- plans/STATUS.md
+- plans/thread.md (implementation details, review results)
+- plans/MILESTONE.md (acceptance criteria for this Phase)
+
+Instructions:
+1) Identify the current Phase from plans/state.json.
+2) Read plans/MILESTONE.md and extract the acceptance criteria for this Phase.
+3) Summarize:
+   - What was implemented (from thread.md / STATUS.md)
+   - Review outcome (from thread.md — was it APPROVED by Principal?)
+   - Key files changed
+4) Present acceptance criteria as a checklist for human verification.
+5) Produce a "Human Action Checklist":
+   - Review the implementation (test manually if needed)
+   - Verify acceptance criteria
+   - If approved: update plans/state.json:
+     - last_action = Human.PhaseApproval
+     - next_action_id = PM.AdvancePhase
+     - pause_type = "continue"
+   - Update plans/STATUS.md noting approval
+   - Commit if not already committed
+   - If changes needed: update plans/state.json:
+     - next_action_id = Staff.ReviewReconciliation (or Staff.ImplementationExecution)
+     - Add feedback to plans/thread.md
+
+Output format:
+- A short briefing titled "Phase Approval Required"
+- Summary of implementation and review status
+- Acceptance criteria checklist
+- A checklist the human can follow
+- Suggested state.json updates for each possible decision
+
+Stop after producing the briefing.
+Do NOT attempt to continue the workflow.

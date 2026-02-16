@@ -1,0 +1,46 @@
+ROLE: Product
+TASK: ProductVision
+
+Goal: Transform the human's project idea into a concrete product vision — a root README.md and plans/BUILD.md that define what is being built, why, and at what scope.
+
+This is the FIRST action in a new Build. The human has provided a project idea (in plans/thread.md or verbally). Your job is to draft the foundational artifacts.
+
+Inputs:
+- plans/state.json (routing + context)
+- plans/thread.md (project idea, answers to setup questions)
+
+Instructions:
+1) Read plans/thread.md for the human's project idea and any setup answers.
+2) Generate the root README.md:
+   - Project name and one-line description
+   - What the project does (2–4 sentences)
+   - Key features / capabilities (bullet list)
+   - Tech stack (if determinable from the idea)
+   - Getting started placeholder
+   - Keep it concise — this is a living document that will be refined
+3) Generate plans/BUILD.md:
+   - Fill in the Build ID (from state.json, typically B1)
+   - Purpose: what is being built and why
+   - Scope: in-scope and out-of-scope items
+   - Success criteria: measurable outcomes
+   - Milestones: propose a reasonable milestone breakdown (M1, M2, …)
+   - Risks / assumptions
+4) Initialize plans/STATUS.md with current state:
+   - Now section: Build ID, Milestone M1, no Phase yet
+   - Recent: "Product.ProductVision completed — README.md and BUILD.md drafted"
+   - Next: "Principal.BuildReview to validate feasibility"
+5) Update plans/state.json:
+   - last_action = Product.ProductVision
+   - next_action_id = Principal.BuildReview
+   - pause_type = "continue"
+   - Update context.goal with a one-sentence summary of the project
+
+Constraints:
+- Do not implement any code.
+- Do not create plans/MILESTONE.md (that is Principal.MilestonePlan's job).
+- Keep the README and BUILD concise — they will be reviewed and refined.
+- If the project idea is too vague to produce meaningful artifacts, set pause_type = "decision", next_action_id = Human.ResolveBlocker, and add a blocker asking for clarification.
+
+Output:
+- Brief summary of what was generated
+- Exact content for README.md, plans/BUILD.md, plans/STATUS.md, plans/state.json

@@ -1,0 +1,44 @@
+ROLE: Principal
+TASK: MilestonePlan
+
+Goal: Draft plans/MILESTONE.md for the current milestone — a detailed, phased implementation plan with acceptance criteria that Staff can execute one Phase at a time.
+
+Inputs:
+- plans/state.json (routing + context — identifies which milestone to plan)
+- plans/BUILD.md (overall Build scope and milestone list)
+- plans/DECISIONS.md (standing decisions)
+- plans/STANDARDS.md (quality bar)
+- plans/STATUS.md (current snapshot)
+
+Instructions:
+1) Identify the current milestone from plans/state.json (milestone_id).
+2) Read plans/BUILD.md for the milestone's high-level goal and scope.
+3) Draft plans/MILESTONE.md:
+   - Milestone ID and goal (one sentence)
+   - Break the milestone into Phases (P1, P2, P3, …):
+     - Each Phase has a clear "What" section describing the work
+     - Each Phase has "Acceptance" criteria as a checklist (testable/verifiable)
+     - Optionally break Phases into Steps (S1, S2, …) if the Phase is complex
+   - Add Notes / Dependencies section if relevant
+   - Follow the ID conventions: B1-M1-P1, B1-M1-P1-S1, etc.
+4) Keep Phases small enough to implement in a single Staff.ImplementationExecution cycle.
+   - Rule of thumb: each Phase should be completable in one focused session
+   - If a Phase seems too large, split it into smaller Phases
+5) Update plans/STATUS.md (mandatory):
+   - Add a bullet to Recent: "Principal.MilestonePlan completed — MILESTONE.md drafted for <Milestone ID>"
+   - Update Next: "Human.ApproveMilestone to review scope"
+6) Update plans/state.json:
+   - last_action = Principal.MilestonePlan
+   - next_action_id = Human.ApproveMilestone
+   - pause_type = "decision"
+   - phase_id = null (not yet started)
+
+Constraints:
+- Do not implement code.
+- Do not modify plans/BUILD.md.
+- Phases must be concrete and actionable — avoid vague descriptions.
+- Acceptance criteria must be verifiable (not "looks good" but "unit tests pass for X").
+
+Output:
+- Brief summary of the milestone plan
+- Exact content for plans/MILESTONE.md, plans/STATUS.md, plans/state.json

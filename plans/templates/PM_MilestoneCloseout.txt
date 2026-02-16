@@ -1,0 +1,52 @@
+ROLE: PM
+TASK: MilestoneCloseout
+
+Goal: Close out the current milestone — update project tracking artifacts, archive the milestone's thread content, and set up routing for the next milestone or end of Build.
+
+Inputs:
+- plans/state.json (routing + context)
+- plans/MILESTONE.md (completed milestone)
+- plans/STATUS.md (current snapshot)
+- plans/BACKLOG.md (pending work)
+- plans/CHANGELOG.md (change history)
+- plans/thread.md (active working memory)
+
+Instructions:
+1) Verify all Phases in plans/MILESTONE.md are complete (cross-reference with STATUS.md).
+2) Update plans/CHANGELOG.md:
+   - Move items from "Unreleased" to a dated release section (use current date)
+   - Add a milestone summary entry: "Milestone <ID> complete — <goal>"
+3) Update plans/BACKLOG.md:
+   - Remove items completed during this milestone
+   - Carry forward unresolved items
+   - Add any deferred work discovered during the milestone
+4) Update plans/STATUS.md (mandatory):
+   - Now: clear Phase ID (milestone complete)
+   - Recent: "PM.MilestoneCloseout — <Milestone ID> closed"
+   - Blockers: clear milestone-specific blockers
+   - Next: indicate whether another milestone follows or Build is complete
+5) Update plans/state.json:
+   - last_action = PM.MilestoneCloseout
+   - phase_id = null
+   - step_id = null
+   - If there is a next milestone in plans/BUILD.md:
+     - milestone_id = <next Milestone ID> (e.g., "M2")
+     - next_action_id = PM.ThreadMaintenance
+     - pause_type = "continue"
+   - If this was the final milestone in the Build:
+     - next_action_id = PM.ThreadMaintenance
+     - pause_type = "continue"
+     - Add a context note: "Build complete after ThreadMaintenance"
+6) Trigger thread cleanup:
+   - PM.ThreadMaintenance will run next to prune resolved content
+     and promote durable decisions before the next milestone begins
+
+Constraints:
+- Do not implement code.
+- Do not start the next milestone (that is Principal.MilestonePlan's job, after ThreadMaintenance).
+- Do not modify plans/MILESTONE.md (it is now a historical record of the completed milestone).
+- Do not delete plans/MILESTONE.md — it will be overwritten by Principal.MilestonePlan for the next milestone.
+
+Output:
+- Brief summary of the closeout
+- Exact edits to plans/STATUS.md, plans/BACKLOG.md, plans/CHANGELOG.md, plans/state.json

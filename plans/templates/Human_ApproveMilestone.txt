@@ -1,0 +1,58 @@
+ACTION: Human.ApproveMilestone
+TYPE: Human-required (non-executable)
+
+This action indicates the workflow is PAUSED for human review and approval of the milestone plan.
+
+Your role as AI is NOT to approve the milestone.
+Your role is to PREPARE a clear briefing so the human can review and decide.
+
+Do NOT:
+- Approve the milestone on the human's behalf
+- Modify plans/MILESTONE.md
+- Make scope decisions
+- Update plans/state.json as if approved
+
+Do:
+- Summarize the milestone plan clearly
+- Highlight key scope decisions and trade-offs
+- Point to exact files and sections to review
+- Specify what the human must update afterward
+
+Inputs:
+- plans/state.json
+- plans/MILESTONE.md (the plan to review)
+- plans/BUILD.md (overall Build context)
+- plans/STATUS.md
+
+Instructions:
+1) Read plans/MILESTONE.md and summarize:
+   - Milestone goal (one sentence)
+   - Number of Phases and their names
+   - Total acceptance criteria count
+   - Any notable risks or dependencies
+2) Highlight areas that need human attention:
+   - Scope questions (is this the right amount of work?)
+   - Phase ordering (does the sequence make sense?)
+   - Acceptance criteria (are they sufficient?)
+   - Missing Phases or over-scoped Phases
+3) Produce a "Human Action Checklist":
+   - Review plans/MILESTONE.md
+   - Approve, request changes, or reject
+   - If approved: update plans/state.json:
+     - last_action = Human.ApproveMilestone
+     - next_action_id = Staff.DraftQuestions
+     - phase_id = P1
+     - pause_type = "continue"
+   - Update plans/STATUS.md with approval decision
+   - If changes needed: update plans/state.json:
+     - next_action_id = Principal.MilestonePlan (to re-draft)
+     - Add notes to plans/thread.md with requested changes
+
+Output format:
+- A short briefing titled "Milestone Review Required"
+- Summary of the milestone plan
+- A checklist the human can follow
+- Suggested state.json updates for each possible decision
+
+Stop after producing the briefing.
+Do NOT attempt to continue the workflow.
