@@ -1,7 +1,7 @@
-# SAM — `plans/` System (Micro-Chunk Workflow)
+# SAM (Structured AI Method) — `plans/` System
 
 ## What this is
-SAM is a **human-directed, AI-executed** workflow for building software through:
+SAM is a **human-directed, AI-executed** micro-chunk workflow for building software through:
 - a fixed planning/execution hierarchy,
 - explicit artifacts in `plans/`,
 - review gates,
@@ -47,6 +47,7 @@ Template filenames mirror action IDs with underscores: `Staff_DraftQuestions.txt
 ### System-level (reusable; defines how SAM works)
 - `plans/README.md` (this file)
 - `plans/copilot-instructions.md` (AI bootstrap — deploy to `.github/copilot-instructions.md` in your project)
+- `plans/state.schema.json` (JSON Schema for `state.json` — validates structure, required fields, and allowed values)
 - `plans/templates/registry.json`
 - `plans/templates/*.txt`
 
@@ -64,7 +65,7 @@ Template filenames mirror action IDs with underscores: `Staff_DraftQuestions.txt
 ## Routing and state
 
 ### Source of truth
-- `plans/state.json` is authoritative for: **what action happens next**
+- `plans/state.json` is authoritative for: **what action happens next** (validated by `plans/state.schema.json`)
 - `plans/STATUS.md` is authoritative for: **human-readable snapshot** (must be updated every action)
 
 ### Pause model

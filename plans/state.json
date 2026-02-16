@@ -1,4 +1,5 @@
 {
+  "$schema": "state.schema.json",
   "version": "0.2",
 
   "build_id": "B1",
