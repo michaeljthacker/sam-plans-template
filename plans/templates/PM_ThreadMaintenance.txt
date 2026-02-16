@@ -6,15 +6,15 @@ Goal: Keep plans/thread.md short and actionable by pruning resolved content and 
 Inputs:
 - plans/thread.md
 - plans/MILESTONE.md
-- plans/DECISIONS.md
-- plans/STANDARDS.md
+- plans/DECISIONS.md (project-specific architectural choices)
+- plans/STANDARDS.md (team-level rules portable across projects)
 - plans/STATUS.md
 - plans/state.json
 
 Instructions:
 1) Identify resolved questions/discussions in plans/thread.md.
 2) Promote information:
-   - Durable "going forward" items → DECISIONS.md or STANDARDS.md
+   - Durable "going forward" items → DECISIONS.md (if project-specific) or STANDARDS.md (if the rule would carry to any project)
    - Milestone-specific implementation detail → MILESTONE.md
 3) Compress resolved thread content into 1–3 bullets in the Resolved summary.
 4) Remove verbose back-and-forth from thread.md.

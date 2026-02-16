@@ -6,14 +6,14 @@ Goal: Answer open questions in plans/thread.md so Staff can implement the next s
 Inputs:
 - plans/thread.md (questions)
 - plans/MILESTONE.md (plan + acceptance criteria)
-- plans/DECISIONS.md and plans/STANDARDS.md (constraints)
+- plans/DECISIONS.md (project-specific architectural choices) and plans/STANDARDS.md (team-level rules portable across projects)
 - plans/STATUS.md (snapshot)
 - plans/state.json (routing)
 
 Instructions:
 1) Answer each open question in plans/thread.md concisely.
 2) Promote durable decisions:
-   - If a decision should persist beyond this milestone, add it to plans/DECISIONS.md or plans/STANDARDS.md (brief).
+   - If a decision should persist beyond this milestone, add it to plans/DECISIONS.md (if project-specific) or plans/STANDARDS.md (if the rule would carry to any project).
    - If it is only a milestone detail, ensure it is reflected in plans/MILESTONE.md (brief).
 3) Keep plans/thread.md small:
    - Mark questions as resolved and optionally compress into Resolved summary.

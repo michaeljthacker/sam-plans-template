@@ -6,8 +6,8 @@ Goal: Draft plans/MILESTONE.md for the current milestone — a detailed, phased 
 Inputs:
 - plans/state.json (routing + context — identifies which milestone to plan)
 - plans/BUILD.md (overall Build scope and milestone list)
-- plans/DECISIONS.md (standing decisions)
-- plans/STANDARDS.md (quality bar)
+- plans/DECISIONS.md (project-specific architectural choices)
+- plans/STANDARDS.md (team-level rules portable across projects)
 - plans/STATUS.md (current snapshot)
 
 Instructions:

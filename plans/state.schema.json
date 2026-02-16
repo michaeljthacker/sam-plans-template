@@ -1,6 +1,5 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://sam.dev/state.schema.json",
   "title": "SAM state.json",
   "description": "Routing source of truth for the SAM micro-chunk workflow. Tracks the current position in the BUILD → MILESTONE → PHASE → STEP hierarchy and determines which action runs next.",
   "type": "object",

@@ -9,8 +9,8 @@ This is a SINGLE micro-chunk review, scoped to the most recent Phase/Step.
 Inputs:
 - Code changes (git diff / commits)
 - plans/MILESTONE.md (acceptance criteria)
-- plans/DECISIONS.md (standing decisions)
-- plans/STANDARDS.md (quality bar)
+- plans/DECISIONS.md (project-specific architectural choices)
+- plans/STANDARDS.md (team-level rules portable across projects)
 - plans/thread.md (review request)
 - plans/STATUS.md
 - plans/state.json

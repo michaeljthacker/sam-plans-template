@@ -10,8 +10,8 @@ Inputs:
 - plans/thread.md (review feedback)
 - Code changes / repository state
 - plans/MILESTONE.md (acceptance criteria)
-- plans/DECISIONS.md
-- plans/STANDARDS.md
+- plans/DECISIONS.md (project-specific architectural choices)
+- plans/STANDARDS.md (team-level rules portable across projects)
 - plans/STATUS.md
 - plans/state.json
 

@@ -6,7 +6,7 @@ Goal: Draft only the questions needed before implementing the next concrete slic
 Inputs:
 - plans/state.json (routing + context)
 - plans/MILESTONE.md (plan + acceptance criteria)
-- plans/DECISIONS.md and plans/STANDARDS.md (constraints)
+- plans/DECISIONS.md (project-specific architectural choices) and plans/STANDARDS.md (team-level rules portable across projects)
 - plans/thread.md (current active thread)
 - plans/STATUS.md (current snapshot)
 

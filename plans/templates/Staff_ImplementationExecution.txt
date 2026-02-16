@@ -13,8 +13,8 @@ Inputs:
 - plans/state.json (routing + context)
 - plans/MILESTONE.md (what to build, acceptance criteria)
 - plans/thread.md (answers to questions; constraints)
-- plans/DECISIONS.md (standing decisions)
-- plans/STANDARDS.md (quality bar)
+- plans/DECISIONS.md (project-specific architectural choices)
+- plans/STANDARDS.md (team-level rules portable across projects)
 - plans/STATUS.md (current snapshot)
 
 Instructions:

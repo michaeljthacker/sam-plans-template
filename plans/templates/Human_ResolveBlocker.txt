@@ -23,7 +23,7 @@ Inputs:
 - plans/STATUS.md
 - plans/BUILD.md (if referenced)
 - plans/MILESTONE.md (if referenced)
-- plans/DECISIONS.md / plans/STANDARDS.md (if relevant)
+- plans/DECISIONS.md (project-specific architectural choices) / plans/STANDARDS.md (team-level rules portable across projects) — if relevant
 
 Instructions:
 1) Read plans/state.json and identify all blockers.

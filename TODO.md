@@ -67,8 +67,8 @@ Future chat sessions: read `DECISIONS.md` for rationale, `plans/README.md` for t
 
 ## P2 — Polish and completeness
 
-- [ ] Sharpen DECISIONS vs. STANDARDS distinction with one-sentence heuristic in each template file
-- [ ] Add STANDARDS.md placeholder section for branching convention
+- [x] Sharpen DECISIONS vs. STANDARDS distinction with one-sentence heuristic in each template file
+- [x] Add STANDARDS.md placeholder section for branching convention
 - [x] Add single-threaded execution statement to README
 - [x] Note that `thread.md` is AI-readable, not machine-parseable (documented in README)
 - [x] Clean up "TASK is reserved" vocabulary note (STEP replaces SUBTASK; README updated)

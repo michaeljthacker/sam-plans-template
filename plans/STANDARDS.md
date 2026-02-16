@@ -25,5 +25,8 @@ Keep concise. Standards should be enforceable.
 ### Architecture constraints
 - <standard>
 
+### Branching convention
+- <standard — e.g., `prod`, `main` (default), `feat/...`, `bug/...`>
+
 ### Documentation
 - <standard>
