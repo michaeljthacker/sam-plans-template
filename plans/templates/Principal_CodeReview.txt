@@ -19,7 +19,9 @@ Instructions:
 1) Review the implementation against:
    - Acceptance criteria in plans/MILESTONE.md
    - DECISIONS and STANDARDS
-2) Write review feedback into plans/thread.md under the existing Review Request section.
+2) Append review feedback as a new entry in plans/thread.md.
+   - Use the entry format: `---` then `### Principal.CodeReview — <date>`
+   - Reference the Review Request being reviewed.
    - Use clear bullets.
    - Distinguish:
      - REQUIRED changes (blocking)
@@ -34,7 +36,7 @@ Instructions:
    - last_action = Principal.CodeReview
    - If APPROVED:
      - pause_type = "continue"
-     - next_action_id = PM.StatusUpdate
+     - next_action_id = Staff.ReviewReconciliation
    - If CHANGES REQUIRED:
      - pause_type = "continue"
      - next_action_id = Staff.ReviewReconciliation

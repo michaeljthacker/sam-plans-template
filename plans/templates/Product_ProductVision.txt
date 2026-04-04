@@ -10,7 +10,14 @@ Inputs:
 - plans/thread.md (project idea, answers to setup questions)
 
 Instructions:
-1) Read plans/thread.md for the human's project idea and any setup answers.
+1) Read plans/thread.md for the human's project idea and any setup context.
+   If the thread does not yet contain sufficient project context, check for:
+   - A one-sentence project goal
+   - A Build B1 short name or description
+   - A Milestone M1 goal
+   If any of these are missing and cannot be inferred from the provided idea,
+   set pause_type = "decision", next_action_id = Human.ResolveBlocker,
+   and add a blocker requesting the missing information.
 2) Generate the root README.md:
    - Project name and one-line description
    - What the project does (2–4 sentences)

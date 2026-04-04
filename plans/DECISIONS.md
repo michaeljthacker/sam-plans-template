@@ -1,17 +1,8 @@
-# DECISIONS — Template
-
-## Purpose
-Standing forward-looking decisions (“going forward, we will always…”).
-Keep this brief. Promote only durable decisions.
-
-## When to update
-- When a decision should persist beyond the current milestone
-- When a convention should be enforced across future work
-
----
+# DECISIONS
+<!-- See plans/FORMATS.md for expected structure. -->
 
 ## Standing decisions
-- <decision>
+- <placeholder>
 
-## Deprecated decisions (optional)
-- <decision>
+## Deprecated decisions
+- <placeholder>

@@ -1,32 +1,17 @@
-# STANDARDS — Template
+# STANDARDS
+<!-- See plans/FORMATS.md for expected structure. -->
 
-## Purpose
-Project-specific technical standards:
-- testing expectations,
-- architecture/compatibility rules,
-- acceptable shortcuts (or not),
-- quality bar.
-
-Keep concise. Standards should be enforceable.
-
-## When to update
-- When project expectations change
-- When you want enforcement roles to apply new rules
-
----
-
-## Standards
 ### Testing
-- <standard>
+- <placeholder>
 
 ### Code style / lint
-- <standard>
+- <placeholder>
 
 ### Architecture constraints
-- <standard>
+- <placeholder>
 
 ### Branching convention
-- <standard — e.g., `prod`, `main` (default), `feat/...`, `bug/...`>
+- <placeholder>
 
 ### Documentation
-- <standard>
+- <placeholder>

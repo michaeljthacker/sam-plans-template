@@ -46,6 +46,7 @@ Template filenames mirror action IDs with underscores: `Staff_DraftQuestions.txt
 ## System-level vs instance-level files
 ### System-level (reusable; defines how SAM works)
 - `plans/README.md` (this file)
+- `plans/FORMATS.md` (expected structure of all instance-level files — reference when creating or updating)
 - `plans/copilot-instructions.md` (AI bootstrap — deploy to `.github/copilot-instructions.md` in your project)
 - `plans/state.schema.json` (JSON Schema for `state.json` — validates structure, required fields, and allowed values)
 - `plans/templates/registry.json`
@@ -125,7 +126,7 @@ Each Phase follows this sequence:
 | 2 | `Principal.AnswerQuestions` | Answer questions so Staff can proceed |
 | 3 | `Staff.ImplementationExecution` | Implement the Phase (≥1 commit) |
 | 4 | `Principal.CodeReview` | Review implementation |
-| 5 | `Staff.ReviewReconciliation` | Address required feedback (loop to 4 if needed) |
+| 5 | `Staff.ReviewReconciliation` | Address feedback + triage suggestions (targeted re-review if code changed) |
 | 6 | `PM.StatusUpdate` | Update STATUS/BACKLOG/CHANGELOG |
 | 7 | `Writer.DocumentationUpdate` | Update docs (optional/skippable) |
 | 8 | `Human.PhaseApproval` | Human confirms; commit |
@@ -136,14 +137,23 @@ Each Phase follows this sequence:
 - Proceed to next milestone (`Principal.MilestonePlan`) or end build
 
 ## Thread management (keep it small)
-`plans/thread.md` is **active working memory**, not a transcript. It is AI-readable, not machine-parseable.
+`plans/thread.md` is an **append-only log** — each action that writes to it appends a new dated entry at the end. It is AI-readable, not machine-parseable.
 The runner may check "was thread.md modified?" but does not parse its content.
 
-When a Phase completes or the thread gets long/noisy, run `PM.ThreadMaintenance`:
+Entry format:
+```
+---
+### [Action.ID] — YYYY-MM-DD
+<content>
+```
+
+When a Phase completes or the thread gets long/noisy, `PM.ThreadMaintenance` prunes:
 - Promote durable decisions → `plans/DECISIONS.md` and/or `plans/STANDARDS.md`
-- Promote important implementation details → `plans/MILESTONE.md`
-- Compress resolved Q/A → 1–3 bullets, delete the back-and-forth
+- Compress resolved content → brief summary
+- Remove verbose back-and-forth
 - (Optional) append raw content to `plans/thread.archive.md`
+
+`PM.ThreadMaintenance` is the **only** action that may delete or restructure thread content. All other actions append only.
 
 ## Execution model assumptions
 - **Single-threaded.** One Phase is active at a time. `state.json` tracks a single active `build_id`, `milestone_id`, and `phase_id`.

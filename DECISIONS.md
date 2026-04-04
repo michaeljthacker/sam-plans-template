@@ -196,3 +196,50 @@ Steps 4-5 may loop if the review requires changes.
 - By M2, the templates and workflow will have gone through at least one full milestone cycle, so any early kinks should be resolved.
 - A real project provides authentic thread.md progression, realistic state.json transitions, and natural BUILD/MILESTONE/STATUS content.
 - Waiting costs nothing — the template is usable without the example directory.
+
+---
+
+## D-017 — ReviewReconciliation always runs after CodeReview
+**Date:** 2026-04-04
+**Decision:** `Principal.CodeReview` always routes to `Staff.ReviewReconciliation`, regardless of whether the outcome is APPROVED or CHANGES REQUIRED. Staff reads `last_action.result` to determine posture:
+- `changes_required`: fix REQUIRED items + triage SUGGESTED items
+- `approved`: triage SUGGESTED items only (implement quick/high-value ones; log the rest as tech debt in BACKLOG.md)
+
+If any code was changed during reconciliation, routing goes back to `Principal.CodeReview` for a **targeted re-review** (scoped to reconciliation changes, not the full Phase). If no code was changed, routing proceeds to `PM.StatusUpdate`.
+
+**Rationale:** The previous flow skipped ReviewReconciliation on APPROVED reviews, which meant SUGGESTED improvements were silently dropped. This change ensures every suggestion is explicitly triaged — implemented or logged — without adding a heavy re-review loop when no code changes were made.
+
+**Supersedes:** APPROVED → PM.StatusUpdate (D-013 step 5 updated)
+
+---
+
+## D-018 — thread.md is an append-only log
+**Date:** 2026-04-04
+**Decision:** `thread.md` is a flat chronological log. Every action that writes to it appends a new dated entry at the end using the format:
+```
+---
+### [Action.ID] — YYYY-MM-DD
+<content>
+```
+
+No structured sections (Open Questions, Answers, Active Work, etc.). Only `PM.ThreadMaintenance` may delete, restructure, or compress content.
+
+**Rationale:** Structured sections caused confusion in practice — unclear when content was "active," questions getting orphaned, answering actions unclear about whether to move/delete entries. An append-only model is simpler: each action just adds to the bottom, and periodic ThreadMaintenance cleans up. This matches how a real conversation thread works.
+
+**Supersedes:** Structured-sections model in thread.md (D-009 clarified)
+
+---
+
+## D-019 — FORMATS.md as single source of truth for file structure
+**Date:** 2026-04-04
+**Decision:** A new system-level file `plans/FORMATS.md` defines the expected structure, purpose, and update-ownership of every instance-level file. Instance file stubs contain only section headings and a comment pointing to FORMATS.md — no inline "About this file" or "Purpose" prose.
+
+**Rationale:** Instance files previously contained verbose explainer text that either persisted into generated content (confusing the AI about where to write real content) or got deleted and lost structural guidance. Moving all format/purpose documentation to a single reference file solves both problems.
+
+---
+
+## D-020 — PM.ThreadMaintenance triggered mid-lifecycle by PM.StatusUpdate
+**Date:** 2026-04-04
+**Decision:** `PM.StatusUpdate` (which runs after every Phase) conditionally routes to `PM.ThreadMaintenance` if the thread has grown long or contains substantial resolved content. It uses a `context.notes` entry ("After ThreadMaintenance: proceed to ...") to tell ThreadMaintenance where to route afterward.
+
+**Rationale:** Previously ThreadMaintenance was only triggered by `PM.MilestoneCloseout`, so thread.md could grow noisy across many Phases within a milestone. This adds a natural pruning point without requiring it every time.

@@ -3,7 +3,7 @@ TASK: StatusUpdate
 
 Goal: Update plans/STATUS.md, plans/BACKLOG.md, and plans/CHANGELOG.md to reflect the current state of the project after a Phase's implementation and review cycle is complete.
 
-This action runs after Principal.CodeReview approves (or after Staff.ReviewReconciliation is approved). It captures what was accomplished and surfaces any new work items.
+This action runs after Staff.ReviewReconciliation completes the review cycle (routing to PM.StatusUpdate means no further code changes were needed). It captures what was accomplished and surfaces any new work items.
 
 Inputs:
 - plans/state.json (routing + context)
@@ -30,10 +30,17 @@ Instructions:
    - Include: what changed, key files affected, and brief rationale
 5) Update plans/state.json:
    - last_action = PM.StatusUpdate
-   - If documentation should be updated:
+   - First, assess whether plans/thread.md needs maintenance (has it grown long,
+     or does it contain substantial resolved content that should be pruned?):
+   - If thread needs maintenance:
+     - pause_type = "continue"
+     - next_action_id = PM.ThreadMaintenance
+     - Add a context.notes entry: "After ThreadMaintenance: proceed to Writer.DocumentationUpdate"
+       (or "After ThreadMaintenance: proceed to Human.PhaseApproval" if docs can be skipped)
+   - If thread is clean and documentation should be updated:
      - pause_type = "continue"
      - next_action_id = Writer.DocumentationUpdate
-   - If documentation can be skipped (no user-facing changes):
+   - If thread is clean and documentation can be skipped (no user-facing changes):
      - pause_type = "continue"
      - next_action_id = Human.PhaseApproval
    - If a blocker is discovered:

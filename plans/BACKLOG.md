@@ -1,22 +1,11 @@
-# BACKLOG — Template
-
-## Purpose
-Prioritized list of pending work, bugs, follow-ups, and tech debt.
-
-## When to update
-- When new work is discovered
-- When priorities change
-- After milestone reviews
-
----
-
-## Instance content
+# BACKLOG
+<!-- See plans/FORMATS.md for expected structure. -->
 
 ## P0 (do next)
-- <item>
+- <placeholder>
 
 ## P1
-- <item>
+- <placeholder>
 
 ## P2
-- <item>
+- <placeholder>

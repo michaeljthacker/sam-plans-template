@@ -21,7 +21,14 @@ artifacts live in the `plans/` directory. Read `plans/README.md` for the full sp
 
 ### Key files
 - `plans/README.md` — full SAM system spec (vocabulary, lifecycle, pause model, etc.)
+- `plans/FORMATS.md` — expected structure of all instance-level files — reference when creating or updating
 - `plans/state.json` — routing source of truth (what to do next)
 - `plans/templates/registry.json` — machine-readable action catalog (inputs, outputs, gates)
 - `plans/templates/*.txt` — individual action prompts
 - `plans/STATUS.md` — human-readable project snapshot (updated every action)
+
+### Instance file hygiene
+When an action creates or overwrites an instance file (BUILD.md, MILESTONE.md, STATUS.md,
+BACKLOG.md, CHANGELOG.md, DECISIONS.md, STANDARDS.md, thread.md), replace all
+template/placeholder content with real content. Reference `plans/FORMATS.md` for the
+expected structure of each file. Do not preserve explanatory preamble from template stubs.

@@ -12,7 +12,8 @@ Inputs:
 
 Instructions:
 1) Identify the exact next execution unit (Phase/Step) implied by plans/state.json + plans/MILESTONE.md.
-2) Write only essential questions into plans/thread.md.
+2) Append a new entry to plans/thread.md with your questions.
+   - Use the entry format: `---` then `### Staff.DraftQuestions — <date>`
    - Use IDs: Q-###.
    - Mark Blocking: Yes/No.
    - Keep questions specific and decision-oriented (avoid essays).

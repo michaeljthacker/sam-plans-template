@@ -11,12 +11,14 @@ Inputs:
 - plans/state.json (routing)
 
 Instructions:
-1) Answer each open question in plans/thread.md concisely.
+1) Append a new entry to plans/thread.md answering each open question by Q-### ID.
+   - Use the entry format: `---` then `### Principal.AnswerQuestions — <date>`
+   - Answer concisely. Do not modify or delete previous entries.
 2) Promote durable decisions:
    - If a decision should persist beyond this milestone, add it to plans/DECISIONS.md (if project-specific) or plans/STANDARDS.md (if the rule would carry to any project).
    - If it is only a milestone detail, ensure it is reflected in plans/MILESTONE.md (brief).
-3) Keep plans/thread.md small:
-   - Mark questions as resolved and optionally compress into Resolved summary.
+3) Keep plans/thread.md small by being concise in your answers.
+   Resolved questions will be compressed by PM.ThreadMaintenance later.
 4) Update plans/STATUS.md (mandatory):
    - add a bullet to Recent describing questions answered
    - update Blockers briefly

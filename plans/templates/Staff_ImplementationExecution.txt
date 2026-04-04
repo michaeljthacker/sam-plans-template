@@ -27,8 +27,9 @@ Instructions:
 3) Commit your work.
    - Minimum: ≥1 commit per Phase.
    - More commits allowed if complexity warrants.
-4) Draft a review request in plans/thread.md:
-   - Section title: "Review Request — <Phase ID>"
+4) Append a review request entry to plans/thread.md:
+   - Use the entry format: `---` then `### Staff.ImplementationExecution — <date>`
+   - Title within entry: "Review Request — <Phase ID>"
    - Include:
      - What was implemented
      - Key files changed

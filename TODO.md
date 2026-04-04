@@ -74,3 +74,25 @@ Future chat sessions: read `DECISIONS.md` for rationale, `plans/README.md` for t
 - [x] Clean up "TASK is reserved" vocabulary note (STEP replaces SUBTASK; README updated)
 - [ ] Build a worked example in `example/` showing one full phase cycle with realistic file contents
   - **Deferred (D-016):** Copy from a real public project at ~B1 M2 P3 S4 rather than fabricating. Waiting for a suitable project.
+
+## v1.1.0 — Completed (2026-04-04)
+
+Based on feedback from initial usage. See D-017 through D-020.
+
+- [x] Fix code review flow: ReviewReconciliation always runs after CodeReview (D-017)
+  - Principal.CodeReview APPROVED now routes to Staff.ReviewReconciliation
+  - Staff.ReviewReconciliation triages SUGGESTED items (implement or log to BACKLOG)
+  - Targeted re-review if code was changed; straight to PM.StatusUpdate if not
+- [x] thread.md is append-only log (D-018)
+  - Removed structured sections; each action appends dated entry
+  - Updated all templates that write to thread.md (DraftQuestions, AnswerQuestions, ImplementationExecution, CodeReview, ReviewReconciliation)
+  - PM.ThreadMaintenance is sole pruner
+- [x] Created plans/FORMATS.md (D-019)
+  - Single source of truth for instance file structure, purpose, and ownership
+  - Stripped verbose "About this file" preamble from all instance stubs
+- [x] PM.ThreadMaintenance triggered mid-lifecycle (D-020)
+  - PM.StatusUpdate conditionally routes to ThreadMaintenance via context.notes handoff
+- [x] Moved bootstrap questions from thread.md to Product.ProductVision template
+- [x] Updated registry.json (BACKLOG.md added to ReviewReconciliation inputs)
+- [x] Updated plans/README.md (lifecycle table, thread management, system-level file list)
+- [x] Updated plans/copilot-instructions.md (FORMATS.md reference, instance file hygiene rule)
