@@ -51,7 +51,7 @@
       "template_path": "plans/templates/Staff_DraftQuestions.txt",
       "status": "ready",
       "inputs": ["plans/state.json", "plans/MILESTONE.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/thread.md", "plans/STATUS.md"],
-      "required_outputs": ["plans/thread.md", "plans/STATUS.md", "plans/state.json"],
+      "required_outputs": ["plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
     {
@@ -70,7 +70,7 @@
       "task": "ImplementationExecution",
       "template_path": "plans/templates/Staff_ImplementationExecution.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/MILESTONE.md", "plans/thread.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/STATUS.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/MILESTONE.md", "plans/thread.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/STATUS.md"],
       "required_outputs": ["plans/thread.md", "plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": true }
     },
@@ -80,7 +80,7 @@
       "task": "CodeReview",
       "template_path": "plans/templates/Principal_CodeReview.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/MILESTONE.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/thread.md", "plans/STATUS.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/MILESTONE.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/thread.md", "plans/STATUS.md"],
       "required_outputs": ["plans/thread.md", "plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
@@ -90,7 +90,7 @@
       "task": "ReviewReconciliation",
       "template_path": "plans/templates/Staff_ReviewReconciliation.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/thread.md", "plans/MILESTONE.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/BACKLOG.md", "plans/STATUS.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/thread.md", "plans/MILESTONE.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/BACKLOG.md", "plans/STATUS.md"],
       "required_outputs": ["plans/thread.md", "plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": true }
     },
@@ -100,7 +100,7 @@
       "task": "StatusUpdate",
       "template_path": "plans/templates/PM_StatusUpdate.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/thread.md", "plans/MILESTONE.md", "plans/STATUS.md", "plans/BACKLOG.md", "plans/CHANGELOG.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/thread.md", "plans/MILESTONE.md", "plans/STATUS.md", "plans/BACKLOG.md", "plans/CHANGELOG.md"],
       "required_outputs": ["plans/STATUS.md", "plans/BACKLOG.md", "plans/CHANGELOG.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
@@ -110,7 +110,7 @@
       "task": "DocumentationUpdate",
       "template_path": "plans/templates/Writer_DocumentationUpdate.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/MILESTONE.md", "plans/thread.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/STATUS.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/MILESTONE.md", "plans/thread.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/STATUS.md"],
       "required_outputs": ["plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },

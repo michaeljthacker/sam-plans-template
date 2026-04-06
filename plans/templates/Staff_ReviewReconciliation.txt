@@ -11,6 +11,7 @@ This action always runs after Principal.CodeReview. Check plans/state.json
 Inputs:
 - plans/thread.md (review feedback)
 - Code changes / repository state
+- plans/config.json (workflow configuration — read `re_review_trigger` setting)
 - plans/MILESTONE.md (acceptance criteria)
 - plans/DECISIONS.md (project-specific architectural choices)
 - plans/STANDARDS.md (team-level rules portable across projects)
@@ -48,9 +49,14 @@ Instructions:
 7) Update plans/state.json:
    - last_action = Staff.ReviewReconciliation
    - If any code was changed (REQUIRED fixes or implemented suggestions):
-     - pause_type = "continue"
-     - next_action_id = Principal.CodeReview
-     (Principal will perform a targeted re-review scoped to reconciliation changes.)
+     - Read `re_review_trigger` from plans/config.json (default: "required" if missing):
+       - "required": pause_type = "continue", next_action_id = Principal.CodeReview
+         (Principal will perform a targeted re-review scoped to reconciliation changes.)
+       - "auto": Evaluate whether the scope and nature of the changes warrant re-review.
+         Consider: did you change control flow, public interfaces, or security-sensitive
+         code? If yes → next_action_id = Principal.CodeReview. If the changes were
+         mechanical, cosmetic, or narrowly scoped → next_action_id = PM.StatusUpdate.
+         You MUST document your re-review decision and reasoning in the thread entry.
    - If no code was changed (all suggestions logged or dismissed):
      - pause_type = "continue"
      - next_action_id = PM.StatusUpdate

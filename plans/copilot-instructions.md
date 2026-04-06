@@ -22,6 +22,7 @@ artifacts live in the `plans/` directory. Read `plans/README.md` for the full sp
 ### Key files
 - `plans/README.md` — full SAM system spec (vocabulary, lifecycle, pause model, etc.)
 - `plans/FORMATS.md` — expected structure of all instance-level files — reference when creating or updating
+- `plans/config.json` — project-level workflow configuration — consult for routing decisions
 - `plans/state.json` — routing source of truth (what to do next)
 - `plans/templates/registry.json` — machine-readable action catalog (inputs, outputs, gates)
 - `plans/templates/*.txt` — individual action prompts

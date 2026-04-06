@@ -203,3 +203,34 @@ at the end.
    request; Principal appends the feedback as the next entry, referencing the request.
 5. **Keep entries concise and actionable.** The thread will be pruned periodically,
    but shorter entries delay the need for maintenance.
+
+---
+
+## config.json
+
+**What it is:** Project-level workflow configuration — tunes process weight (which steps run, how strict reviews are) without changing the state machine or artifact contracts.
+**Updated by:** Human only (manually edited). Never modified by any action. Missing file or missing key = default behavior (full process).
+
+```
+{
+  "$schema": "config.schema.json",
+  "code_review": "every_phase",
+  "formal_approval": "every_phase",
+  "documentation_update": "every_milestone",
+  "review_strictness": "balanced",
+  "re_review_trigger": "required"
+}
+```
+
+### Keys
+
+| Key | Options | Default | Effect |
+|-----|---------|---------|--------|
+| `code_review` | `every_phase` \| `every_milestone` \| `never` | `every_phase` | When Principal.CodeReview runs after implementation |
+| `formal_approval` | `every_phase` \| `every_milestone` \| `never` | `every_phase` | When Human.PhaseApproval runs |
+| `documentation_update` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | When Writer.DocumentationUpdate runs |
+| `review_strictness` | `strict` \| `balanced` \| `pragmatic` | `balanced` | Threshold for REQUIRED vs. SUGGESTED in code review |
+| `re_review_trigger` | `required` \| `auto` | `required` | Whether code changes in reconciliation always trigger re-review |
+
+For `every_milestone` options: the step runs only on the last phase of each milestone.
+Templates consult this file when making routing decisions. See `config.schema.json` for full descriptions.

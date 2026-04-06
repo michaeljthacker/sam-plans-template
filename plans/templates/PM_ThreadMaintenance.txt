@@ -29,7 +29,9 @@ Instructions:
    - Check context.notes for an "After ThreadMaintenance: proceed to ..." directive.
      If present, set next_action_id accordingly and remove the note from context.notes.
      If absent, set next_action_id appropriately based on lifecycle position.
-   - pause_type unchanged unless you discover an unhandled decision point
+   - Set pause_type based on who acts next:
+     - If next_action_id starts with `Human.*`: pause_type = "decision"
+     - Otherwise: pause_type = "continue"
 
 Output:
 - Brief summary

@@ -293,3 +293,17 @@ Gate strictness mechanics:
 - **Artifact granularity (disable CHANGELOG/BACKLOG):** Rejected. Low maintenance overhead, high audit value.
 - **Role consolidation (inline PM/Writer):** Rejected. Requires template surgery, not just routing changes.
 - **Getting-started setup prompt:** Rejected. Cold-start problem (no `.github/copilot-instructions.md` yet) limits its usefulness, and the quickstart section in README covers the manual path.
+
+---
+
+## D-022 — ThreadMaintenance must set pause_type based on next action
+**Date:** 2026-04-05
+**Decision:** `PM.ThreadMaintenance` must explicitly set `pause_type` based on who acts next:
+- If `next_action_id` starts with `Human.*`: `pause_type = "decision"`
+- Otherwise: `pause_type = "continue"`
+
+Previously the template said "pause_type unchanged unless you discover an unhandled decision point." This was incorrect when `PM.StatusUpdate` routed through ThreadMaintenance to `Human.PhaseApproval` — the pause_type stayed `"continue"` (set for ThreadMaintenance) instead of becoming `"decision"` (needed for the Human action).
+
+**Rationale:** Found during routing review for D-021 (configurable `formal_approval`). The bug was pre-existing but became more prominently exposed when config routing could send more paths through ThreadMaintenance → Human.PhaseApproval.
+
+**Supersedes:** "pause_type unchanged" rule in PM.ThreadMaintenance template
