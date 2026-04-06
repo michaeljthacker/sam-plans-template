@@ -243,3 +243,53 @@ No structured sections (Open Questions, Answers, Active Work, etc.). Only `PM.Th
 **Decision:** `PM.StatusUpdate` (which runs after every Phase) conditionally routes to `PM.ThreadMaintenance` if the thread has grown long or contains substantial resolved content. It uses a `context.notes` entry ("After ThreadMaintenance: proceed to ...") to tell ThreadMaintenance where to route afterward.
 
 **Rationale:** Previously ThreadMaintenance was only triggered by `PM.MilestoneCloseout`, so thread.md could grow noisy across many Phases within a milestone. This adds a natural pruning point without requiring it every time.
+
+---
+
+## D-021 — Configurable process weight via `plans/config.json`
+**Date:** 2026-04-05
+**Decision:** Introduce a new system-level `plans/config.json` (with `plans/config.schema.json`) that lets the human tune process weight without breaking the state machine. Six features across two classes — four routing knobs and two gate-strictness knobs:
+
+| Config Key | Options | Default | Class |
+|------------|---------|---------|-------|
+| `code_review` | `every_phase` \| `every_milestone` \| `never` | `every_phase` | Routing |
+| `formal_approval` | `every_phase` \| `every_milestone` \| `never` | `every_phase` | Routing |
+| `documentation_update` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | Routing |
+| `review_strictness` | `strict` \| `balanced` \| `pragmatic` | `balanced` | Gate strictness |
+| `re_review_trigger` | `required` \| `auto` | `required` | Gate strictness |
+
+Additionally, `Staff.DraftQuestions` gains self-skip logic (no config key): if the path forward is clear and no meaningful questions exist, it skips itself (`result = "skipped"`) and routes directly to `Staff.ImplementationExecution`.
+
+Design principles:
+- **All defaults = current full-process behavior** (except `documentation_update` which defaults to `every_milestone` — docs every phase was deemed excessive).
+- **Missing config file or missing key = default.** The system fails open to the full process.
+- **Config is human-edited, never modified by actions.** It is a system-level file.
+- **`never` (not `skip`)** for frequency options — consistent with the other frequency values.
+- **Routing changes only.** No schema changes to `state.json`. All `next_action_id` values already exist in the enum. Templates consult config when deciding where to route, but the action set, artifacts, and registry structure are unchanged.
+
+Routing knob mechanics:
+- `code_review`: `Staff.ImplementationExecution` checks config; `every_milestone` routes to review only on the last phase of the milestone; `never` routes straight to `PM.StatusUpdate`.
+- `formal_approval`: `PM.StatusUpdate` and `Writer.DocumentationUpdate` check config; `every_milestone` routes to `Human.PhaseApproval` only on the last phase; `never` routes straight to `PM.AdvancePhase`.
+- `documentation_update`: `PM.StatusUpdate` checks config; `every_milestone` routes to `Writer.DocumentationUpdate` only on the last phase; `never` always skips Writer.
+
+Gate strictness mechanics:
+- `review_strictness`: `Principal.CodeReview` consults config to set the threshold between REQUIRED and SUGGESTED findings. `strict` = any deviation is REQUIRED; `pragmatic` = only correctness/security issues are REQUIRED.
+- `re_review_trigger`: `Staff.ReviewReconciliation` consults config; `required` always re-reviews if code changed (current behavior); `auto` lets the AI judge whether changes warrant re-review (must document reasoning in thread entry).
+
+**Rationale:**
+- The full 9-step phase cycle is heavier than many projects need, especially when the human is reviewing in real-time.
+- Routing-only changes are safe — they skip steps but don't alter the state machine or artifact contracts.
+- Granular knobs (no presets) force the human to consciously opt out of each safety gate rather than blindly picking a "lightweight" preset.
+- The Q&A round is better handled as AI self-skip than a config knob — the AI is in the best position to judge whether it has questions, and the escape hatch (routing to `Principal.AnswerQuestions` mid-implementation) is always available.
+
+**Supersedes:** N/A (additive)
+
+### Rejected alternatives
+- **Presets (light/standard/full):** Rejected. Granular-only forces explicit decisions about each gate.
+- **Configurable Q&A round:** Rejected. Template-level self-skip is more adaptive than a static toggle.
+- **`skip` terminology:** Rejected in favor of `never` for consistency with frequency-based sibling values.
+- **`re_review_trigger: required_only`:** Rejected. Reframed as `required` vs. `auto` — even suggested changes may warrant review; the distinction is whether the AI judges or always triggers.
+- **Thread verbosity config:** Rejected. "Be concise when possible" is good template practice, not a per-project knob.
+- **Artifact granularity (disable CHANGELOG/BACKLOG):** Rejected. Low maintenance overhead, high audit value.
+- **Role consolidation (inline PM/Writer):** Rejected. Requires template surgery, not just routing changes.
+- **Getting-started setup prompt:** Rejected. Cold-start problem (no `.github/copilot-instructions.md` yet) limits its usefulness, and the quickstart section in README covers the manual path.

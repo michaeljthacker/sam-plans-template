@@ -96,3 +96,79 @@ Based on feedback from initial usage. See D-017 through D-020.
 - [x] Updated registry.json (BACKLOG.md added to ReviewReconciliation inputs)
 - [x] Updated plans/README.md (lifecycle table, thread management, system-level file list)
 - [x] Updated plans/copilot-instructions.md (FORMATS.md reference, instance file hygiene rule)
+
+---
+
+## v1.2.0 — Configurable process weight (D-021)
+
+Add `plans/config.json` with 5 configurable knobs (4 routing, 2 gate strictness) plus Q&A self-skip logic. All changes are routing/behavioral — no schema or structural rework. See D-021 for full rationale.
+
+### Phase A — Config infrastructure
+
+- [ ] Create `plans/config.schema.json` — JSON Schema (draft-07) for all 5 config keys with enums, defaults, descriptions. Follow `state.schema.json` style.
+- [ ] Create `plans/config.json` — instance file with `$schema` ref and all defaults:
+  - `code_review`: `"every_phase"`
+  - `formal_approval`: `"every_phase"`
+  - `documentation_update`: `"every_milestone"`
+  - `review_strictness`: `"balanced"`
+  - `re_review_trigger`: `"required"`
+- [ ] Update `plans/FORMATS.md` — add `config.json` section (what it is, who edits it, structure example). Mark as system-level: human-edited, never modified by actions.
+
+### Phase B — System docs & registry (parallel with A)
+
+- [ ] Update `plans/README.md`:
+  - Add `plans/config.json` and `plans/config.schema.json` to the "System-level" file list
+  - Add a "## Configuration" section after "Routing and state" explaining purpose, location, defaults table, and fail-open behavior
+  - Annotate the Phase execution table noting which steps are configurable (reference Configuration section)
+- [ ] Update `plans/copilot-instructions.md` — add `plans/config.json` to "Key files" list with one-line description
+- [ ] Update `plans/templates/registry.json` — add `"plans/config.json"` to `inputs` for 5 actions:
+  - `Staff.ImplementationExecution` (reads `code_review`)
+  - `Staff.ReviewReconciliation` (reads `re_review_trigger`)
+  - `PM.StatusUpdate` (reads `documentation_update`, `formal_approval`)
+  - `Writer.DocumentationUpdate` (reads `formal_approval`)
+  - `Principal.CodeReview` (reads `review_strictness`)
+
+### Phase C — Routing template updates (depends on A+B)
+
+- [ ] Update `Staff_ImplementationExecution.txt` — config-aware `code_review` routing:
+  - `every_phase` → `Principal.CodeReview` (unchanged)
+  - `every_milestone` + last phase → `Principal.CodeReview`; otherwise → `PM.StatusUpdate`
+  - `never` → `PM.StatusUpdate`
+  - Keep existing escape hatches (AnswerQuestions, ResolveBlocker) unchanged
+- [ ] Update `PM_StatusUpdate.txt` — config-aware post-status routing (most complex change):
+  - Replace ad-hoc Writer skip logic with explicit config-driven decision tree
+  - Chain: StatusUpdate → [ThreadMaintenance?] → [Writer?] → [PhaseApproval?] → AdvancePhase
+  - `documentation_update` × is-last-phase determines Writer routing
+  - `formal_approval` × is-last-phase determines PhaseApproval routing
+  - ThreadMaintenance "After TM: proceed to X" note must resolve X using same config logic
+- [ ] Update `Writer_DocumentationUpdate.txt` — config-aware `formal_approval` routing:
+  - `every_phase` → `Human.PhaseApproval` (unchanged)
+  - `every_milestone` + last phase → `Human.PhaseApproval`; otherwise → `PM.AdvancePhase`
+  - `never` → `PM.AdvancePhase`
+  - Adjust `pause_type`: `"decision"` only when routing to Human.PhaseApproval
+- [ ] Update `Staff_ReviewReconciliation.txt` — config-aware `re_review_trigger` routing:
+  - `required` → `Principal.CodeReview` if any code changed (unchanged)
+  - `auto` → AI judges whether changes warrant re-review; must document reasoning in thread entry
+
+### Phase D — Behavioral template updates (parallel with C)
+
+- [ ] Update `Principal_CodeReview.txt` — add `review_strictness` parameter:
+  - `strict`: deviations from STANDARDS/DECISIONS are REQUIRED; best-practice violations are pushed harder (REQUIRED when clear, SUGGESTED with strong recommendation otherwise)
+  - `balanced`: correctness + clear violations = REQUIRED; style preferences = SUGGESTED (current implicit behavior)
+  - `pragmatic`: only correctness/security issues are REQUIRED; everything else = SUGGESTED
+- [ ] Update `Staff_DraftQuestions.txt` — add self-skip logic (no config dependency):
+  - If no meaningful questions exist: `result = "skipped"`, `next_action_id = Staff.ImplementationExecution`
+  - Do not append empty entry to thread.md; note skip in STATUS.md
+  - If questions exist: proceed as currently specified (→ Principal.AnswerQuestions)
+
+### Verification
+
+- [ ] Validate `config.json` against `config.schema.json`
+- [ ] Walk through 3 routing scenarios to confirm no dead ends or infinite loops:
+  - Full process (all defaults) — must produce current 9-step sequence
+  - Minimal (`code_review=never`, `formal_approval=never`, `documentation_update=never`) — ~4 steps per phase
+  - Milestone-gated (all `every_milestone`) — non-last phases get minimal path, last phase gets full
+- [ ] Confirm DraftQuestions self-skip routes to valid `next_action_id` (already in schema enum)
+- [ ] Confirm `re_review_trigger=auto` doesn't create dead ends
+- [ ] Confirm every updated template says "if config.json missing or key absent, use default"
+- [ ] Confirm registry.json has `plans/config.json` in all 5 action inputs
