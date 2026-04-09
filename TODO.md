@@ -140,3 +140,33 @@ Configurable process weight via `plans/config.json`. 5 configurable knobs (4 rou
 - [x] `re_review_trigger=auto` doesn't create dead ends
 - [x] Every updated template specifies "if config.json missing or key absent, use default"
 - [x] registry.json has `plans/config.json` in all 5 action inputs
+
+---
+
+## v1.2.1 — Completed (2026-04-09)
+
+- [x] Added `plans/next.ps1` helper script — reads state.json, copies "Run the next action: B1-M1-P1 Action.ID" to clipboard for descriptive chat names
+
+---
+
+## v1.3.0 — Planned
+
+Mid-flight plan diversion support. SAM currently has no action that modifies the plan once execution begins. When reality diverges, BACKLOG becomes a junk drawer and there's no formal re-planning path.
+
+### Principal.PlanDiversion
+
+- [ ] Design `Principal.PlanDiversion` action template
+  - Human-initiated (user sets `next_action_id` or a helper triggers it)
+  - Principal assesses scope: new milestone, new phase, extra steps, or just a note
+  - Interactive: Principal proposes changes, user confirms before files are modified
+  - Updates BUILD.md (if milestones change), MILESTONE.md (if phases change), DECISIONS.md (rationale), thread.md (log), state.json (resume point)
+  - Routes to: `Human.ApproveMilestone` (new milestone), `Staff.DraftQuestions` (new phase), or resume previous position (minor change)
+  - Pause type: `decision`
+- [ ] Add `Principal.PlanDiversion` to registry.json (inputs, outputs, gates)
+- [ ] Add `Principal.PlanDiversion` to state.schema.json `action_id` enum
+- [ ] Update plans/README.md — add to action catalog and lifecycle docs
+
+### BACKLOG hygiene
+
+- [ ] Add explicit rule to FORMATS.md: "BACKLOG tracks future work items only. Do not use BACKLOG for in-progress status, remaining tasks in the current phase, or implementation details. Those belong in STATUS.md and thread.md respectively."
+- [ ] Review BACKLOG references in templates (PM.StatusUpdate, PM.MilestoneCloseout, Staff.ReviewReconciliation) to reinforce correct usage

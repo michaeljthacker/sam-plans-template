@@ -203,6 +203,18 @@ Common references:
 From step 4 onward, each step is: open a new chat, say "run the next step", and the AI
 reads `state.json` to know what to do. Review its output, then repeat.
 
+**Tip:** Use `plans/next.ps1` to generate a descriptive prompt and copy it to your clipboard — see below.
+
+## Helper script: `next.ps1`
+
+Instead of typing a generic "run the next step", run:
+
+```powershell
+./plans/next.ps1
+```
+
+This reads `state.json`, builds a prompt like `Run the next action: B1-M2-P3 Staff.ImplementationExecution`, copies it to your clipboard, and prints it along with the last action's summary. Pasting this as your chat opener helps give each conversation a meaningful name in your chat history.
+
 ## Where to look next
 - `plans/templates/registry.json` — machine-verifiable action list + gates
 - `plans/templates/*.txt` — individual action prompts
