@@ -170,3 +170,27 @@ Mid-flight plan diversion support. SAM currently has no action that modifies the
 
 - [ ] Add explicit rule to FORMATS.md: "BACKLOG tracks future work items only. Do not use BACKLOG for in-progress status, remaining tasks in the current phase, or implementation details. Those belong in STATUS.md and thread.md respectively."
 - [ ] Review BACKLOG references in templates (PM.StatusUpdate, PM.MilestoneCloseout, Staff.ReviewReconciliation) to reinforce correct usage
+
+### System file sync helper
+
+- [ ] Add `plans/sam-update.py` script and `plans/sync-manifest.json` for updating SAM system files across projects
+  - **Problem:** When SAM system files or templates change, every project repo using SAM needs those updates — but only for system-level files. Instance-level files (BUILD.md, config.json, state.json, etc.) must never be overwritten.
+  - **Approach:**
+    - `sync-manifest.json` declares system-level files to copy and instance-level files to never touch (derived from the taxonomy in `plans/README.md`)
+    - `sam-update.py` reads the manifest and copies system files from a source SAM repo into the target project, including `copilot-instructions.md` → `.github/copilot-instructions.md`
+    - Dry-run by default; `--apply` flag to execute. Show diffs for files that already exist.
+    - Optionally stamp `plans/.sam-version` for tracking which SAM version a project is running
+  - **Invocation:** `python plans/sam-update.py [path/to/sam-template]` (path defaults to `SAM_TEMPLATE_PATH` env var if set)
+  - **Rationale:** Git submodules/subtrees/symlinks don't fit the selective, in-place update need. A manifest-driven script is explicit, maintainable, and lets SAM own the sync rules.
+  - **Note:** Both `sam-update.py` and `sync-manifest.json` are system-level files, so they get synced too — bootstrapping is the only manual copy.
+
+### Folder reorganization
+
+- [ ] Evaluate restructuring `plans/` to reduce top-level clutter
+  - Currently everything except prompt templates lives flat under `plans/` — system docs, instance artifacts, schemas, config, helpers, and state all at the same level.
+  - Possible directions: separate system files (schemas, scripts, README, FORMATS) from instance files (BUILD, MILESTONE, STATUS, state.json, thread.md, etc.), or group by role (e.g., `plans/schemas/`, `plans/system/`).
+  - **Constraints to consider:**
+    - Every template hardcodes `plans/` paths — restructuring means updating all templates, registry.json, copilot-instructions.md, and the sync manifest
+    - The sync helper (`sam-update.py`) would need to handle the new layout
+    - Instance-level files must remain easy for the AI to find (short, predictable paths)
+  - **Decision:** Defer until the file count becomes a real friction point. Document the evaluation and chosen structure in DECISIONS.md if/when pursued.
