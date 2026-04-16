@@ -72,8 +72,7 @@ Future chat sessions: read `DECISIONS.md` for rationale, `plans/README.md` for t
 - [x] Add single-threaded execution statement to README
 - [x] Note that `thread.md` is AI-readable, not machine-parseable (documented in README)
 - [x] Clean up "TASK is reserved" vocabulary note (STEP replaces SUBTASK; README updated)
-- [ ] Build a worked example in `example/` showing one full phase cycle with realistic file contents
-  - **Deferred (D-016):** Copy from a real public project at ~B1 M2 P3 S4 rather than fabricating. Waiting for a suitable project.
+- [x] Build a worked example in `example/` showing one full phase cycle with realistic file contents
 
 ## v1.1.0 — Completed (2026-04-04)
 
@@ -151,27 +150,111 @@ Configurable process weight via `plans/config.json`. 5 configurable knobs (4 rou
 
 ## v1.3.0 — Planned
 
-Mid-flight plan diversion support. SAM currently has no action that modifies the plan once execution begins. When reality diverges, BACKLOG becomes a junk drawer and there's no formal re-planning path.
+Bug fixes and usability improvements surfaced by real-world usage (discussion-guide builder, wordsearch app).
+
+### Bug: state.json `last_action.result` schema violations
+
+- [ ] Audit all templates for correct `last_action.result` values — AI keeps writing `complete` instead of the schema-valid enum (`ok`, `approved`, `changes_required`, `blocked`, `error`, `skipped`)
+- [ ] Add explicit reminder in `plans/copilot-instructions.md` listing valid `result` values
+- [ ] Add result-value guidance to the `state.json` section of `plans/FORMATS.md`
+
+### Quickstart guide: clarify project idea goes in thread.md
+
+- [ ] Update quickstart in `plans/README.md` step 3: explicitly say "Write your project idea in `plans/thread.md`" (or provide a detailed description — whatever you have). Users keep putting descriptions in separate files because it's not obvious that `Product.ProductVision` reads from `thread.md`
+- [ ] Update `plans/README.md` "Expected lifecycle" section 1 — change "Human provides project idea" to "Human writes project idea in `plans/thread.md`"
+
+### PM.ThreadMaintenance config-awareness audit
+
+- [ ] Audit `PM_ThreadMaintenance.txt` against `config.json` settings — ensure it doesn't prune content that's still needed (e.g., don't delete code review notes from phases 1–2 if `code_review=every_milestone` means the review hasn't happened yet)
+- [ ] Check other templates for similar config-timing mismatches introduced in v1.2.0
+
+### BACKLOG hygiene
+
+- [ ] Add explicit rule to FORMATS.md: "BACKLOG tracks future work items only. Do not use BACKLOG for in-progress status, remaining tasks in the current phase, or implementation details. Those belong in state.json (e.g., `context.notes`) and thread.md respectively."
+- [ ] Review BACKLOG references in templates (PM.StatusUpdate, PM.MilestoneCloseout, Staff.ReviewReconciliation) to reinforce correct usage
+
+---
+
+## v1.4.0 — Planned
+
+New lifecycle actions: human build-approval gate and mid-flight re-planning.
+
+### Human.ApproveBuild
+
+Currently there's no human gate between `Principal.BuildReview` and `Principal.MilestonePlan`. The human should confirm build scope before planning begins. Named `Human.ApproveBuild` for consistency with `Human.ApproveMilestone`.
+
+- [ ] Design `Human.ApproveBuild` action template
+  - Runs after `Principal.BuildReview`, before `Principal.MilestonePlan`
+  - Human reviews `plans/BUILD.md` for scope, goals, and milestone breakdown
+  - On approval: routes to `Principal.MilestonePlan`
+  - On changes requested: routes back to `Product.ProductVision` or `Principal.BuildReview` (human specifies)
+  - Pause type: `decision`
+- [ ] Add `Human.ApproveBuild` to registry.json (inputs, outputs, gates)
+- [ ] Add `Human.ApproveBuild` to state.schema.json `action_id` enum
+- [ ] Update `Principal_BuildReview.txt` routing — currently routes to `Principal.MilestonePlan`, should route to `Human.ApproveBuild`
+- [ ] Update plans/README.md — lifecycle docs, action catalog, quickstart sequence (now 4 build-init steps instead of 3)
 
 ### Principal.PlanDiversion
+
+SAM currently has no action that modifies the plan once execution begins. When reality diverges, BACKLOG becomes a junk drawer and there's no formal re-planning path.
 
 - [ ] Design `Principal.PlanDiversion` action template
   - Human-initiated (user sets `next_action_id` or a helper triggers it)
   - Principal assesses scope: new milestone, new phase, extra steps, or just a note
   - Interactive: Principal proposes changes, user confirms before files are modified
   - Updates BUILD.md (if milestones change), MILESTONE.md (if phases change), DECISIONS.md (rationale), thread.md (log), state.json (resume point)
-  - Routes to: `Human.ApproveMilestone` (new milestone), `Staff.DraftQuestions` (new phase), or resume previous position (minor change)
+  - Routes based on which artifact was edited: `Human.ApproveBuild` (if BUILD.md changed — new/restructured milestones), `Human.ApproveMilestone` (if MILESTONE.md changed — new/restructured phases), `Staff.DraftQuestions` (new steps only), or resume previous position (minor change)
   - Pause type: `decision`
 - [ ] Add `Principal.PlanDiversion` to registry.json (inputs, outputs, gates)
 - [ ] Add `Principal.PlanDiversion` to state.schema.json `action_id` enum
 - [ ] Update plans/README.md — add to action catalog and lifecycle docs
 
-### BACKLOG hygiene
+---
 
-- [ ] Add explicit rule to FORMATS.md: "BACKLOG tracks future work items only. Do not use BACKLOG for in-progress status, remaining tasks in the current phase, or implementation details. Those belong in STATUS.md and thread.md respectively."
-- [ ] Review BACKLOG references in templates (PM.StatusUpdate, PM.MilestoneCloseout, Staff.ReviewReconciliation) to reinforce correct usage
+## v1.5.0 — Planned
 
-### System file sync helper
+STATUS.md reduction. Currently every action must update STATUS.md, which largely duplicates state.json. Make update frequency configurable, defaulting to PM-only.
+
+### STATUS.md config option
+
+- [ ] Add `status_updates` key to `config.schema.json` — enum: `every_action` | `pm_only` | `every_milestone` | `never`, default: `pm_only`
+  - `every_action` — current behavior; every action writes STATUS.md (backward compatible)
+  - `pm_only` — only `PM.StatusUpdate` writes STATUS.md; all others skip it (new default — state.json + thread.md are sufficient for inter-action state)
+  - `every_milestone` — STATUS.md updated only on the last phase of each milestone (by `PM.StatusUpdate`)
+  - `never` — STATUS.md is not updated; state.json + thread.md are the sole records
+- [ ] Update `plans/config.json` with new key (default `pm_only`)
+- [ ] Update `PM_StatusUpdate.txt` — always writes STATUS.md regardless of config (it's the PM's primary job)
+- [ ] Update all other action templates that currently mandate STATUS.md updates — check `status_updates` config before writing
+- [ ] Update `plans/FORMATS.md` — note that STATUS.md update frequency is configurable
+- [ ] Update `plans/README.md` — add `status_updates` to Configuration table, update "STATUS.md is authoritative for human-readable snapshot" language to reflect new default
+- [ ] Update `plans/copilot-instructions.md` — adjust the "update STATUS.md every action" rule to reference config
+
+---
+
+## v1.6.0 — Planned
+
+Helper scripts and sync tooling. All helper scripts are `plans/*.ps1` for zero-install simplicity — just copy `plans/` and go. (CLI upgrade to `sam <command>` deferred to v3+.)
+
+### plans/status.ps1
+
+- [ ] Create `plans/status.ps1` — reads state.json and displays a formatted summary
+  - Current position: build, milestone, phase, step
+  - Last action: action_id, result, summary
+  - Next action: next_action_id, pause_type
+  - Active blockers (if any)
+  - Config summary (non-default values only)
+  - No clipboard copy (that's `next.ps1`'s job)
+
+### plans/commit.ps1
+
+- [ ] Create `plans/commit.ps1` — auto-commits with a SAM-formatted message
+  - Runs `git add -A; git commit -m "{message}"`
+  - Message format: `--AUTO-{build_id}-{milestone_id}-{phase_id}-{Role}.{Task}: {last_action.summary}` (all values from state.json)
+  - The `--AUTO-` prefix distinguishes automated SAM commits from manual ones
+  - **Template update:** Add instructions to all action templates that produce organic commits (e.g., `Staff.ImplementationExecution`) telling the AI to NOT use the `--AUTO-` prefix in manual commit messages, so automated vs. organic commits remain distinguishable
+  - **Design note:** Keep as a standalone script (single-purpose). Could later add a `-Commit` switch to `next.ps1` as a convenience alias, but separate scripts are simpler and composable.
+
+### plans/sam-update.py + sync-manifest.json
 
 - [ ] Add `plans/sam-update.py` script and `plans/sync-manifest.json` for updating SAM system files across projects
   - **Problem:** When SAM system files or templates change, every project repo using SAM needs those updates — but only for system-level files. Instance-level files (BUILD.md, config.json, state.json, etc.) must never be overwritten.
@@ -183,14 +266,33 @@ Mid-flight plan diversion support. SAM currently has no action that modifies the
   - **Invocation:** `python plans/sam-update.py [path/to/sam-template]` (path defaults to `SAM_TEMPLATE_PATH` env var if set)
   - **Rationale:** Git submodules/subtrees/symlinks don't fit the selective, in-place update need. A manifest-driven script is explicit, maintainable, and lets SAM own the sync rules.
   - **Note:** Both `sam-update.py` and `sync-manifest.json` are system-level files, so they get synced too — bootstrapping is the only manual copy.
+  - **Note:** This is the one Python script in the toolbox. It stays Python because it's the most complex helper (diffing, manifest parsing, cross-platform potential) and is a natural seed for a future CLI if that path is pursued.
+
+---
+
+## Deferred / Future
+
+Items parked until a clear trigger or sufficient friction warrants action.
 
 ### Folder reorganization
 
 - [ ] Evaluate restructuring `plans/` to reduce top-level clutter
   - Currently everything except prompt templates lives flat under `plans/` — system docs, instance artifacts, schemas, config, helpers, and state all at the same level.
-  - Possible directions: separate system files (schemas, scripts, README, FORMATS) from instance files (BUILD, MILESTONE, STATUS, state.json, thread.md, etc.), or group by role (e.g., `plans/schemas/`, `plans/system/`).
-  - **Constraints to consider:**
-    - Every template hardcodes `plans/` paths — restructuring means updating all templates, registry.json, copilot-instructions.md, and the sync manifest
-    - The sync helper (`sam-update.py`) would need to handle the new layout
-    - Instance-level files must remain easy for the AI to find (short, predictable paths)
-  - **Decision:** Defer until the file count becomes a real friction point. Document the evaluation and chosen structure in DECISIONS.md if/when pursued.
+  - Possible directions: separate system files from instance files, or group by function (e.g., `plans/schemas/`, `plans/scripts/`).
+  - **Constraints:** Every template hardcodes `plans/` paths — restructuring means updating all templates, registry.json, copilot-instructions.md, and the sync manifest. Instance-level files must remain easy for the AI to find.
+  - **Trigger:** Reassess after v1.6.0 adds more scripts. If the file count still isn't causing friction, keep deferring.
+
+### CLI tool — `sam <command>` (v3+)
+
+- [ ] Evaluate upgrading `plans/*.ps1` scripts into a proper CLI tool (`sam next`, `sam commit`, `sam status`, `sam update`)
+  - **Pros:** Clean UX, cross-platform (Python or Node), single entry point, could add features like `sam init` (scaffold plans/), `sam validate` (check state.json against schema), `sam log` (formatted thread.md viewer)
+  - **Cons:** Requires install step (pip/npm), breaks the "just copy plans/" simplicity, adds a runtime dependency, distribution/versioning overhead
+  - **Current position:** `plans/*.ps1` scripts are zero-install, single-purpose, and cover the core needs. The simplicity of "copy plans/ to your repo" is a major feature, not a limitation. Upgrade to CLI only if the script count or complexity outgrows the pattern.
+  - **Note:** If pursued, `sam-update.py` is the natural starting point — it's already Python and the most complex helper.
+
+### Modular / configurable workflow (v4+)
+
+- [ ] Explore fully configurable workflow engine where users can: group multiple steps into one `plans/next` invocation (e.g., PM.StatusUpdate + PM.AdvancePhase), drop actions entirely, or define custom project-specific actions
+  - Would require a workflow definition format, dynamic template loading, and significant registry/routing rework
+  - The current `config.json` knobs (v1.2.0) handle ~80% of the process-weight need; this is the remaining 20% for power users
+  - **Far-future vision** — park until config.json proves insufficient
