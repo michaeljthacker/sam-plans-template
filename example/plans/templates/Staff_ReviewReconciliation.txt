@@ -1,0 +1,78 @@
+ROLE: Staff
+TASK: ReviewReconciliation
+
+Goal:
+Address review feedback from the most recent Principal code review — both REQUIRED
+changes and SUGGESTED improvements.
+
+This action always runs after Principal.CodeReview. Check plans/state.json
+`last_action.result` to determine your posture.
+
+Inputs:
+- plans/thread.md (review feedback)
+- Code changes / repository state
+- plans/config.json (workflow configuration — read `re_review_trigger` setting)
+- plans/MILESTONE.md (acceptance criteria)
+- plans/DECISIONS.md (project-specific architectural choices)
+- plans/STANDARDS.md (team-level rules portable across projects)
+- plans/BACKLOG.md (for logging tech debt)
+- plans/STATUS.md
+- plans/state.json
+
+Instructions:
+1) Read plans/state.json `last_action.result` to determine the review outcome
+   (this tells you your posture — whether there are blocking issues):
+   - If `changes_required`: there are REQUIRED items that must be fixed.
+   - If `approved`: there are no REQUIRED items, but there may be SUGGESTED items.
+   Then read plans/thread.md for the detailed review feedback
+   (the specific REQUIRED and SUGGESTED items to address).
+2) Handle REQUIRED items (if `changes_required`):
+   - Identify all REQUIRED review items in plans/thread.md.
+   - Implement changes to address each REQUIRED item.
+   - Do not skip unresolved REQUIRED feedback.
+3) Triage SUGGESTED items (always, regardless of review outcome):
+   - For each SUGGESTED improvement in plans/thread.md:
+     - If it is quick to implement or high-value: implement it now.
+     - Otherwise: log it as a specific, actionable tech debt item in plans/BACKLOG.md
+       (P1 or P2 as appropriate).
+   - It is acceptable to implement all, some, or none of the suggestions.
+4) Commit any code changes.
+5) Append a new entry to plans/thread.md:
+   - Use the entry format: `---` then `### Staff.ReviewReconciliation — <date>`
+   - For each REQUIRED item: note how it was addressed.
+   - For each SUGGESTED item: note whether it was implemented or logged to BACKLOG.
+   - If any code was changed, clearly describe what changed so that Principal can
+     perform a targeted re-review (not a full Phase review).
+   - Note any follow-up questions if something was unclear.
+6) Update plans/STATUS.md (mandatory):
+   - Add a bullet summarizing reconciliation.
+7) Update plans/state.json:
+   - last_action = Staff.ReviewReconciliation
+   - If any code was changed (REQUIRED fixes or implemented suggestions):
+     - Read `re_review_trigger` from plans/config.json (default: "required" if missing):
+       - "required": pause_type = "continue", next_action_id = Principal.CodeReview
+         (Principal will perform a targeted re-review scoped to reconciliation changes.)
+       - "auto": Evaluate whether the scope and nature of the changes warrant re-review.
+         Consider: did you change control flow, public interfaces, or security-sensitive
+         code? If yes → next_action_id = Principal.CodeReview. If the changes were
+         mechanical, cosmetic, or narrowly scoped → next_action_id = PM.StatusUpdate.
+         You MUST document your re-review decision and reasoning in the thread entry.
+   - If no code was changed (all suggestions logged or dismissed):
+     - pause_type = "continue"
+     - next_action_id = PM.StatusUpdate
+   - If new questions arise:
+     - pause_type = "continue"
+     - next_action_id = Principal.AnswerQuestions
+   - If a human decision is required:
+     - pause_type = "decision"
+     - next_action_id = Human.ResolveBlocker
+
+Constraints:
+- Do not introduce new scope beyond what was suggested in the review.
+- Do not advance to the next Phase.
+- Do not skip unresolved REQUIRED feedback.
+
+Output:
+- Brief summary
+- Commit(s) (if any code was changed)
+- Exact edits to plans/thread.md, plans/STATUS.md, plans/state.json, and plans/BACKLOG.md (if applicable)

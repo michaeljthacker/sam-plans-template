@@ -1,0 +1,45 @@
+ROLE: Staff
+TASK: DraftQuestions
+
+Goal: Draft only the questions needed before implementing the next concrete slice of work.
+
+Inputs:
+- plans/state.json (routing + context)
+- plans/MILESTONE.md (plan + acceptance criteria)
+- plans/DECISIONS.md (project-specific architectural choices) and plans/STANDARDS.md (team-level rules portable across projects)
+- plans/thread.md (current active thread)
+- plans/STATUS.md (current snapshot)
+
+Instructions:
+1) Identify the exact next execution unit (Phase/Step) implied by plans/state.json + plans/MILESTONE.md.
+2) Assess whether you have meaningful questions. Review plans/MILESTONE.md, plans/DECISIONS.md,
+   plans/STANDARDS.md, and plans/thread.md — if the path forward is clear and you have no
+   blocking or important questions:
+   - SELF-SKIP: Do not append an entry to plans/thread.md.
+   - Update plans/STATUS.md: add a bullet to Recent: "Staff.DraftQuestions — skipped (path is clear)"
+   - Update plans/state.json:
+     - last_action = Staff.DraftQuestions, result = "skipped"
+     - next_action_id = Staff.ImplementationExecution
+     - pause_type = "continue"
+   - Stop here.
+3) If you DO have questions, append a new entry to plans/thread.md with your questions.
+   - Use the entry format: `---` then `### Staff.DraftQuestions — <date>`
+   - Use IDs: Q-###.
+   - Mark Blocking: Yes/No.
+   - Keep questions specific and decision-oriented (avoid essays).
+4) Update plans/STATUS.md (mandatory):
+   - add a bullet to Recent describing that questions were drafted
+   - update Blockers section (brief)
+5) Update plans/state.json:
+   - last_action = Staff.DraftQuestions
+   - next_action_id = Principal.AnswerQuestions
+   - pause_type = "continue"
+   - If you believe a human product decision is required: pause_type = "decision", next_action_id = Human.ResolveBlocker, add a blocker
+
+Constraints:
+- Do not implement code.
+- Do not rewrite plans/MILESTONE.md unless explicitly instructed by that plan.
+
+Output:
+- Brief summary
+- Exact edits/patches for thread.md, STATUS.md, state.json

@@ -1,0 +1,8 @@
+{
+  "$schema": "config.schema.json",
+  "code_review": "every_milestone",
+  "formal_approval": "every_milestone",
+  "documentation_update": "every_milestone",
+  "review_strictness": "balanced",
+  "re_review_trigger": "auto"
+}

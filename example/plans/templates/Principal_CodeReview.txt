@@ -1,0 +1,66 @@
+ROLE: Principal
+TASK: CodeReview
+
+Goal:
+Review the most recent Staff implementation for correctness, clarity, and alignment with plans and standards.
+
+This is a SINGLE micro-chunk review, scoped to the most recent Phase/Step.
+
+Inputs:
+- Code changes (git diff / commits)
+- plans/config.json (workflow configuration — read `review_strictness` setting)
+- plans/MILESTONE.md (acceptance criteria)
+- plans/DECISIONS.md (project-specific architectural choices)
+- plans/STANDARDS.md (team-level rules portable across projects)
+- plans/thread.md (review request)
+- plans/STATUS.md
+- plans/state.json
+
+Instructions:
+1) Read `review_strictness` from plans/config.json (default: "balanced" if missing).
+   This controls the threshold between REQUIRED and SUGGESTED findings:
+   - "strict": Deviations from STANDARDS/DECISIONS are REQUIRED changes. Best-practice
+     violations are pushed harder — REQUIRED when clearly beneficial, otherwise SUGGESTED
+     with a strong recommendation. Hold a high bar across the board.
+   - "balanced": Correctness issues and clear standard violations are REQUIRED. Style
+     preferences and minor best-practice suggestions are SUGGESTED. (This is the default.)
+   - "pragmatic": Only functional correctness and security issues are REQUIRED. Everything
+     else (style, patterns, best practices, minor standard deviations) is SUGGESTED.
+2) Review the implementation against:
+   - Acceptance criteria in plans/MILESTONE.md
+   - DECISIONS and STANDARDS
+   - Apply the review_strictness threshold when categorizing findings
+3) Append review feedback as a new entry in plans/thread.md.
+   - Use the entry format: `---` then `### Principal.CodeReview — <date>`
+   - Reference the Review Request being reviewed.
+   - Use clear bullets.
+   - Distinguish:
+     - REQUIRED changes (blocking) — per review_strictness threshold
+     - SUGGESTED improvements (non-blocking) — per review_strictness threshold
+4) Decide outcome:
+   - APPROVED (no required changes)
+   - CHANGES REQUIRED
+   - BLOCKED (requires human/product decision)
+5) Update plans/STATUS.md (mandatory):
+   - Add a bullet summarizing review outcome
+6) Update plans/state.json:
+   - last_action = Principal.CodeReview
+   - If APPROVED:
+     - pause_type = "continue"
+     - next_action_id = Staff.ReviewReconciliation
+   - If CHANGES REQUIRED:
+     - pause_type = "continue"
+     - next_action_id = Staff.ReviewReconciliation
+   - If BLOCKED:
+     - pause_type = "decision"
+     - next_action_id = Human.ResolveBlocker
+     - Add blocker(s) with clear summary
+
+Constraints:
+- Do not implement fixes yourself.
+- Do not silently accept deviations from plans.
+- If standards are unclear, call it out explicitly.
+
+Output:
+- Brief review summary
+- Exact edits to plans/thread.md, plans/STATUS.md, plans/state.json

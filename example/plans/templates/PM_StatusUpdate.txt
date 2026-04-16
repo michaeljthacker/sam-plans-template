@@ -1,0 +1,74 @@
+ROLE: PM
+TASK: StatusUpdate
+
+Goal: Update plans/STATUS.md, plans/BACKLOG.md, and plans/CHANGELOG.md to reflect the current state of the project after a Phase's implementation and review cycle is complete.
+
+This action runs after Staff.ReviewReconciliation completes the review cycle (routing to PM.StatusUpdate means no further code changes were needed). It captures what was accomplished and surfaces any new work items.
+
+Inputs:
+- plans/state.json (routing + context)
+- plans/config.json (workflow configuration — read `documentation_update` and `formal_approval`)
+- plans/thread.md (implementation details, review feedback, decisions)
+- plans/MILESTONE.md (acceptance criteria to check off)
+- plans/STATUS.md (current snapshot)
+- plans/BACKLOG.md (pending work)
+- plans/CHANGELOG.md (change history)
+
+Instructions:
+1) Review plans/thread.md for what was implemented and any review outcomes.
+2) Update plans/STATUS.md (mandatory):
+   - Now: update Phase ID to reflect current state
+   - Blockers: clear resolved blockers, add any new ones
+   - Recent: summarize what was implemented, reviewed, and approved in this Phase
+   - Next: indicate what happens next (documentation, phase approval, etc.)
+3) Update plans/BACKLOG.md:
+   - Remove completed items that were addressed in this Phase
+   - Add any new items discovered during implementation or review
+     (tech debt, follow-ups, non-blocking suggestions from code review)
+   - Prioritize: P0 = do next, P1 = important, P2 = nice-to-have
+4) Update plans/CHANGELOG.md:
+   - Add an entry under "Unreleased" describing the Phase's changes
+   - Include: what changed, key files affected, and brief rationale
+5) Update plans/state.json:
+   - last_action = PM.StatusUpdate
+   - First, assess whether plans/thread.md needs maintenance (has it grown long,
+     or does it contain substantial resolved content that should be pruned?).
+   - Then, determine the DESTINATION action using plans/config.json
+     (if config.json is missing or a key is absent, use its default):
+
+     Determine destination by evaluating in order:
+     a) Is Writer.DocumentationUpdate needed?
+        - `documentation_update = "every_phase"`: YES
+        - `documentation_update = "every_milestone"`: YES only if this is the LAST phase
+          in the milestone (check plans/MILESTONE.md). NO otherwise.
+        - `documentation_update = "never"`: NO
+     b) Is Human.PhaseApproval needed?
+        - `formal_approval = "every_phase"`: YES
+        - `formal_approval = "every_milestone"`: YES only if this is the LAST phase. NO otherwise.
+        - `formal_approval = "never"`: NO
+     c) Resolve destination:
+        - If Writer needed → destination = Writer.DocumentationUpdate
+        - Else if PhaseApproval needed → destination = Human.PhaseApproval
+        - Else → destination = PM.AdvancePhase
+
+   - If thread needs maintenance:
+     - pause_type = "continue"
+     - next_action_id = PM.ThreadMaintenance
+     - Add a context.notes entry: "After ThreadMaintenance: proceed to <destination>"
+   - If thread is clean:
+     - next_action_id = <destination>
+     - If destination is Human.PhaseApproval: pause_type = "decision"
+     - Otherwise: pause_type = "continue"
+   - If a blocker is discovered:
+     - pause_type = "decision"
+     - next_action_id = Human.ResolveBlocker
+
+Constraints:
+- Do not implement code.
+- Do not modify plans/MILESTONE.md (acceptance criteria stay as-is for Phase approval).
+- Keep CHANGELOG entries concise — one to three bullets per Phase.
+- Keep BACKLOG items actionable — no vague "improve X" without specifics.
+
+Output:
+- Brief summary
+- Exact edits to plans/STATUS.md, plans/BACKLOG.md, plans/CHANGELOG.md, plans/state.json

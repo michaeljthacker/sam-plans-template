@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SAM config.json",
+  "description": "Project-level workflow configuration for SAM. Tune process weight without breaking the state machine. All defaults preserve current full-process behavior (except documentation_update, which defaults to every_milestone). Missing file or missing key = default.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional JSON Schema reference for editor validation."
+    },
+    "code_review": {
+      "type": "string",
+      "description": "How often Principal.CodeReview runs after Staff.ImplementationExecution. 'every_phase' = always (default). 'every_milestone' = only on the last phase of each milestone. 'never' = skip code review entirely, route straight to PM.StatusUpdate.",
+      "enum": ["every_phase", "every_milestone", "never"],
+      "default": "every_phase"
+    },
+    "formal_approval": {
+      "type": "string",
+      "description": "How often Human.PhaseApproval runs. 'every_phase' = always (default). 'every_milestone' = only on the last phase of each milestone. 'never' = skip formal approval entirely (Human.ApproveMilestone still applies).",
+      "enum": ["every_phase", "every_milestone", "never"],
+      "default": "every_phase"
+    },
+    "documentation_update": {
+      "type": "string",
+      "description": "How often Writer.DocumentationUpdate runs. 'every_phase' = always. 'every_milestone' = only on the last phase of each milestone (default). 'never' = skip documentation updates entirely.",
+      "enum": ["every_phase", "every_milestone", "never"],
+      "default": "every_milestone"
+    },
+    "review_strictness": {
+      "type": "string",
+      "description": "Threshold for REQUIRED vs. SUGGESTED findings in Principal.CodeReview. 'strict' = deviations from STANDARDS/DECISIONS are REQUIRED; best-practice violations are pushed harder. 'balanced' = correctness issues and clear standard violations are REQUIRED; style preferences are SUGGESTED (default). 'pragmatic' = only correctness and security issues are REQUIRED; everything else is SUGGESTED.",
+      "enum": ["strict", "balanced", "pragmatic"],
+      "default": "balanced"
+    },
+    "re_review_trigger": {
+      "type": "string",
+      "description": "When Staff.ReviewReconciliation changes code, should it always trigger a re-review? 'required' = always route back to Principal.CodeReview if any code changed (default). 'auto' = AI judges whether the scope/nature of changes warrants re-review and documents reasoning.",
+      "enum": ["required", "auto"],
+      "default": "required"
+    }
+  }
+}
