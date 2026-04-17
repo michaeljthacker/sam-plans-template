@@ -31,10 +31,11 @@ Instructions:
    - add a bullet to Recent describing that questions were drafted
    - update Blockers section (brief)
 5) Update plans/state.json:
-   - last_action = Staff.DraftQuestions
+   - last_action.action_id = Staff.DraftQuestions
+   - last_action.result = "ok"
    - next_action_id = Principal.AnswerQuestions
    - pause_type = "continue"
-   - If you believe a human product decision is required: pause_type = "decision", next_action_id = Human.ResolveBlocker, add a blocker
+   - If you believe a human product decision is required: last_action.result = "blocked", pause_type = "decision", next_action_id = Human.ResolveBlocker, add a blocker
 
 Constraints:
 - Do not implement code.

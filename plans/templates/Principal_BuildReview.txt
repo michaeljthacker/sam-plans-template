@@ -28,15 +28,18 @@ Instructions:
 4) Update plans/STATUS.md (mandatory):
    - Add a bullet to Recent summarizing the review outcome
 5) Update plans/state.json:
-   - last_action = Principal.BuildReview
+   - last_action.action_id = Principal.BuildReview
    - If APPROVED:
+     - last_action.result = "approved"
      - pause_type = "continue"
      - next_action_id = Principal.MilestonePlan
    - If CHANGES REQUIRED:
+     - last_action.result = "changes_required"
      - pause_type = "decision"
      - next_action_id = Human.ResolveBlocker
      - Add blocker(s) describing what needs to change in BUILD.md
    - If BLOCKED:
+     - last_action.result = "blocked"
      - pause_type = "decision"
      - next_action_id = Human.ResolveBlocker
      - Add blocker(s) with clear summary

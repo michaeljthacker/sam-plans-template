@@ -26,11 +26,14 @@ Instructions:
    - Add any new items discovered during implementation or review
      (tech debt, follow-ups, non-blocking suggestions from code review)
    - Prioritize: P0 = do next, P1 = important, P2 = nice-to-have
+   - BACKLOG is for future work only — do not add in-progress tasks, current-phase
+     remaining work, or implementation details (those belong in state.json/thread.md)
 4) Update plans/CHANGELOG.md:
    - Add an entry under "Unreleased" describing the Phase's changes
    - Include: what changed, key files affected, and brief rationale
 5) Update plans/state.json:
-   - last_action = PM.StatusUpdate
+   - last_action.action_id = PM.StatusUpdate
+   - last_action.result = "ok"
    - First, assess whether plans/thread.md needs maintenance (has it grown long,
      or does it contain substantial resolved content that should be pruned?).
    - Then, determine the DESTINATION action using plans/config.json
@@ -60,6 +63,7 @@ Instructions:
      - If destination is Human.PhaseApproval: pause_type = "decision"
      - Otherwise: pause_type = "continue"
    - If a blocker is discovered:
+     - last_action.result = "blocked"
      - pause_type = "decision"
      - next_action_id = Human.ResolveBlocker
 

@@ -44,14 +44,17 @@ Instructions:
 5) Update plans/STATUS.md (mandatory):
    - Add a bullet summarizing review outcome
 6) Update plans/state.json:
-   - last_action = Principal.CodeReview
+   - last_action.action_id = Principal.CodeReview
    - If APPROVED:
+     - last_action.result = "approved"
      - pause_type = "continue"
      - next_action_id = Staff.ReviewReconciliation
    - If CHANGES REQUIRED:
+     - last_action.result = "changes_required"
      - pause_type = "continue"
      - next_action_id = Staff.ReviewReconciliation
    - If BLOCKED:
+     - last_action.result = "blocked"
      - pause_type = "decision"
      - next_action_id = Human.ResolveBlocker
      - Add blocker(s) with clear summary

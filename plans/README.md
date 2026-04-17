@@ -124,7 +124,7 @@ A dumb runner can automate steps 1–5:
 ## Expected lifecycle
 
 ### 1. Idea & framing
-- Human provides project idea
+- Human writes project idea in `plans/thread.md` (one sentence to a few paragraphs)
 - `Product.ProductVision` → generates root `README.md` + `plans/BUILD.md`
 - `Principal.BuildReview` → reviews feasibility and constraints
 - Human approves
@@ -193,7 +193,7 @@ Common references:
 2. Copy `plans/copilot-instructions.md` to `.github/copilot-instructions.md` in your project root
    - This is the file VS Code Copilot reads automatically — it tells the AI how to run SAM
    - The copy in `plans/` is the template source; `.github/` is where it takes effect
-3. Write a one-sentence project idea (or a few paragraphs)
+3. Write your project idea in `plans/thread.md` — anything from a one-sentence goal to a detailed description. `Product.ProductVision` reads from `thread.md`, so this is where your idea must live.
 4. Run `Product.ProductVision` → generates root README + `plans/BUILD.md`
 5. Run `Principal.BuildReview` → validates feasibility
 6. Human approves → run `Principal.MilestonePlan` → generates `plans/MILESTONE.md`

@@ -34,7 +34,8 @@ Instructions:
    - For each SUGGESTED improvement in plans/thread.md:
      - If it is quick to implement or high-value: implement it now.
      - Otherwise: log it as a specific, actionable tech debt item in plans/BACKLOG.md
-       (P1 or P2 as appropriate).
+       (P1 or P2 as appropriate). BACKLOG is for future work only — do not log
+       current-phase tasks or implementation details here.
    - It is acceptable to implement all, some, or none of the suggestions.
 4) Commit any code changes.
 5) Append a new entry to plans/thread.md:
@@ -47,7 +48,8 @@ Instructions:
 6) Update plans/STATUS.md (mandatory):
    - Add a bullet summarizing reconciliation.
 7) Update plans/state.json:
-   - last_action = Staff.ReviewReconciliation
+   - last_action.action_id = Staff.ReviewReconciliation
+   - last_action.result = "ok"
    - If any code was changed (REQUIRED fixes or implemented suggestions):
      - Read `re_review_trigger` from plans/config.json (default: "required" if missing):
        - "required": pause_type = "continue", next_action_id = Principal.CodeReview
@@ -64,6 +66,7 @@ Instructions:
      - pause_type = "continue"
      - next_action_id = Principal.AnswerQuestions
    - If a human decision is required:
+     - last_action.result = "blocked"
      - pause_type = "decision"
      - next_action_id = Human.ResolveBlocker
 

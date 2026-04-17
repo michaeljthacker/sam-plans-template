@@ -40,8 +40,9 @@ Instructions:
    - Add a bullet to Recent describing what was implemented
    - Update Blockers if any emerged
 6) Update plans/state.json:
-   - last_action = Staff.ImplementationExecution
+   - last_action.action_id = Staff.ImplementationExecution
    - If implementation is complete and ready for review:
+     - last_action.result = "ok"
      - Read `code_review` from plans/config.json (default: "every_phase" if missing):
        - "every_phase": pause_type = "continue", next_action_id = Principal.CodeReview
        - "every_milestone": check plans/MILESTONE.md — if this is the LAST phase in the
@@ -49,10 +50,12 @@ Instructions:
          Otherwise, pause_type = "continue", next_action_id = PM.StatusUpdate
        - "never": pause_type = "continue", next_action_id = PM.StatusUpdate
    - If you discover missing information or ambiguity:
+     - last_action.result = "ok"
      - pause_type = "continue"
      - next_action_id = Principal.AnswerQuestions
      - Add questions to plans/thread.md
    - If a product decision is required:
+     - last_action.result = "blocked"
      - pause_type = "decision"
      - next_action_id = Human.ResolveBlocker
      - Add a blocker to plans/state.json and details to plans/thread.md

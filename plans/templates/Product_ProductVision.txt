@@ -16,7 +16,8 @@ Instructions:
    - A Build B1 short name or description
    - A Milestone M1 goal
    If any of these are missing and cannot be inferred from the provided idea,
-   set pause_type = "decision", next_action_id = Human.ResolveBlocker,
+   set last_action.result = "blocked", pause_type = "decision",
+   next_action_id = Human.ResolveBlocker,
    and add a blocker requesting the missing information.
 2) Generate the root README.md:
    - Project name and one-line description
@@ -37,7 +38,8 @@ Instructions:
    - Recent: "Product.ProductVision completed — README.md and BUILD.md drafted"
    - Next: "Principal.BuildReview to validate feasibility"
 5) Update plans/state.json:
-   - last_action = Product.ProductVision
+   - last_action.action_id = Product.ProductVision
+   - last_action.result = "ok"
    - next_action_id = Principal.BuildReview
    - pause_type = "continue"
    - Update context.goal with a one-sentence summary of the project
@@ -46,7 +48,7 @@ Constraints:
 - Do not implement any code.
 - Do not create plans/MILESTONE.md (that is Principal.MilestonePlan's job).
 - Keep the README and BUILD concise — they will be reviewed and refined.
-- If the project idea is too vague to produce meaningful artifacts, set pause_type = "decision", next_action_id = Human.ResolveBlocker, and add a blocker asking for clarification.
+- If the project idea is too vague to produce meaningful artifacts, set last_action.result = "blocked", pause_type = "decision", next_action_id = Human.ResolveBlocker, and add a blocker asking for clarification.
 
 Output:
 - Brief summary of what was generated

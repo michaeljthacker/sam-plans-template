@@ -148,30 +148,30 @@ Configurable process weight via `plans/config.json`. 5 configurable knobs (4 rou
 
 ---
 
-## v1.3.0 — Planned
+## v1.3.0 — Completed (2026-04-17)
 
 Bug fixes and usability improvements surfaced by real-world usage (discussion-guide builder, wordsearch app).
 
 ### Bug: state.json `last_action.result` schema violations
 
-- [ ] Audit all templates for correct `last_action.result` values — AI keeps writing `complete` instead of the schema-valid enum (`ok`, `approved`, `changes_required`, `blocked`, `error`, `skipped`)
-- [ ] Add explicit reminder in `plans/copilot-instructions.md` listing valid `result` values
-- [ ] Add result-value guidance to the `state.json` section of `plans/FORMATS.md`
+- [x] Audit all templates for correct `last_action.result` values — AI keeps writing `complete` instead of the schema-valid enum (`ok`, `approved`, `changes_required`, `blocked`, `error`, `skipped`)
+- [x] Add explicit reminder in `plans/copilot-instructions.md` listing valid `result` values
+- [x] Add result-value guidance to the `state.json` section of `plans/FORMATS.md`
 
 ### Quickstart guide: clarify project idea goes in thread.md
 
-- [ ] Update quickstart in `plans/README.md` step 3: explicitly say "Write your project idea in `plans/thread.md`" (or provide a detailed description — whatever you have). Users keep putting descriptions in separate files because it's not obvious that `Product.ProductVision` reads from `thread.md`
-- [ ] Update `plans/README.md` "Expected lifecycle" section 1 — change "Human provides project idea" to "Human writes project idea in `plans/thread.md`"
+- [x] Update quickstart in `plans/README.md` step 3: explicitly say "Write your project idea in `plans/thread.md`" (or provide a detailed description — whatever you have). Users keep putting descriptions in separate files because it's not obvious that `Product.ProductVision` reads from `thread.md`
+- [x] Update `plans/README.md` "Expected lifecycle" section 1 — change "Human provides project idea" to "Human writes project idea in `plans/thread.md`"
 
 ### PM.ThreadMaintenance config-awareness audit
 
-- [ ] Audit `PM_ThreadMaintenance.txt` against `config.json` settings — ensure it doesn't prune content that's still needed (e.g., don't delete code review notes from phases 1–2 if `code_review=every_milestone` means the review hasn't happened yet)
-- [ ] Check other templates for similar config-timing mismatches introduced in v1.2.0
+- [x] Audit `PM_ThreadMaintenance.txt` against `config.json` settings — ensure it doesn't prune content that's still needed (e.g., don't delete code review notes from phases 1–2 if `code_review=every_milestone` means the review hasn't happened yet)
+- [x] Check other templates for similar config-timing mismatches introduced in v1.2.0
 
 ### BACKLOG hygiene
 
-- [ ] Add explicit rule to FORMATS.md: "BACKLOG tracks future work items only. Do not use BACKLOG for in-progress status, remaining tasks in the current phase, or implementation details. Those belong in state.json (e.g., `context.notes`) and thread.md respectively."
-- [ ] Review BACKLOG references in templates (PM.StatusUpdate, PM.MilestoneCloseout, Staff.ReviewReconciliation) to reinforce correct usage
+- [x] Add explicit rule to FORMATS.md: "BACKLOG tracks future work items only. Do not use BACKLOG for in-progress status, remaining tasks in the current phase, or implementation details. Those belong in state.json (e.g., `context.notes`) and thread.md respectively."
+- [x] Review BACKLOG references in templates (PM.StatusUpdate, PM.MilestoneCloseout, Staff.ReviewReconciliation) to reinforce correct usage
 
 ---
 

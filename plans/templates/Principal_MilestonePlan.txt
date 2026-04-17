@@ -28,7 +28,8 @@ Instructions:
    - Add a bullet to Recent: "Principal.MilestonePlan completed — MILESTONE.md drafted for <Milestone ID>"
    - Update Next: "Human.ApproveMilestone to review scope"
 6) Update plans/state.json:
-   - last_action = Principal.MilestonePlan
+   - last_action.action_id = Principal.MilestonePlan
+   - last_action.result = "ok"
    - next_action_id = Human.ApproveMilestone
    - pause_type = "decision"
    - phase_id = null (not yet started)

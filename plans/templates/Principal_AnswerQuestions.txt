@@ -23,9 +23,9 @@ Instructions:
    - add a bullet to Recent describing questions answered
    - update Blockers briefly
 5) Update plans/state.json:
-   - last_action = Principal.AnswerQuestions
-   - If fully unblocked: pause_type = "continue", next_action_id = Staff.ImplementationExecution
-   - If a human decision is required: pause_type = "decision", next_action_id = Human.ResolveBlocker, add blocker(s)
+   - last_action.action_id = Principal.AnswerQuestions
+   - If fully unblocked: last_action.result = "ok", pause_type = "continue", next_action_id = Staff.ImplementationExecution
+   - If a human decision is required: last_action.result = "blocked", pause_type = "decision", next_action_id = Human.ResolveBlocker, add blocker(s)
 
 Constraints:
 - Do not implement code.

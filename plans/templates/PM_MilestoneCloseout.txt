@@ -20,13 +20,15 @@ Instructions:
    - Remove items completed during this milestone
    - Carry forward unresolved items
    - Add any deferred work discovered during the milestone
+   - BACKLOG is for future work only — do not add in-progress tasks or implementation details
 4) Update plans/STATUS.md (mandatory):
    - Now: clear Phase ID (milestone complete)
    - Recent: "PM.MilestoneCloseout — <Milestone ID> closed"
    - Blockers: clear milestone-specific blockers
    - Next: indicate whether another milestone follows or Build is complete
 5) Update plans/state.json:
-   - last_action = PM.MilestoneCloseout
+   - last_action.action_id = PM.MilestoneCloseout
+   - last_action.result = "ok"
    - phase_id = null
    - step_id = null
    - If there is a next milestone in plans/BUILD.md:

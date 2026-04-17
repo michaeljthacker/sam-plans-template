@@ -20,7 +20,8 @@ Instructions:
    - Recent: "PM.AdvancePhase — advanced from <old Phase> to <new Phase>"
    - Next: "Staff.DraftQuestions for <new Phase>"
 4) Update plans/state.json:
-   - last_action = PM.AdvancePhase
+   - last_action.action_id = PM.AdvancePhase
+   - last_action.result = "ok"
    - If advancing to next Phase:
      - phase_id = <next Phase ID> (e.g., "P2")
      - step_id = null

@@ -7,7 +7,10 @@ This directory shows an example of `plans/` filled in for a real project.
 Do not copy these contents blindly. Use it as a reference for:
 - what “good” BUILD/MILESTONE/STATUS look like when filled in
 - how thread and state evolve through micro-chunks
+
 ## Source project
+
+> **Version note:** This example was built with a mix of SAM v1.1.0, v1.2.0, and v1.2.1. Its contents may not exactly match the latest SAM plans version.
 
 The example is from [mjt-wordsearch-ui](https://github.com/michaeljthacker/mjt-wordsearch-ui/), a static word search puzzle generator built with plain HTML/CSS/JS. The snapshot here is mid-development — specifically at **B1-M2-P2** (Build 1, Milestone 2, Phase 2), corresponding to commit [`47bab71`](https://github.com/michaeljthacker/mjt-wordsearch-ui/commit/47bab71).
 

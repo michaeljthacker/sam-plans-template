@@ -27,7 +27,8 @@ Instructions:
 4) Update plans/STATUS.md (mandatory):
    - Add a bullet to Recent: "Writer.DocumentationUpdate — updated <list of docs>"
 5) Update plans/state.json:
-   - last_action = Writer.DocumentationUpdate
+   - last_action.action_id = Writer.DocumentationUpdate
+   - last_action.result = "ok"
    - Read `formal_approval` from plans/config.json (default: "every_phase" if missing):
      - "every_phase": pause_type = "decision", next_action_id = Human.PhaseApproval
      - "every_milestone": check plans/MILESTONE.md — if this is the LAST phase in the

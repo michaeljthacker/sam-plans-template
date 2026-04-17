@@ -35,6 +35,7 @@ Instructions:
    - Decisions to make
    - Files to update
    - What the NEXT action should be once resolved (Role.Task from registry.json)
+   - Remind the human to set `last_action.result = "ok"` and clear the resolved blocker(s)
 
 Output format:
 - A short briefing titled "Human Review Required"

@@ -99,6 +99,8 @@ template/placeholder content with real content. Do not preserve "About this file
 **What it is:** Prioritized list of pending work, bugs, follow-ups, and tech debt.
 **Updated by:** `PM.StatusUpdate`, `PM.MilestoneCloseout`, `Staff.ReviewReconciliation` (when logging tech debt); also when priorities change or new work is discovered.
 
+**Key rule:** BACKLOG tracks **future work items only**. Do not use BACKLOG for in-progress status, remaining tasks in the current phase, or implementation details. Those belong in `state.json` (e.g., `context.notes`) and `thread.md` respectively.
+
 ```
 # BACKLOG
 
@@ -234,3 +236,23 @@ at the end.
 
 For `every_milestone` options: the step runs only on the last phase of each milestone.
 Templates consult this file when making routing decisions. See `config.schema.json` for full descriptions.
+
+---
+
+## state.json
+
+**What it is:** Routing source of truth — tracks the current position in the BUILD → MILESTONE → PHASE → STEP hierarchy and determines which action runs next. Validated by `state.schema.json`.
+**Updated by:** Every action (mandatory). Must always reflect what just happened and what should happen next.
+
+### `last_action.result` values
+
+The `result` field MUST be one of these schema-valid enum values. Do NOT use "complete", "done", "success", or any other string.
+
+| Value | When to use |
+|-------|-------------|
+| `ok` | Action completed successfully. Default for most actions (ProductVision, MilestonePlan, DraftQuestions, AnswerQuestions, ImplementationExecution, ReviewReconciliation, StatusUpdate, DocumentationUpdate, AdvancePhase, MilestoneCloseout, ThreadMaintenance, ResolveBlocker). |
+| `approved` | A review or approval action approved the artifact (BuildReview, CodeReview, PhaseApproval, ApproveMilestone). |
+| `changes_required` | A review found issues that must be addressed before proceeding (BuildReview, CodeReview). |
+| `blocked` | Action cannot proceed; a blocker has been added to `blockers[]`. |
+| `error` | Unexpected failure occurred; `Human.ResolveBlocker` is next. |
+| `skipped` | Action was intentionally skipped (e.g., DraftQuestions self-skip when path is clear, DocumentationUpdate when no doc changes needed). |

@@ -40,11 +40,13 @@ Instructions:
    - Approve, request changes, or reject
    - If approved: update plans/state.json:
      - last_action = Human.ApproveMilestone
+     - last_action.result = "approved"
      - next_action_id = Staff.DraftQuestions
      - phase_id = P1
      - pause_type = "continue"
    - Update plans/STATUS.md with approval decision
    - If changes needed: update plans/state.json:
+     - last_action.result = "changes_required"
      - next_action_id = Principal.MilestonePlan (to re-draft)
      - Add notes to plans/thread.md with requested changes
 

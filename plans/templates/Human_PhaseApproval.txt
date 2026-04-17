@@ -37,11 +37,13 @@ Instructions:
    - Verify acceptance criteria
    - If approved: update plans/state.json:
      - last_action = Human.PhaseApproval
+     - last_action.result = "approved"
      - next_action_id = PM.AdvancePhase
      - pause_type = "continue"
    - Update plans/STATUS.md noting approval
    - Commit if not already committed
    - If changes needed: update plans/state.json:
+     - last_action.result = "changes_required"
      - next_action_id = Staff.ReviewReconciliation (or Staff.ImplementationExecution)
      - Add feedback to plans/thread.md
 

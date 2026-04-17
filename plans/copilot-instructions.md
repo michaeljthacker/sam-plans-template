@@ -28,6 +28,19 @@ artifacts live in the `plans/` directory. Read `plans/README.md` for the full sp
 - `plans/templates/*.txt` — individual action prompts
 - `plans/STATUS.md` — human-readable project snapshot (updated every action)
 
+### Valid `last_action.result` values
+When updating `plans/state.json`, the `last_action.result` field MUST be one of these
+schema-valid enum values — do NOT use "complete", "done", "success", or any other string:
+
+| Value | When to use |
+|-------|-------------|
+| `ok` | Action completed successfully (default for most actions) |
+| `approved` | Review/approval action approved the artifact |
+| `changes_required` | Review found issues that must be addressed |
+| `blocked` | Action cannot proceed; a blocker has been added |
+| `error` | Unexpected failure occurred |
+| `skipped` | Action was intentionally skipped |
+
 ### Instance file hygiene
 When an action creates or overwrites an instance file (BUILD.md, MILESTONE.md, STATUS.md,
 BACKLOG.md, CHANGELOG.md, DECISIONS.md, STANDARDS.md, thread.md), replace all
