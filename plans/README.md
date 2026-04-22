@@ -190,9 +190,12 @@ Common references:
 
 ## Quickstart — bootstrapping a new project
 1. Copy the `plans/` directory into your project repo
-2. Copy `plans/copilot-instructions.md` to `.github/copilot-instructions.md` in your project root
+2(a). If using SAM with Copilot, copy `plans/copilot-instructions.md` to `.github/copilot-instructions.md` in your project root
    - This is the file VS Code Copilot reads automatically — it tells the AI how to run SAM
    - The copy in `plans/` is the template source; `.github/` is where it takes effect
+2(b). If using SAM with Claude Code, copy `plans/CLAUDE.md` to your project root
+   - This is the file Claude Code reads automatically — it tells the AI how to run SAM
+   - The copy in `plans/` is the template source; the project root is where it takes effect
 3. Write your project idea in `plans/thread.md` — anything from a one-sentence goal to a detailed description. `Product.ProductVision` reads from `thread.md`, so this is where your idea must live.
 4. Run `Product.ProductVision` → generates root README + `plans/BUILD.md`
 5. Run `Principal.BuildReview` → validates feasibility
