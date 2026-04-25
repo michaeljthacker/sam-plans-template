@@ -37,13 +37,28 @@ Instructions:
        (P1 or P2 as appropriate). BACKLOG is for future work only — do not log
        current-phase tasks or implementation details here.
    - It is acceptable to implement all, some, or none of the suggestions.
+   - Tech debt entries about shared-repo code stay in the primary repo's BACKLOG.md
+     (BACKLOG is project-scoped, not shared-scoped).
+3a) Workspace scope (multi-root only):
+   - Read `workspace.shared_repos` from plans/config.json (default: empty).
+   - If any code change you make falls inside a `shared_repos[].path`, that change is
+     **shared scope**. Code edits in shared repos are allowed; STANDARDS.md /
+     DECISIONS.md edits in shared repos are NOT — those are reserved for
+     PM.ThreadMaintenance with explicit human approval.
+   - Any DECISIONS/STANDARDS-style finding from the review goes to the primary repo's
+     plans/DECISIONS.md or plans/STANDARDS.md, even when it concerns shared code.
+   - Flag shared-repo edits in your thread.md entry (see step 5).
 4) Commit any code changes.
+   - For shared-repo code edits, commit inside the shared repo using its own commit
+     conventions. The primary repo's commit covers the rest.
 5) Append a new entry to plans/thread.md:
    - Use the entry format: `---` then `### Staff.ReviewReconciliation — <date>`
    - For each REQUIRED item: note how it was addressed.
    - For each SUGGESTED item: note whether it was implemented or logged to BACKLOG.
    - If any code was changed, clearly describe what changed so that Principal can
      perform a targeted re-review (not a full Phase review).
+   - For any change inside a `workspace.shared_repos[].path`, prefix that bullet with
+     "shared scope (<repo name>):" so the workspace boundary is visible in the log.
    - Note any follow-up questions if something was unclear.
 6) Update plans/STATUS.md (mandatory):
    - Add a bullet summarizing reconciliation.

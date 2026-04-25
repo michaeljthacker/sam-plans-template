@@ -76,8 +76,51 @@ Template filenames mirror action IDs with underscores: `Staff_DraftQuestions.txt
 | `documentation_update` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | When Writer.DocumentationUpdate runs |
 | `review_strictness` | `strict` \| `balanced` \| `pragmatic` | `balanced` | Threshold for REQUIRED vs. SUGGESTED in code review |
 | `re_review_trigger` | `required` \| `auto` | `required` | Whether code changes in reconciliation always trigger re-review |
+| `workspace` | object | single-repo placeholder | Multi-root workspace: primary repo + shared repos (see below) |
 
 For `every_milestone` options: the step runs only on the **last phase** of each milestone. Templates consult `plans/config.json` when making routing decisions. See `plans/config.schema.json` for full descriptions and `plans/FORMATS.md` for the file format.
+
+## Multi-root workspaces
+
+SAM can operate across multiple repos in a VS Code multi-root workspace — for example,
+a frontend project plus a shared backend like `mjt.pub`. **Only the primary repo owns
+`plans/`.** Shared repos receive code edits and (with explicit human approval)
+`STANDARDS.md` / `DECISIONS.md` updates, but no `plans/` wrapper.
+
+### Configuration
+
+Define your workspace in `plans/config.json`:
+
+```json
+"workspace": {
+  "primary_repo": {
+    "name": "frontend",
+    "path": "frontend",
+    "owns_plans": true
+  },
+  "shared_repos": [
+    { "name": "mjt.pub", "path": "mjt.pub", "role": "shared backend" }
+  ]
+}
+```
+
+For single-repo projects, leave `shared_repos` empty (the default in the shipped
+template).
+
+### Routing rules
+
+- **Project scope** (default) — all `plans/` artifacts go to `primary_repo/plans/`.
+- **Shared scope** — code edits inside `shared_repos[].path`, plus that repo's own
+  `STANDARDS.md` and `DECISIONS.md` (no `plans/` wrapper).
+- **Detection** — path match against `shared_repos[].path`. SAM never falls back to
+  cwd or `"."` to infer the primary repo.
+- **Project-scoped decisions about shared code** stay in
+  `primary_repo/plans/DECISIONS.md`. They are promoted to a shared repo's
+  `STANDARDS.md` / `DECISIONS.md` only via `PM.ThreadMaintenance`'s promotion protocol
+  (human-approved in chat, executed on the next run).
+
+See `plans/FORMATS.md` for the full rules and `plans/templates/PM_ThreadMaintenance.txt`
+for the promotion protocol.
 
 ## Routing and state
 
@@ -197,6 +240,7 @@ Common references:
    - This is the file Claude Code reads automatically — it tells the AI how to run SAM
    - The copy in `plans/` is the template source; the project root is where it takes effect
 3. Write your project idea in `plans/thread.md` — anything from a one-sentence goal to a detailed description. `Product.ProductVision` reads from `thread.md`, so this is where your idea must live.
+3a. **(Multi-root workspaces only)** Edit `plans/config.json` `workspace` block to set `primary_repo` (this repo) and any `shared_repos` you'll be touching. See **Multi-root workspaces** above. Single-repo projects can leave the defaults.
 4. Run `Product.ProductVision` → generates root README + `plans/BUILD.md`
 5. Run `Principal.BuildReview` → validates feasibility
 6. Human approves → run `Principal.MilestonePlan` → generates `plans/MILESTONE.md`

@@ -46,3 +46,20 @@ When an action creates or overwrites an instance file (BUILD.md, MILESTONE.md, S
 BACKLOG.md, CHANGELOG.md, DECISIONS.md, STANDARDS.md, thread.md), replace all
 template/placeholder content with real content. Reference `plans/FORMATS.md` for the
 expected structure of each file. Do not preserve explanatory preamble from template stubs.
+
+### Multi-root workspaces
+If `plans/config.json` defines `workspace.shared_repos`, this is a multi-root project
+and scope-of-change routing applies. Read `plans/FORMATS.md` ("workspace block" and
+"Scope-of-change routing") for the full rules. Quick reference:
+
+- **The primary repo owns `plans/`.** No shared repo ever gets a `plans/` directory.
+- **Project scope** (everything not inside a `shared_repos[].path`) → writes go to the
+  primary repo's `plans/` (BUILD/MILESTONE/STATUS/BACKLOG/CHANGELOG/DECISIONS/STANDARDS/thread).
+- **Shared scope** (path matches a `shared_repos[].path`) → only code edits and, with
+  prior human approval via `PM.ThreadMaintenance`, that repo's own `STANDARDS.md` /
+  `DECISIONS.md` (no `plans/` wrapper). Project-scoped decisions *about* shared code
+  stay in the primary repo's `plans/DECISIONS.md`.
+- **Detection:** path match against `shared_repos[].path`. SAM never falls back to cwd
+  or `"."` to infer the primary repo — the config is authoritative.
+- **Promotion** of a project decision to a shared standard is proposed by
+  `PM.ThreadMaintenance`, approved by the human in chat, then executed on the next run.

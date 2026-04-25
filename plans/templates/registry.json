@@ -60,7 +60,7 @@
       "task": "AnswerQuestions",
       "template_path": "plans/templates/Principal_AnswerQuestions.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/thread.md", "plans/MILESTONE.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/STATUS.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/thread.md", "plans/MILESTONE.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/STATUS.md"],
       "required_outputs": ["plans/thread.md", "plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },

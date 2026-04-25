@@ -4,5 +4,13 @@
   "formal_approval": "every_phase",
   "documentation_update": "every_milestone",
   "review_strictness": "balanced",
-  "re_review_trigger": "required"
+  "re_review_trigger": "required",
+  "workspace": {
+    "primary_repo": {
+      "name": "primary",
+      "path": ".",
+      "owns_plans": true
+    },
+    "shared_repos": []
+  }
 }

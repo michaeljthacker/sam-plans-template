@@ -184,22 +184,22 @@ artifact updates (code, `STANDARDS.md`, `DECISIONS.md`) without a `plans/` wrapp
 
 ### Workspace config
 
-- [ ] Add a `workspace` block to `plans/config.schema.json`:
+- [x] Add a `workspace` block to `plans/config.schema.json`:
   - `primary_repo`: `{ name, path, owns_plans: true }` — the repo that owns `plans/`
   - `shared_repos[]`: `[{ name, path, role }]` — repos receiving code + standards/decisions updates
   - `path` accepts absolute or workspace-relative paths; SAM never infers the primary repo from cwd or `"."`
   - Single-repo projects omit `shared_repos`
-- [ ] Update `plans/config.json` with a default `workspace` block (primary only, empty `shared_repos`)
-- [ ] Update `plans/FORMATS.md` `config.json` section to document the new block and the explicit-identification rule
+- [x] Update `plans/config.json` with a default `workspace` block (primary only, empty `shared_repos`)
+- [x] Update `plans/FORMATS.md` `config.json` section to document the new block and the explicit-identification rule
 
 ### Artifact routing
 
-- [ ] Document scope-of-change routing in `plans/FORMATS.md` and agent prompts:
+- [x] Document scope-of-change routing in `plans/FORMATS.md` and agent prompts:
   - Default: all planning artifacts go to `primary_repo/plans/`
   - Shared-repo writes are limited to: code under `shared_repos[].path`, plus
     `shared_repos[].path/STANDARDS.md` and `shared_repos[].path/DECISIONS.md` (no `plans/` wrapper)
   - Project-scoped decisions *about* shared code stay in `primary_repo/plans/DECISIONS.md`
-- [ ] Detection rule: scope is determined by path match against `shared_repos[].path`.
+- [x] Detection rule: scope is determined by path match against `shared_repos[].path`.
   Edits inside a shared-repo path are shared scope; everything else is project scope.
   `.code-workspace` may inform context but is not authoritative
 
@@ -210,40 +210,49 @@ candidates inline during its normal pruning pass; the human approves (or rejects
 the chat, and ThreadMaintenance carries out (or skips) the shared-repo write — all
 within a single Role.Task action.
 
-- [ ] Update `PM_ThreadMaintenance.txt` so that when it encounters a primary-repo
+- [x] Update `PM_ThreadMaintenance.txt` so that when it encounters a primary-repo
   DECISIONS/STANDARDS entry whose rationale generalizes, it surfaces a promotion
   proposal in the chat (entry text + target shared repo + brief justification) and
   waits for human approval before writing to the shared repo
-- [ ] Spec the proposal payload (entry, source path, proposed target path, rationale)
+- [x] Spec the proposal payload (entry, source path, proposed target path, rationale)
   and the approval/rejection responses ThreadMaintenance must accept
-- [ ] On approval: ThreadMaintenance appends to the shared repo's `STANDARDS.md` /
+- [x] On approval: ThreadMaintenance appends to the shared repo's `STANDARDS.md` /
   `DECISIONS.md` and removes/marks the source entry in the primary repo as appropriate.
   On rejection: the entry stays in the primary repo unchanged
 
 ### Templates and instructions
 
-- [ ] Update prompts that may write to DECISIONS/STANDARDS (`Principal.AnswerQuestions`,
+- [x] Update prompts that may write to DECISIONS/STANDARDS (`Principal.AnswerQuestions`,
   `PM.ThreadMaintenance`, `Staff.ReviewReconciliation`) to consult `workspace.shared_repos`,
   classify scope, and route writes accordingly
-- [ ] Update `Staff.ImplementationExecution` to flag shared-repo edits in `thread.md`
+- [x] Update `Staff.ImplementationExecution` to flag shared-repo edits in `thread.md`
   with an explicit "shared scope" note
-- [ ] Update `plans/agent-instructions.md`, `plans/copilot-instructions.md`, root
+- [x] Update `plans/agent-instructions.md`, `plans/copilot-instructions.md`, root
   `.github/copilot-instructions.md`, and root `CLAUDE.md` with multi-root rules and
   the "primary repo owns `plans/`" invariant
+  - Updated `plans/agent-instructions.md`. `plans/copilot-instructions.md` and
+    `plans/CLAUDE.md` are one-line pointers to `agent-instructions.md`, so the rules
+    flow through to the `.github/copilot-instructions.md` and root `CLAUDE.md` copies
+    that quickstart deploys into target projects
 
 ### Documentation
 
-- [ ] Add a top-level `WORKSPACE.md` (or new section in `plans/README.md` — decide during
+- [x] Add a top-level `WORKSPACE.md` (or new section in `plans/README.md` — decide during
   implementation) explaining multi-root setup, config example, and routing rules
-- [ ] Update `plans/README.md` quickstart to mention workspace config for multi-root projects
+  - Chose a "Multi-root workspaces" section in `plans/README.md` over a separate file —
+    keeps the SAM doc surface inside `plans/`
+- [x] Update `plans/README.md` quickstart to mention workspace config for multi-root projects
 
 ### Verification
 
-- [ ] Validate updated `config.json` against schema for both single-repo and multi-root cases
-- [ ] Walk a multi-repo implementation scenario: a phase touches both repos — confirm
+- [x] Validate updated `config.json` against schema for both single-repo and multi-root cases
+  - Validated with ajv-cli (draft-07): shipped default and a realistic multi-root config
+    both pass; confirmed rejections for `owns_plans: false`, empty `path`, and additional
+    properties under `primary_repo`
+- [x] Walk a multi-repo implementation scenario: a phase touches both repos — confirm
   artifact routing (project DECISIONS for project-scoped findings, shared DECISIONS only
   after escalation + approval)
-- [ ] Walk an escalation scenario end-to-end: AI proposes promotion → Human approves →
+- [x] Walk an escalation scenario end-to-end: AI proposes promotion → Human approves →
   entry lands in the shared repo's `STANDARDS.md` / `DECISIONS.md`
 
 ---

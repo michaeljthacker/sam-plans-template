@@ -11,7 +11,7 @@ This is a SINGLE micro-chunk of execution, not an entire milestone.
 
 Inputs:
 - plans/state.json (routing + context)
-- plans/config.json (workflow configuration — read `code_review` setting)
+- plans/config.json (workflow configuration — read `code_review` and `workspace`)
 - plans/MILESTONE.md (what to build, acceptance criteria)
 - plans/thread.md (answers to questions; constraints)
 - plans/DECISIONS.md (project-specific architectural choices)
@@ -25,15 +25,26 @@ Instructions:
 2) Implement the work in code.
    - Follow plans/MILESTONE.md strictly.
    - Respect DECISIONS and STANDARDS.
+   - Multi-root workspaces: read `workspace.shared_repos` from plans/config.json.
+     Code edits inside a `shared_repos[].path` are **shared scope** and are allowed.
+     Do NOT create or modify a `plans/` directory inside a shared repo. Do NOT write
+     to a shared repo's STANDARDS.md or DECISIONS.md from this action — that path
+     goes through PM.ThreadMaintenance with explicit human approval. If the review
+     uncovers a finding that genuinely belongs in shared standards, capture it in the
+     primary repo's plans/DECISIONS.md or plans/STANDARDS.md and let the promotion
+     protocol handle it.
 3) Commit your work.
    - Minimum: ≥1 commit per Phase.
    - More commits allowed if complexity warrants.
+   - Shared-repo code edits commit inside the shared repo using its own conventions.
 4) Append a review request entry to plans/thread.md:
    - Use the entry format: `---` then `### Staff.ImplementationExecution — <date>`
    - Title within entry: "Review Request — <Phase ID>"
    - Include:
      - What was implemented
-     - Key files changed
+     - Key files changed (for any file inside a `workspace.shared_repos[].path`,
+       prefix the bullet with "shared scope (<repo name>):" so the workspace
+       boundary is visible in the log)
      - Acceptance criteria checklist
      - Any known risks or trade-offs
 5) Update plans/STATUS.md (mandatory):

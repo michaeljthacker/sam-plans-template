@@ -220,7 +220,15 @@ at the end.
   "formal_approval": "every_phase",
   "documentation_update": "every_milestone",
   "review_strictness": "balanced",
-  "re_review_trigger": "required"
+  "re_review_trigger": "required",
+  "workspace": {
+    "primary_repo": {
+      "name": "primary",
+      "path": ".",
+      "owns_plans": true
+    },
+    "shared_repos": []
+  }
 }
 ```
 
@@ -233,9 +241,51 @@ at the end.
 | `documentation_update` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | When Writer.DocumentationUpdate runs |
 | `review_strictness` | `strict` \| `balanced` \| `pragmatic` | `balanced` | Threshold for REQUIRED vs. SUGGESTED in code review |
 | `re_review_trigger` | `required` \| `auto` | `required` | Whether code changes in reconciliation always trigger re-review |
+| `workspace` | object | single-repo placeholder | Multi-root workspace definition (primary repo + shared repos) |
 
 For `every_milestone` options: the step runs only on the last phase of each milestone.
 Templates consult this file when making routing decisions. See `config.schema.json` for full descriptions.
+
+### `workspace` block
+
+Defines the repos that participate in the workspace and how SAM routes artifact writes
+across them. The block has two parts:
+
+- `primary_repo` (required) — the repo that owns `plans/`. Exactly one per workspace.
+  - `name` — human-readable name
+  - `path` — absolute or workspace-relative path to the repo root
+  - `owns_plans` — must be `true`
+- `shared_repos` (optional, default `[]`) — repos that may receive code edits and
+  `STANDARDS.md` / `DECISIONS.md` updates without their own `plans/` wrapper.
+  - `name` / `path` / `role` — name, root path, and a brief description of the repo's role
+
+**Explicit-identification rule:** SAM never infers the primary repo from cwd or `"."`.
+If you use multi-root, set real workspace-relative paths for both `primary_repo.path`
+and every `shared_repos[].path`. Single-repo projects can leave the placeholder defaults
+(the `shared_repos` array is empty, so nothing matches shared scope and all writes go
+to `primary_repo/plans/`).
+
+### Scope-of-change routing
+
+When an action edits files or records knowledge, classify the scope of each write and
+route it accordingly. There are two scopes:
+
+- **Project scope** — writes go to `primary_repo/plans/`. This is the default.
+- **Shared scope** — writes go to a `shared_repos[]` location, with a *narrow* surface:
+  - Code under `shared_repos[].path`
+  - `shared_repos[].path/STANDARDS.md`
+  - `shared_repos[].path/DECISIONS.md`
+  - **No `plans/` wrapper** — shared repos never receive a `plans/` directory.
+
+**Detection rule:** scope is determined by **path match**. If an edit's path is inside
+any `shared_repos[].path`, that edit is shared scope. Everything else is project scope.
+The `.code-workspace` file may inform context but is **not authoritative**.
+
+**Project-scoped decisions about shared code stay in `primary_repo/plans/DECISIONS.md`.**
+A decision affects shared scope only when its rationale is platform-wide (would apply to
+any project using that shared code). Promotion from project DECISIONS/STANDARDS to a
+shared repo's DECISIONS/STANDARDS is handled by `PM.ThreadMaintenance` with explicit
+human approval — see `PM_ThreadMaintenance.txt` for the proposal/approval protocol.
 
 ---
 

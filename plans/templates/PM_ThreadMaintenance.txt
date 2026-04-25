@@ -8,7 +8,7 @@ ThreadMaintenance is the SOLE action that may delete, restructure, or compress t
 
 Inputs:
 - plans/thread.md
-- plans/config.json (workflow configuration — check before pruning)
+- plans/config.json (workflow configuration — check before pruning; also defines workspace.primary_repo and workspace.shared_repos for scope routing)
 - plans/MILESTONE.md
 - plans/DECISIONS.md (project-specific architectural choices)
 - plans/STANDARDS.md (team-level rules portable across projects)
@@ -27,24 +27,78 @@ Instructions:
      details that Writer.DocumentationUpdate will need.
    - If any setting is `"every_phase"` or `"never"`, prune normally for those concerns.
 2) Identify resolved questions/discussions in plans/thread.md.
-3) Promote information:
-   - Durable "going forward" items → DECISIONS.md (if project-specific) or STANDARDS.md (if the rule would carry to any project)
-   - Milestone-specific implementation detail → MILESTONE.md
+3) Promote information (within the primary repo):
+   - Durable "going forward" items → primary repo's plans/DECISIONS.md
+     (if project-specific) or plans/STANDARDS.md (if the rule would carry to any project).
+   - Milestone-specific implementation detail → plans/MILESTONE.md.
 4) Compress resolved thread content into 1–3 bullet summaries.
 5) Remove verbose back-and-forth from thread.md.
    After pruning, thread.md should contain: a brief resolved summary at the top,
    followed by any still-active/unresolved content.
-6) Update plans/STATUS.md (mandatory) noting maintenance occurred.
-7) Update plans/state.json:
+
+6) Shared-standard promotion proposals (multi-root workspaces only):
+   Read `workspace.shared_repos` from plans/config.json (default: empty).
+   If `shared_repos` is empty, skip this step.
+
+   For each entry currently in the primary repo's plans/DECISIONS.md or
+   plans/STANDARDS.md, ask:
+   - Does this rationale generalize beyond this project? (i.e., would it apply to
+     any project that depends on the shared repo)
+   - Does it concern code or contracts owned by a shared_repo?
+   - Is the entry stable (not still under active negotiation)?
+   If the answer is "yes" to all three, surface a promotion proposal in chat:
+
+       Promotion proposal:
+         entry: "<verbatim entry text>"
+         source: plans/DECISIONS.md  (or plans/STANDARDS.md)
+         target_repo: <shared_repos[].name>
+         target_path: <shared_repos[].path>/STANDARDS.md  (or /DECISIONS.md)
+         rationale: <one or two sentences on why this generalizes>
+
+   STOP after surfacing proposals — do NOT write to any shared repo yet.
+   Set last_action.result = "ok", pause_type = "decision",
+   next_action_id = "Human.ResolveBlocker", and add a blocker entry summarizing
+   the pending proposals so the human can approve or reject in their reply.
+
+   Acceptable human responses (free-form; interpret in context):
+   - "approve <id|all>" / "yes, promote" → execute the write on the next run
+   - "reject <id|all>" / "no" / "skip" → leave the entry where it is, drop the proposal
+   - "approve with edits: <text>" → use the edited text when writing
+
+   On a subsequent run where the human has approved one or more proposals
+   (recorded in plans/thread.md or context.notes):
+   - Append the approved entry verbatim (or as edited) to the target shared repo's
+     STANDARDS.md / DECISIONS.md (no plans/ wrapper — write directly under
+     `shared_repos[].path/`).
+   - Remove the source entry from the primary repo's DECISIONS.md / STANDARDS.md,
+     OR mark it with a one-line cross-reference like
+     "Promoted to <shared_repo>/<file> on <YYYY-MM-DD>" (your call based on whether
+     the entry still applies inside this project).
+   - Append a new plans/thread.md entry summarizing what was promoted.
+
+   On a subsequent run where the human has rejected proposals: leave the source
+   entries unchanged. Note the rejection briefly in plans/thread.md.
+
+7) Update plans/STATUS.md (mandatory) noting maintenance occurred (and any
+   promotion proposals/executions).
+
+8) Update plans/state.json:
    - last_action.action_id = PM.ThreadMaintenance
    - last_action.result = "ok"
-   - Check context.notes for an "After ThreadMaintenance: proceed to ..." directive.
-     If present, set next_action_id accordingly and remove the note from context.notes.
-     If absent, set next_action_id appropriately based on lifecycle position.
-   - Set pause_type based on who acts next:
-     - If next_action_id starts with `Human.*`: pause_type = "decision"
-     - Otherwise: pause_type = "continue"
+   - If you surfaced promotion proposals awaiting human approval:
+     - pause_type = "decision"
+     - next_action_id = "Human.ResolveBlocker"
+     - Add a blocker entry describing the pending proposals.
+   - Otherwise:
+     - Check context.notes for an "After ThreadMaintenance: proceed to ..." directive.
+       If present, set next_action_id accordingly and remove the note from context.notes.
+       If absent, set next_action_id appropriately based on lifecycle position.
+     - Set pause_type based on who acts next:
+       - If next_action_id starts with `Human.*`: pause_type = "decision"
+       - Otherwise: pause_type = "continue"
 
 Output:
 - Brief summary
-- Exact edits/patches
+- Any promotion proposals (clearly delimited so the human can approve/reject)
+- Exact edits/patches (within the primary repo, plus any shared-repo writes you
+  executed under prior approval)

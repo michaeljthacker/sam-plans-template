@@ -5,6 +5,7 @@ Goal: Answer open questions in plans/thread.md so Staff can implement the next s
 
 Inputs:
 - plans/thread.md (questions)
+- plans/config.json (workspace.shared_repos for scope routing)
 - plans/MILESTONE.md (plan + acceptance criteria)
 - plans/DECISIONS.md (project-specific architectural choices) and plans/STANDARDS.md (team-level rules portable across projects)
 - plans/STATUS.md (snapshot)
@@ -14,9 +15,16 @@ Instructions:
 1) Append a new entry to plans/thread.md answering each open question by Q-### ID.
    - Use the entry format: `---` then `### Principal.AnswerQuestions — <date>`
    - Answer concisely. Do not modify or delete previous entries.
-2) Promote durable decisions:
-   - If a decision should persist beyond this milestone, add it to plans/DECISIONS.md (if project-specific) or plans/STANDARDS.md (if the rule would carry to any project).
+2) Promote durable decisions (always to the primary repo):
+   - If a decision should persist beyond this milestone, add it to the primary repo's
+     plans/DECISIONS.md (if project-specific) or plans/STANDARDS.md (if the rule would
+     carry to any project).
    - If it is only a milestone detail, ensure it is reflected in plans/MILESTONE.md (brief).
+   - Project-scoped decisions *about* shared code stay in the primary repo's
+     plans/DECISIONS.md. Do NOT write directly to any shared repo's STANDARDS.md or
+     DECISIONS.md from this action — promotion to a shared repo is handled later by
+     PM.ThreadMaintenance with explicit human approval. (See workspace.shared_repos in
+     plans/config.json and the promotion protocol in PM_ThreadMaintenance.txt.)
 3) Keep plans/thread.md small by being concise in your answers.
    Resolved questions will be compressed by PM.ThreadMaintenance later.
 4) Update plans/STATUS.md (mandatory):

@@ -38,6 +38,63 @@
       "description": "When Staff.ReviewReconciliation changes code, should it always trigger a re-review? 'required' = always route back to Principal.CodeReview if any code changed (default). 'auto' = AI judges whether the scope/nature of changes warrants re-review and documents reasoning.",
       "enum": ["required", "auto"],
       "default": "required"
+    },
+    "workspace": {
+      "type": "object",
+      "description": "Multi-root workspace configuration. Defines the primary repo (which owns plans/) and any shared repos that receive code/STANDARDS/DECISIONS updates without their own plans/ wrapper. For single-repo projects, define primary_repo and leave shared_repos empty. SAM never infers the primary repo from cwd or '.'; it must be explicit.",
+      "additionalProperties": false,
+      "required": ["primary_repo"],
+      "properties": {
+        "primary_repo": {
+          "type": "object",
+          "description": "The repo that owns plans/. There is exactly one primary repo per workspace.",
+          "additionalProperties": false,
+          "required": ["name", "path", "owns_plans"],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Human-readable name for the primary repo."
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Absolute or workspace-relative path to the primary repo root."
+            },
+            "owns_plans": {
+              "const": true,
+              "description": "Always true. The primary repo always owns plans/."
+            }
+          }
+        },
+        "shared_repos": {
+          "type": "array",
+          "description": "Repos that may receive code edits plus STANDARDS.md / DECISIONS.md updates (no plans/ wrapper). Omit or leave empty for single-repo projects. The path field is matched against file edits to determine shared scope.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "path", "role"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Human-readable name for the shared repo."
+              },
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Absolute or workspace-relative path to the shared repo root. Edits whose paths match this prefix are classified as shared scope."
+              },
+              "role": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Brief description of the repo's role in the workspace (e.g., 'shared backend', 'design system')."
+              }
+            }
+          },
+          "default": []
+        }
+      }
     }
   }
 }
