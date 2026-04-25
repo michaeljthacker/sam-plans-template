@@ -139,14 +139,25 @@ template/placeholder content with real content. Do not preserve "About this file
 **What it is:** Standing forward-looking decisions ("going forward, we will always…"). Durable project-specific choices that persist beyond the current milestone.
 **Updated by:** `Principal.AnswerQuestions` and `PM.ThreadMaintenance` promote decisions here.
 
+**Recording rule:** Record only if future work would benefit from knowing the rationale. If there is no meaningful rationale to preserve, don't log it.
+
+**Record:** architectural patterns, data model constraints, API design principles, cross-cutting policies, decisions whose reasoning isn't obvious from the code.
+**Don't record:** one-off implementation details, local code structure choices, temporary tradeoffs with no long-term relevance, decisions whose rationale is already self-evident in the code or commit message.
+
+### Entry format
+
+Every entry MUST include a `**Why this matters long-term:**` line. If you can't write a meaningful one, the entry doesn't belong here.
+
 ```
 # DECISIONS
 
 ## Standing decisions
-- <decision — "going forward, we will always…">
+- **<short title>.** <decision — "going forward, we will always…"> (YYYY-MM-DD)
+  **Why this matters long-term:** <the rationale a future contributor needs to make sense of this — the constraint, tradeoff, or context that justifies the choice>
 
 ## Deprecated decisions
-- <decision>
+- **<short title>.** <decision> (YYYY-MM-DD)
+  **Why this matters long-term:** <why it was once true and why it no longer applies>
 ```
 
 ---
@@ -156,23 +167,37 @@ template/placeholder content with real content. Do not preserve "About this file
 **What it is:** Team-level technical standards portable across projects — testing expectations, architecture rules, code style, quality bar. Keep concise and enforceable.
 **Updated by:** `Principal.AnswerQuestions` and `PM.ThreadMaintenance` promote standards here; updated when project expectations change.
 
+**Recording rule:** Record only if future work would benefit from knowing the rationale. If there is no meaningful rationale to preserve, don't log it.
+
+**Record:** testing expectations, lint/style conventions, architecture rules, branching conventions, documentation expectations — rules that should apply across features and across projects.
+**Don't record:** local code structure choices, one-off implementation details, project-specific decisions (those go in DECISIONS.md), guidance whose rationale is already self-evident in the code.
+
+### Entry format
+
+Every entry MUST include a `**Why this matters long-term:**` line. If you can't write a meaningful one, the entry doesn't belong here.
+
 ```
 # STANDARDS
 
 ### Testing
 - <standard>
+  **Why this matters long-term:** <the rationale — quality bar, past incident, portability concern>
 
 ### Code style / lint
 - <standard>
+  **Why this matters long-term:** <rationale>
 
 ### Architecture constraints
 - <standard>
+  **Why this matters long-term:** <rationale>
 
 ### Branching convention
 - <standard>
+  **Why this matters long-term:** <rationale>
 
 ### Documentation
 - <standard>
+  **Why this matters long-term:** <rationale>
 ```
 
 ---

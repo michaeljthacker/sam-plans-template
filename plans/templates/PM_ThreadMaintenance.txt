@@ -28,8 +28,29 @@ Instructions:
    - If any setting is `"every_phase"` or `"never"`, prune normally for those concerns.
 2) Identify resolved questions/discussions in plans/thread.md.
 3) Promote information (within the primary repo):
-   - Durable "going forward" items → primary repo's plans/DECISIONS.md
-     (if project-specific) or plans/STANDARDS.md (if the rule would carry to any project).
+   - **Before promoting, classify** each candidate as one of:
+       (a) `implementation detail` — local, one-off, no long-term relevance.
+           Do NOT promote to DECISIONS.md or STANDARDS.md. Compress into the resolved
+           thread summary or drop entirely.
+       (b) `project decision` — durable, project-specific. Promote to primary repo's
+           plans/DECISIONS.md.
+       (c) `shared/platform standard` — rule that would apply to any project using the
+           same shared code or platform. Promote to primary repo's plans/STANDARDS.md
+           (and consider it a candidate for the shared-standard promotion proposal in
+           step 6, if a shared repo would benefit from it).
+     Do NOT write the bucket label into DECISIONS.md / STANDARDS.md — the classification
+     is a decision-making heuristic, not metadata to persist.
+   - **Promote only if future work would benefit from knowing the rationale.** Apply
+     these checks before writing an entry:
+       - Will this matter in 3 months?
+       - Does it affect multiple features or systems?
+       - Is there a non-obvious rationale worth preserving?
+     If you can't say "yes" to at least one, drop it (or compress into the thread
+     summary). Low-signal entries drown out durable rationale and are worse than no entry.
+   - **Every DECISIONS/STANDARDS entry MUST include a `**Why this matters long-term:**`
+     line** capturing the rationale. If you can't write a meaningful one, the entry
+     doesn't belong there. When pruning, also remove or rewrite existing entries that
+     lack a meaningful Why line. See plans/FORMATS.md for the entry format.
    - Milestone-specific implementation detail → plans/MILESTONE.md.
 4) Compress resolved thread content into 1–3 bullet summaries.
 5) Remove verbose back-and-forth from thread.md.

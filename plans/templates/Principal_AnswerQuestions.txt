@@ -16,9 +16,28 @@ Instructions:
    - Use the entry format: `---` then `### Principal.AnswerQuestions — <date>`
    - Answer concisely. Do not modify or delete previous entries.
 2) Promote durable decisions (always to the primary repo):
-   - If a decision should persist beyond this milestone, add it to the primary repo's
-     plans/DECISIONS.md (if project-specific) or plans/STANDARDS.md (if the rule would
-     carry to any project).
+   - **Before recording, classify** each candidate as one of:
+       (a) `implementation detail` — local code structure, one-off tradeoff with no
+           long-term relevance. Do NOT record in DECISIONS.md or STANDARDS.md.
+           Capture in plans/MILESTONE.md or plans/thread.md if it needs to be remembered
+           at all.
+       (b) `project decision` — durable, project-specific choice ("going forward in this
+           project, we will always…"). Record in the primary repo's plans/DECISIONS.md.
+       (c) `shared/platform standard` — a rule that would apply to any project using
+           the same shared code or shared platform. Record in the primary repo's
+           plans/STANDARDS.md (NOT a shared repo — promotion to a shared repo is handled
+           later by PM.ThreadMaintenance with explicit human approval).
+     Do NOT write the bucket label into DECISIONS.md / STANDARDS.md — the classification
+     is a decision-making heuristic, not metadata to persist.
+   - **Record only if future work would benefit from knowing the rationale.** Apply
+     these checks before writing an entry:
+       - Will this matter in 3 months?
+       - Does it affect multiple features or systems?
+       - Is there a non-obvious rationale worth preserving?
+     If you can't say "yes" to at least one, do not record it.
+   - **Every DECISIONS/STANDARDS entry MUST include a `**Why this matters long-term:**`
+     line** capturing the rationale. If you can't write a meaningful one, the entry
+     doesn't belong there. See plans/FORMATS.md for the entry format.
    - If it is only a milestone detail, ensure it is reflected in plans/MILESTONE.md (brief).
    - Project-scoped decisions *about* shared code stay in the primary repo's
      plans/DECISIONS.md. Do NOT write directly to any shared repo's STANDARDS.md or

@@ -266,38 +266,41 @@ long-term" line; if rationale is weak or absent, the entry shouldn't exist.
 
 ### Recording rule
 
-- [ ] Add the refined rule to the DECISIONS and STANDARDS sections of `plans/FORMATS.md`:
+- [x] Add the refined rule to the DECISIONS and STANDARDS sections of `plans/FORMATS.md`:
   > Record only if future work would benefit from knowing the rationale. If there is no
   > meaningful rationale to preserve, don't log it.
-- [ ] In `FORMATS.md`, list positive examples (architectural patterns, testing standards,
+- [x] In `FORMATS.md`, list positive examples (architectural patterns, testing standards,
   lint conventions, data model constraints, API design principles) and negative examples
   (one-off implementation details, local code structure choices, temporary tradeoffs with
   no long-term relevance)
 
 ### Structural enforcement
 
-- [ ] Update the DECISIONS.md entry format in `FORMATS.md` to require a
+- [x] Update the DECISIONS.md entry format in `FORMATS.md` to require a
   `**Why this matters long-term:**` line per entry
-- [ ] Update the STANDARDS.md entry format the same way
-- [ ] Update placeholders in `plans/DECISIONS.md` and `plans/STANDARDS.md` to show the
+- [x] Update the STANDARDS.md entry format the same way
+- [x] Update placeholders in `plans/DECISIONS.md` and `plans/STANDARDS.md` to show the
   new structure
 
 ### Agent heuristics (prompt-only, not file metadata)
 
-- [ ] Embed the classification heuristic in prompts that may write entries
+- [x] Embed the classification heuristic in prompts that may write entries
   (`Principal.AnswerQuestions`, `PM.ThreadMaintenance`, `Staff.ReviewReconciliation`):
   - "Will this matter in 3 months?"
   - "Does this affect multiple features or systems?"
   - "Is there a non-obvious rationale worth preserving?"
-- [ ] Embed the three-bucket classification (`implementation detail` / `project decision` /
+- [x] Embed the three-bucket classification (`implementation detail` / `project decision` /
   `shared/platform standard`) in the same prompts as a decision-making heuristic.
   Do NOT write these labels into `DECISIONS.md` / `STANDARDS.md` files — behavior, not
   metadata clutter
 
 ### Worked example
 
-- [ ] Update `example/plans/DECISIONS.md` and `example/plans/STANDARDS.md` to demonstrate
-  the new structure with high-signal entries (each with a `Why this matters long-term` line)
+- [x] ~~Update `example/plans/DECISIONS.md` and `example/plans/STANDARDS.md` to demonstrate
+  the new structure with high-signal entries (each with a `Why this matters long-term` line)~~
+  **Resolved as: do not update.** `example/` is a frozen snapshot from a real project at
+  SAM v1.1.0–v1.2.1 (see `example/README.md` version note). Updating it to match newer
+  SAM conventions would destroy its authenticity. See root `DECISIONS.md` D-023.
 
 ---
 

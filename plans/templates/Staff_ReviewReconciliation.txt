@@ -48,6 +48,29 @@ Instructions:
    - Any DECISIONS/STANDARDS-style finding from the review goes to the primary repo's
      plans/DECISIONS.md or plans/STANDARDS.md, even when it concerns shared code.
    - Flag shared-repo edits in your thread.md entry (see step 5).
+
+3b) Recording DECISIONS/STANDARDS findings from the review:
+   - **Before recording, classify** each finding as one of:
+       (a) `implementation detail` — local code structure, one-off tradeoff. Do NOT
+           record in DECISIONS.md or STANDARDS.md. Address it in the code or log it as
+           BACKLOG tech debt instead.
+       (b) `project decision` — durable, project-specific. Record in primary repo's
+           plans/DECISIONS.md.
+       (c) `shared/platform standard` — rule that would apply to any project using the
+           same shared code or platform. Record in primary repo's plans/STANDARDS.md
+           (promotion to a shared repo is handled later by PM.ThreadMaintenance).
+     Do NOT write the bucket label into DECISIONS.md / STANDARDS.md — the classification
+     is a decision-making heuristic, not metadata to persist.
+   - **Record only if future work would benefit from knowing the rationale.** Apply
+     these checks before writing an entry:
+       - Will this matter in 3 months?
+       - Does it affect multiple features or systems?
+       - Is there a non-obvious rationale worth preserving?
+     If you can't say "yes" to at least one, do not record it. "Reviewer suggested X
+     and we did X" is not a decision worth preserving.
+   - **Every DECISIONS/STANDARDS entry MUST include a `**Why this matters long-term:**`
+     line** capturing the rationale. If you can't write a meaningful one, the entry
+     doesn't belong there. See plans/FORMATS.md for the entry format.
 4) Commit any code changes.
    - For shared-repo code edits, commit inside the shared repo using its own commit
      conventions. The primary repo's commit covers the rest.

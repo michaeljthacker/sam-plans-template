@@ -1,17 +1,22 @@
 # STANDARDS
-<!-- See plans/FORMATS.md for expected structure. -->
+<!-- See plans/FORMATS.md for expected structure. Every entry requires a "Why this matters long-term" line — if you can't write a meaningful one, the entry doesn't belong here. -->
 
 ### Testing
-- <placeholder>
+- <standard>
+  **Why this matters long-term:** <rationale>
 
 ### Code style / lint
-- <placeholder>
+- <standard>
+  **Why this matters long-term:** <rationale>
 
 ### Architecture constraints
-- <placeholder>
+- <standard>
+  **Why this matters long-term:** <rationale>
 
 ### Branching convention
-- <placeholder>
+- <standard>
+  **Why this matters long-term:** <rationale>
 
 ### Documentation
-- <placeholder>
+- <standard>
+  **Why this matters long-term:** <rationale>

@@ -307,3 +307,22 @@ Previously the template said "pause_type unchanged unless you discover an unhand
 **Rationale:** Found during routing review for D-021 (configurable `formal_approval`). The bug was pre-existing but became more prominently exposed when config routing could send more paths through ThreadMaintenance → Human.PhaseApproval.
 
 **Supersedes:** "pause_type unchanged" rule in PM.ThreadMaintenance template
+
+---
+
+## D-023 — `example/` is a frozen snapshot; never update it to match newer SAM
+**Date:** 2026-04-25
+**Decision:** The `example/` directory is a **frozen snapshot** of a real project (`mjt-wordsearch-ui`) captured mid-development at B1-M2-P2 against a mix of SAM v1.1.0, v1.2.0, and v1.2.1. When SAM evolves (new entry formats, new templates, renamed files, new conventions), **do NOT propagate those changes into `example/`**. The version mismatch is intentional and is documented in `example/README.md`.
+
+This applies to every file under `example/` — `example/plans/*`, `example/ROOT_README.md`, anything else added later. The only legitimate reasons to edit `example/` are:
+- Replacing the entire snapshot with a fresh capture (deliberate, human-initiated).
+- Fixing a typo or factual error that was already present in the captured commit.
+
+**Rationale:**
+- The example's value is its **authenticity** — it shows real BUILD/MILESTONE/STATUS/thread/state evolution from a real project at a specific point in time. Continuously syncing it to current SAM would destroy that authenticity and turn it into a fabricated specimen, which D-016 explicitly rejected.
+- It is normal and expected for the example to drift behind current SAM. `example/README.md` already discloses this with the version note.
+- Multiple AI agents have made the mistake of "helpfully" updating `example/` files when extending SAM (e.g., adding the new `**Why this matters long-term:**` line format from the DECISIONS/STANDARDS discipline work). This decision exists specifically to prevent that mistake from recurring.
+
+**How to apply (for AI working on SAM):** When a TODO or task involves changes to file formats, templates, or conventions, scope the change to `plans/` and root-level files only. Do not touch `example/` unless the human explicitly asks for a fresh snapshot. If a TODO item appears to ask for an `example/` update, treat it as suspect and confirm with the human before acting.
+
+**Supersedes:** N/A (additive — clarifies and reinforces D-016)
