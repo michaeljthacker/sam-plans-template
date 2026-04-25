@@ -31,8 +31,8 @@ Instructions:
    - last_action.action_id = Principal.BuildReview
    - If APPROVED:
      - last_action.result = "approved"
-     - pause_type = "continue"
-     - next_action_id = Principal.MilestonePlan
+     - pause_type = "decision"
+     - next_action_id = Human.ApproveBuild
    - If CHANGES REQUIRED:
      - last_action.result = "changes_required"
      - pause_type = "decision"
@@ -47,7 +47,7 @@ Instructions:
 Constraints:
 - Do not implement code.
 - Do not modify plans/BUILD.md yourself — flag issues for resolution.
-- Do not create plans/MILESTONE.md (that is the next action if approved).
+- Do not create plans/MILESTONE.md (that is the next action after Human.ApproveBuild).
 
 Output:
 - Brief review summary

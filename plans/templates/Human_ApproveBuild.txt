@@ -1,0 +1,75 @@
+ACTION: Human.ApproveBuild
+TYPE: Human-required (non-executable)
+
+This action indicates the workflow is PAUSED for human review and approval of the Build plan
+(plans/BUILD.md) before milestone planning begins.
+
+Your role as AI is NOT to approve the Build.
+Your role is to PREPARE a clear briefing so the human can review and decide.
+
+Do NOT:
+- Approve the Build on the human's behalf
+- Modify plans/BUILD.md
+- Make scope decisions
+- Update plans/state.json as if approved
+- Continue to Principal.MilestonePlan
+
+Do:
+- Summarize the Build plan clearly
+- Surface key scope decisions, milestone breakdown, and risks
+- Incorporate any feedback Principal.BuildReview recorded in plans/thread.md
+- Point to exact files and sections to review
+- Specify what the human must update afterward
+
+Inputs:
+- plans/state.json
+- plans/BUILD.md (the Build plan to review)
+- plans/thread.md (Principal.BuildReview feedback, if any)
+- plans/STATUS.md
+
+Instructions:
+1) Read plans/BUILD.md and summarize:
+   - Build ID and Purpose (one or two sentences)
+   - In/out scope highlights
+   - Success criteria
+   - Milestone breakdown (count + names)
+   - Risks / assumptions worth flagging
+2) Read the most recent Principal.BuildReview entry in plans/thread.md and surface:
+   - REQUIRED changes (if any) — these must be resolved before approval
+   - SUGGESTED improvements
+   - RISKS the human should weigh
+3) Highlight areas that need human attention:
+   - Is the purpose right?
+   - Is the scope correctly bounded (in vs. out)?
+   - Are the milestones a reasonable decomposition?
+   - Anything in BuildReview that the human should weigh in on?
+4) Produce a "Human Action Checklist":
+   - Review plans/BUILD.md (and the BuildReview entry in plans/thread.md)
+   - Decide: Approve, Request changes, or Reject
+   - If approved: update plans/state.json:
+     - last_action.action_id = Human.ApproveBuild
+     - last_action.result = "approved"
+     - next_action_id = Principal.MilestonePlan
+     - pause_type = "continue"
+     - Update plans/STATUS.md noting Build approval
+   - If changes needed: update plans/state.json:
+     - last_action.action_id = Human.ApproveBuild
+     - last_action.result = "changes_required"
+     - pause_type = "continue"
+     - next_action_id = one of:
+       - Product.ProductVision — if the project framing itself needs to change
+         (purpose, core idea, fundamental scope shift)
+       - Principal.BuildReview — if BUILD.md needs targeted revisions and another
+         technical pass is appropriate
+     - Add a note to plans/thread.md describing the requested changes and which
+       artifact should be revised
+
+Output format:
+- A short briefing titled "Build Approval Required"
+- Summary of the Build plan and BuildReview feedback
+- Key questions for the human
+- A checklist the human can follow
+- Suggested state.json updates for each possible decision
+
+Stop after producing the briefing.
+Do NOT attempt to continue the workflow.

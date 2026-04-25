@@ -312,31 +312,31 @@ New lifecycle actions: human build-approval gate and mid-flight re-planning.
 
 Currently there's no human gate between `Principal.BuildReview` and `Principal.MilestonePlan`. The human should confirm build scope before planning begins. Named `Human.ApproveBuild` for consistency with `Human.ApproveMilestone`.
 
-- [ ] Design `Human.ApproveBuild` action template
+- [x] Design `Human.ApproveBuild` action template
   - Runs after `Principal.BuildReview`, before `Principal.MilestonePlan`
   - Human reviews `plans/BUILD.md` for scope, goals, and milestone breakdown
   - On approval: routes to `Principal.MilestonePlan`
   - On changes requested: routes back to `Product.ProductVision` or `Principal.BuildReview` (human specifies)
   - Pause type: `decision`
-- [ ] Add `Human.ApproveBuild` to registry.json (inputs, outputs, gates)
-- [ ] Add `Human.ApproveBuild` to state.schema.json `action_id` enum
-- [ ] Update `Principal_BuildReview.txt` routing — currently routes to `Principal.MilestonePlan`, should route to `Human.ApproveBuild`
-- [ ] Update plans/README.md — lifecycle docs, action catalog, quickstart sequence (now 4 build-init steps instead of 3)
+- [x] Add `Human.ApproveBuild` to registry.json (inputs, outputs, gates)
+- [x] Add `Human.ApproveBuild` to state.schema.json `action_id` enum
+- [x] Update `Principal_BuildReview.txt` routing — currently routes to `Principal.MilestonePlan`, should route to `Human.ApproveBuild`
+- [x] Update plans/README.md — lifecycle docs, action catalog, quickstart sequence (now 4 build-init steps instead of 3)
 
 ### Principal.PlanDiversion
 
 SAM currently has no action that modifies the plan once execution begins. When reality diverges, BACKLOG becomes a junk drawer and there's no formal re-planning path.
 
-- [ ] Design `Principal.PlanDiversion` action template
+- [x] Design `Principal.PlanDiversion` action template
   - Human-initiated (user sets `next_action_id` or a helper triggers it)
   - Principal assesses scope: new milestone, new phase, extra steps, or just a note
   - Interactive: Principal proposes changes, user confirms before files are modified
   - Updates BUILD.md (if milestones change), MILESTONE.md (if phases change), DECISIONS.md (rationale), thread.md (log), state.json (resume point)
   - Routes based on which artifact was edited: `Human.ApproveBuild` (if BUILD.md changed — new/restructured milestones), `Human.ApproveMilestone` (if MILESTONE.md changed — new/restructured phases), `Staff.DraftQuestions` (new steps only), or resume previous position (minor change)
   - Pause type: `decision`
-- [ ] Add `Principal.PlanDiversion` to registry.json (inputs, outputs, gates)
-- [ ] Add `Principal.PlanDiversion` to state.schema.json `action_id` enum
-- [ ] Update plans/README.md — add to action catalog and lifecycle docs
+- [x] Add `Principal.PlanDiversion` to registry.json (inputs, outputs, gates)
+- [x] Add `Principal.PlanDiversion` to state.schema.json `action_id` enum
+- [x] Update plans/README.md — add to action catalog and lifecycle docs
 
 ---
 

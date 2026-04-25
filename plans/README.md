@@ -170,7 +170,7 @@ A dumb runner can automate steps 1–5:
 - Human writes project idea in `plans/thread.md` (one sentence to a few paragraphs)
 - `Product.ProductVision` → generates root `README.md` + `plans/BUILD.md`
 - `Principal.BuildReview` → reviews feasibility and constraints
-- Human approves
+- `Human.ApproveBuild` → human reviews `plans/BUILD.md` and approves scope before milestone planning
 
 ### 2. Milestone planning
 - `Principal.MilestonePlan` → drafts `plans/MILESTONE.md` for the current milestone
@@ -196,6 +196,9 @@ See **Configuration** above for how these knobs affect routing.
 ### 4. Milestone closeout
 - `PM.MilestoneCloseout` → update BACKLOG/CHANGELOG, trigger ThreadMaintenance
 - Proceed to next milestone (`Principal.MilestonePlan`) or end build
+
+### Mid-flight re-planning
+When reality diverges from the plan — discovered work, scope shift, milestone needs to be split — the human sets `next_action_id = Principal.PlanDiversion` (manually, or via a helper). Principal classifies the change (note only / new steps / new phases / new milestones), proposes the edits in chat, waits for human confirmation, then applies them and routes to the appropriate re-approval gate (`Human.ApproveBuild` for milestone changes, `Human.ApproveMilestone` for phase changes) or back to `Staff.DraftQuestions` for step-level changes. This is the only sanctioned way to modify `BUILD.md` / `MILESTONE.md` after execution has begun — BACKLOG should not become a junk drawer for in-plan work.
 
 ## Thread management (keep it small)
 `plans/thread.md` is an **append-only log** — each action that writes to it appends a new dated entry at the end. It is AI-readable, not machine-parseable.
@@ -243,9 +246,10 @@ Common references:
 3a. **(Multi-root workspaces only)** Edit `plans/config.json` `workspace` block to set `primary_repo` (this repo) and any `shared_repos` you'll be touching. See **Multi-root workspaces** above. Single-repo projects can leave the defaults.
 4. Run `Product.ProductVision` → generates root README + `plans/BUILD.md`
 5. Run `Principal.BuildReview` → validates feasibility
-6. Human approves → run `Principal.MilestonePlan` → generates `plans/MILESTONE.md`
-7. `Human.ApproveMilestone` → approve scope
-8. Phase execution begins with `Staff.DraftQuestions` for P1
+6. `Human.ApproveBuild` → approve Build scope
+7. Run `Principal.MilestonePlan` → generates `plans/MILESTONE.md`
+8. `Human.ApproveMilestone` → approve milestone scope
+9. Phase execution begins with `Staff.DraftQuestions` for P1
 
 From step 4 onward, each step is: open a new chat, say "run the next step", and the AI
 reads `state.json` to know what to do. Review its output, then repeat.

@@ -1,7 +1,7 @@
 {
   "version": "0.2",
   "action_id_convention": "Role.Task",
-  "note": "All 16 actions have templates. See plans/templates/ for individual action prompts.",
+  "note": "All 18 actions have templates. See plans/templates/ for individual action prompts.",
 
   "actions": [
     {
@@ -22,6 +22,16 @@
       "status": "ready",
       "inputs": ["plans/state.json", "plans/BUILD.md", "plans/STATUS.md"],
       "required_outputs": ["plans/thread.md", "plans/STATUS.md", "plans/state.json"],
+      "gates": { "update_status_required": true, "tests_required": false }
+    },
+    {
+      "action_id": "Human.ApproveBuild",
+      "role": "Human",
+      "task": "ApproveBuild",
+      "template_path": "plans/templates/Human_ApproveBuild.txt",
+      "status": "ready",
+      "inputs": ["plans/state.json", "plans/BUILD.md", "plans/thread.md", "plans/STATUS.md"],
+      "required_outputs": ["plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
     {
@@ -152,6 +162,16 @@
       "status": "ready",
       "inputs": ["plans/state.json", "plans/config.json", "plans/thread.md", "plans/MILESTONE.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/STATUS.md"],
       "required_outputs": ["plans/thread.md", "plans/STATUS.md", "plans/state.json", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/MILESTONE.md"],
+      "gates": { "update_status_required": true, "tests_required": false }
+    },
+    {
+      "action_id": "Principal.PlanDiversion",
+      "role": "Principal",
+      "task": "PlanDiversion",
+      "template_path": "plans/templates/Principal_PlanDiversion.txt",
+      "status": "ready",
+      "inputs": ["plans/state.json", "plans/config.json", "plans/BUILD.md", "plans/MILESTONE.md", "plans/STATUS.md", "plans/BACKLOG.md", "plans/thread.md", "plans/DECISIONS.md"],
+      "required_outputs": ["plans/STATUS.md", "plans/state.json", "plans/thread.md"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
     {
