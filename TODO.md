@@ -175,7 +175,124 @@ Bug fixes and usability improvements surfaced by real-world usage (discussion-gu
 
 ---
 
-## v1.4.0 — Planned
+## Multi-root workspace awareness — Planned
+
+Foundational support for SAM operating across multiple repos in a VS Code multi-root
+workspace (e.g., a frontend project repo plus a shared backend repo such as `mjt.pub`).
+Only the primary repo owns `plans/`; shared repos receive durable, platform-level
+artifact updates (code, `STANDARDS.md`, `DECISIONS.md`) without a `plans/` wrapper.
+
+### Workspace config
+
+- [ ] Add a `workspace` block to `plans/config.schema.json`:
+  - `primary_repo`: `{ name, path, owns_plans: true }` — the repo that owns `plans/`
+  - `shared_repos[]`: `[{ name, path, role }]` — repos receiving code + standards/decisions updates
+  - `path` accepts absolute or workspace-relative paths; SAM never infers the primary repo from cwd or `"."`
+  - Single-repo projects omit `shared_repos`
+- [ ] Update `plans/config.json` with a default `workspace` block (primary only, empty `shared_repos`)
+- [ ] Update `plans/FORMATS.md` `config.json` section to document the new block and the explicit-identification rule
+
+### Artifact routing
+
+- [ ] Document scope-of-change routing in `plans/FORMATS.md` and agent prompts:
+  - Default: all planning artifacts go to `primary_repo/plans/`
+  - Shared-repo writes are limited to: code under `shared_repos[].path`, plus
+    `shared_repos[].path/STANDARDS.md` and `shared_repos[].path/DECISIONS.md` (no `plans/` wrapper)
+  - Project-scoped decisions *about* shared code stay in `primary_repo/plans/DECISIONS.md`
+- [ ] Detection rule: scope is determined by path match against `shared_repos[].path`.
+  Edits inside a shared-repo path are shared scope; everything else is project scope.
+  `.code-workspace` may inform context but is not authoritative
+
+### Escalation: project decision → shared standard
+
+No automatic promotion and no new actions. `PM.ThreadMaintenance` proposes promotion
+candidates inline during its normal pruning pass; the human approves (or rejects) in
+the chat, and ThreadMaintenance carries out (or skips) the shared-repo write — all
+within a single Role.Task action.
+
+- [ ] Update `PM_ThreadMaintenance.txt` so that when it encounters a primary-repo
+  DECISIONS/STANDARDS entry whose rationale generalizes, it surfaces a promotion
+  proposal in the chat (entry text + target shared repo + brief justification) and
+  waits for human approval before writing to the shared repo
+- [ ] Spec the proposal payload (entry, source path, proposed target path, rationale)
+  and the approval/rejection responses ThreadMaintenance must accept
+- [ ] On approval: ThreadMaintenance appends to the shared repo's `STANDARDS.md` /
+  `DECISIONS.md` and removes/marks the source entry in the primary repo as appropriate.
+  On rejection: the entry stays in the primary repo unchanged
+
+### Templates and instructions
+
+- [ ] Update prompts that may write to DECISIONS/STANDARDS (`Principal.AnswerQuestions`,
+  `PM.ThreadMaintenance`, `Staff.ReviewReconciliation`) to consult `workspace.shared_repos`,
+  classify scope, and route writes accordingly
+- [ ] Update `Staff.ImplementationExecution` to flag shared-repo edits in `thread.md`
+  with an explicit "shared scope" note
+- [ ] Update `plans/agent-instructions.md`, `plans/copilot-instructions.md`, root
+  `.github/copilot-instructions.md`, and root `CLAUDE.md` with multi-root rules and
+  the "primary repo owns `plans/`" invariant
+
+### Documentation
+
+- [ ] Add a top-level `WORKSPACE.md` (or new section in `plans/README.md` — decide during
+  implementation) explaining multi-root setup, config example, and routing rules
+- [ ] Update `plans/README.md` quickstart to mention workspace config for multi-root projects
+
+### Verification
+
+- [ ] Validate updated `config.json` against schema for both single-repo and multi-root cases
+- [ ] Walk a multi-repo implementation scenario: a phase touches both repos — confirm
+  artifact routing (project DECISIONS for project-scoped findings, shared DECISIONS only
+  after escalation + approval)
+- [ ] Walk an escalation scenario end-to-end: AI proposes promotion → Human approves →
+  entry lands in the shared repo's `STANDARDS.md` / `DECISIONS.md`
+
+---
+
+## DECISIONS / STANDARDS discipline — Planned
+
+Tighten what gets recorded in `DECISIONS.md` / `STANDARDS.md`. Current behavior produces
+low-signal entries (e.g., "we chose not to add a flag to this function") that drown out
+durable rationale. Enforce structurally: every entry requires a "Why this matters
+long-term" line; if rationale is weak or absent, the entry shouldn't exist.
+
+### Recording rule
+
+- [ ] Add the refined rule to the DECISIONS and STANDARDS sections of `plans/FORMATS.md`:
+  > Record only if future work would benefit from knowing the rationale. If there is no
+  > meaningful rationale to preserve, don't log it.
+- [ ] In `FORMATS.md`, list positive examples (architectural patterns, testing standards,
+  lint conventions, data model constraints, API design principles) and negative examples
+  (one-off implementation details, local code structure choices, temporary tradeoffs with
+  no long-term relevance)
+
+### Structural enforcement
+
+- [ ] Update the DECISIONS.md entry format in `FORMATS.md` to require a
+  `**Why this matters long-term:**` line per entry
+- [ ] Update the STANDARDS.md entry format the same way
+- [ ] Update placeholders in `plans/DECISIONS.md` and `plans/STANDARDS.md` to show the
+  new structure
+
+### Agent heuristics (prompt-only, not file metadata)
+
+- [ ] Embed the classification heuristic in prompts that may write entries
+  (`Principal.AnswerQuestions`, `PM.ThreadMaintenance`, `Staff.ReviewReconciliation`):
+  - "Will this matter in 3 months?"
+  - "Does this affect multiple features or systems?"
+  - "Is there a non-obvious rationale worth preserving?"
+- [ ] Embed the three-bucket classification (`implementation detail` / `project decision` /
+  `shared/platform standard`) in the same prompts as a decision-making heuristic.
+  Do NOT write these labels into `DECISIONS.md` / `STANDARDS.md` files — behavior, not
+  metadata clutter
+
+### Worked example
+
+- [ ] Update `example/plans/DECISIONS.md` and `example/plans/STANDARDS.md` to demonstrate
+  the new structure with high-signal entries (each with a `Why this matters long-term` line)
+
+---
+
+## Build approval gate & plan diversion — Planned
 
 New lifecycle actions: human build-approval gate and mid-flight re-planning.
 
@@ -211,7 +328,7 @@ SAM currently has no action that modifies the plan once execution begins. When r
 
 ---
 
-## v1.5.0 — Planned
+## STATUS.md update frequency — Planned
 
 STATUS.md reduction. Currently every action must update STATUS.md, which largely duplicates state.json. Make update frequency configurable, defaulting to PM-only.
 
@@ -231,7 +348,7 @@ STATUS.md reduction. Currently every action must update STATUS.md, which largely
 
 ---
 
-## v1.6.0 — Planned
+## Helper scripts & sync tooling — Planned
 
 Helper scripts and sync tooling. All helper scripts are `plans/*.ps1` for zero-install simplicity — just copy `plans/` and go. (CLI upgrade to `sam <command>` deferred to v3+.)
 
