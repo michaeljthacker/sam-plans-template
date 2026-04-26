@@ -20,6 +20,7 @@ Do:
 
 Inputs:
 - plans/state.json
+- plans/config.json (workflow configuration — read `status_updates`)
 - plans/MILESTONE.md (the plan to review)
 - plans/BUILD.md (overall Build context)
 - plans/STATUS.md
@@ -41,14 +42,25 @@ Instructions:
    - If approved: update plans/state.json:
      - last_action = Human.ApproveMilestone
      - last_action.result = "approved"
-     - next_action_id = Staff.DraftQuestions
      - phase_id = P1
-     - pause_type = "continue"
-   - Update plans/STATUS.md with approval decision
+     - Read `status_updates` from plans/config.json (default: "pm_only" if missing):
+       - If `status_updates = "every_action"`: route directly to Staff.DraftQuestions.
+         - next_action_id = Staff.DraftQuestions
+         - pause_type = "continue"
+         - Update plans/STATUS.md: refresh `**Update configuration:**` line; add a
+           Recent bullet noting Milestone approval.
+       - Otherwise (`pm_only`, `every_milestone`, `never`): route through PM.StatusUpdate
+         so the major transition is captured (or, under `never`, normalized to stub).
+         - next_action_id = PM.StatusUpdate
+         - pause_type = "continue"
+         - Set context.notes = "After StatusUpdate: proceed to Staff.DraftQuestions"
+         - Do NOT write plans/STATUS.md from this action.
    - If changes needed: update plans/state.json:
      - last_action.result = "changes_required"
      - next_action_id = Principal.MilestonePlan (to re-draft)
      - Add notes to plans/thread.md with requested changes
+     - STATUS.md write: same gating — `every_action` writes a Recent bullet; other
+       settings skip (the next PM.StatusUpdate after re-approval will refresh).
 
 Output format:
 - A short briefing titled "Milestone Review Required"

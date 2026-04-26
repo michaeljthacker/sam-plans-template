@@ -5,6 +5,7 @@ Goal: Draft only the questions needed before implementing the next concrete slic
 
 Inputs:
 - plans/state.json (routing + context)
+- plans/config.json (workflow configuration — read `status_updates`)
 - plans/MILESTONE.md (plan + acceptance criteria)
 - plans/DECISIONS.md (project-specific architectural choices) and plans/STANDARDS.md (team-level rules portable across projects)
 - plans/thread.md (current active thread)
@@ -16,7 +17,9 @@ Instructions:
    plans/STANDARDS.md, and plans/thread.md — if the path forward is clear and you have no
    blocking or important questions:
    - SELF-SKIP: Do not append an entry to plans/thread.md.
-   - Update plans/STATUS.md: add a bullet to Recent: "Staff.DraftQuestions — skipped (path is clear)"
+   - STATUS.md write (config-gated): if `status_updates = "every_action"`, refresh
+     the `**Update configuration:**` line and add a Recent bullet
+     "Staff.DraftQuestions — skipped (path is clear)". Otherwise SKIP.
    - Update plans/state.json:
      - last_action = Staff.DraftQuestions, result = "skipped"
      - next_action_id = Staff.ImplementationExecution
@@ -27,9 +30,13 @@ Instructions:
    - Use IDs: Q-###.
    - Mark Blocking: Yes/No.
    - Keep questions specific and decision-oriented (avoid essays).
-4) Update plans/STATUS.md (mandatory):
-   - add a bullet to Recent describing that questions were drafted
-   - update Blockers section (brief)
+4) Update plans/STATUS.md (config-gated):
+   - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
+   - If `status_updates = "every_action"`:
+     - Refresh the `**Update configuration:**` line at top
+     - Add a bullet to Recent describing that questions were drafted
+     - Update Blockers section (brief)
+   - Otherwise: SKIP. The next PM.StatusUpdate will reflect this in summary.
 5) Update plans/state.json:
    - last_action.action_id = Staff.DraftQuestions
    - last_action.result = "ok"

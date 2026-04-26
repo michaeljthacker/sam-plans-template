@@ -10,7 +10,7 @@
       "task": "ProductVision",
       "template_path": "plans/templates/Product_ProductVision.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/thread.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/thread.md"],
       "required_outputs": ["README.md", "plans/BUILD.md", "plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
@@ -20,7 +20,7 @@
       "task": "BuildReview",
       "template_path": "plans/templates/Principal_BuildReview.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/BUILD.md", "plans/STATUS.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/BUILD.md", "plans/STATUS.md"],
       "required_outputs": ["plans/thread.md", "plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
@@ -30,7 +30,7 @@
       "task": "ApproveBuild",
       "template_path": "plans/templates/Human_ApproveBuild.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/BUILD.md", "plans/thread.md", "plans/STATUS.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/BUILD.md", "plans/thread.md", "plans/STATUS.md"],
       "required_outputs": ["plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
@@ -40,7 +40,7 @@
       "task": "MilestonePlan",
       "template_path": "plans/templates/Principal_MilestonePlan.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/BUILD.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/STATUS.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/BUILD.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/STATUS.md"],
       "required_outputs": ["plans/MILESTONE.md", "plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
@@ -50,7 +50,7 @@
       "task": "ApproveMilestone",
       "template_path": "plans/templates/Human_ApproveMilestone.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/MILESTONE.md", "plans/BUILD.md", "plans/STATUS.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/MILESTONE.md", "plans/BUILD.md", "plans/STATUS.md"],
       "required_outputs": ["plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
@@ -60,7 +60,7 @@
       "task": "DraftQuestions",
       "template_path": "plans/templates/Staff_DraftQuestions.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/MILESTONE.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/thread.md", "plans/STATUS.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/MILESTONE.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/thread.md", "plans/STATUS.md"],
       "required_outputs": ["plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
@@ -130,7 +130,7 @@
       "task": "PhaseApproval",
       "template_path": "plans/templates/Human_PhaseApproval.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/STATUS.md", "plans/thread.md", "plans/MILESTONE.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/STATUS.md", "plans/thread.md", "plans/MILESTONE.md"],
       "required_outputs": ["plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
@@ -140,7 +140,7 @@
       "task": "AdvancePhase",
       "template_path": "plans/templates/PM_AdvancePhase.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/MILESTONE.md", "plans/STATUS.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/MILESTONE.md", "plans/STATUS.md"],
       "required_outputs": ["plans/state.json", "plans/STATUS.md"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
@@ -150,7 +150,7 @@
       "task": "MilestoneCloseout",
       "template_path": "plans/templates/PM_MilestoneCloseout.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/MILESTONE.md", "plans/STATUS.md", "plans/BACKLOG.md", "plans/CHANGELOG.md", "plans/thread.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/MILESTONE.md", "plans/STATUS.md", "plans/BACKLOG.md", "plans/CHANGELOG.md", "plans/thread.md"],
       "required_outputs": ["plans/STATUS.md", "plans/BACKLOG.md", "plans/CHANGELOG.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },

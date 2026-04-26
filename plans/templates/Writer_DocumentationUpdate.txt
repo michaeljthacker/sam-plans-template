@@ -5,7 +5,7 @@ Goal: Update project documentation to reflect changes made in the most recent Ph
 
 Inputs:
 - plans/state.json (routing + context)
-- plans/config.json (workflow configuration — read `formal_approval` setting)
+- plans/config.json (workflow configuration — read `formal_approval` and `status_updates`)
 - plans/MILESTONE.md (what was built)
 - plans/thread.md (implementation details)
 - plans/DECISIONS.md (project-specific architectural choices)
@@ -24,8 +24,13 @@ Instructions:
    - Follow documentation standards in plans/STANDARDS.md
    - Ensure consistency with plans/DECISIONS.md
    - Do not document planned-but-unbuilt features
-4) Update plans/STATUS.md (mandatory):
-   - Add a bullet to Recent: "Writer.DocumentationUpdate — updated <list of docs>"
+4) Update plans/STATUS.md (config-gated):
+   - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
+   - If `status_updates = "every_action"`:
+     - Refresh the `**Update configuration:**` line at top
+     - Add a bullet to Recent: "Writer.DocumentationUpdate — updated <list of docs>"
+   - Otherwise: SKIP. The pre-approval PM.StatusUpdate already wrote STATUS for this
+     phase; documentation updates ride along under that snapshot.
 5) Update plans/state.json:
    - last_action.action_id = Writer.DocumentationUpdate
    - last_action.result = "ok"

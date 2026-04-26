@@ -8,7 +8,7 @@ This is a SINGLE micro-chunk review, scoped to the most recent Phase/Step.
 
 Inputs:
 - Code changes (git diff / commits)
-- plans/config.json (workflow configuration — read `review_strictness` setting)
+- plans/config.json (workflow configuration — read `review_strictness` and `status_updates`)
 - plans/MILESTONE.md (acceptance criteria)
 - plans/DECISIONS.md (project-specific architectural choices)
 - plans/STANDARDS.md (team-level rules portable across projects)
@@ -41,8 +41,12 @@ Instructions:
    - APPROVED (no required changes)
    - CHANGES REQUIRED
    - BLOCKED (requires human/product decision)
-5) Update plans/STATUS.md (mandatory):
-   - Add a bullet summarizing review outcome
+5) Update plans/STATUS.md (config-gated):
+   - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
+   - If `status_updates = "every_action"`:
+     - Refresh the `**Update configuration:**` line at top
+     - Add a bullet summarizing review outcome
+   - Otherwise: SKIP. The next PM.StatusUpdate (after ReviewReconciliation) will summarize.
 6) Update plans/state.json:
    - last_action.action_id = Principal.CodeReview
    - If APPROVED:

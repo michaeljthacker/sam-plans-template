@@ -5,6 +5,7 @@ Goal: Draft plans/MILESTONE.md for the current milestone — a detailed, phased 
 
 Inputs:
 - plans/state.json (routing + context — identifies which milestone to plan)
+- plans/config.json (workflow configuration — read `status_updates`)
 - plans/BUILD.md (overall Build scope and milestone list)
 - plans/DECISIONS.md (project-specific architectural choices)
 - plans/STANDARDS.md (team-level rules portable across projects)
@@ -24,9 +25,14 @@ Instructions:
 4) Keep Phases small enough to implement in a single Staff.ImplementationExecution cycle.
    - Rule of thumb: each Phase should be completable in one focused session
    - If a Phase seems too large, split it into smaller Phases
-5) Update plans/STATUS.md (mandatory):
-   - Add a bullet to Recent: "Principal.MilestonePlan completed — MILESTONE.md drafted for <Milestone ID>"
-   - Update Next: "Human.ApproveMilestone to review scope"
+5) Update plans/STATUS.md (config-gated):
+   - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
+   - If `status_updates = "every_action"`:
+     - Refresh the `**Update configuration:** status_updates=<value>` line at top
+     - Add a bullet to Recent: "Principal.MilestonePlan completed — MILESTONE.md drafted for <Milestone ID>"
+     - Update Next: "Human.ApproveMilestone to review scope"
+   - Otherwise: SKIP the STATUS write. The PM.StatusUpdate that runs after
+     Human.ApproveMilestone will refresh STATUS for the new milestone.
 6) Update plans/state.json:
    - last_action.action_id = Principal.MilestonePlan
    - last_action.result = "ok"

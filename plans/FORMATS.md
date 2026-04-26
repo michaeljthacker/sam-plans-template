@@ -72,10 +72,12 @@ template/placeholder content with real content. Do not preserve "About this file
 ## STATUS.md
 
 **What it is:** The tactical snapshot of the repo right now — human-readable complement to `state.json` (the routing source of truth).
-**Updated by:** Every action (mandatory). Must always reflect current Build/Milestone/Phase position.
+**Updated by:** Update frequency is configurable via `status_updates` in `config.json` (see below). By default (`pm_only`), only `PM.StatusUpdate` writes to STATUS.md; routing inserts `PM.StatusUpdate` after build/milestone approvals and plan diversions so major transitions are still captured. The one unconditional write is `Product.ProductVision`, which creates the file. Under `never`, STATUS.md is a frozen disabled-stub.
 
 ```
 # STATUS
+
+**Update configuration:** `status_updates=<value>`
 
 ## Now
 - Build: <Build ID>
@@ -90,6 +92,16 @@ template/placeholder content with real content. Do not preserve "About this file
 
 ## Next
 - <high-level next steps — routing detail is in state.json>
+```
+
+The `Update configuration` line shows the `status_updates` value at the time of the most recent write. It tells the reader the cadence STATUS is being kept at, which explains any apparent staleness (e.g., a one-phase lag is expected under `pm_only`/`every_milestone`). Every action that writes STATUS must refresh this line from `config.json`.
+
+**Disabled stub** (used when `status_updates=never`):
+
+```
+# STATUS
+
+_(STATUS updates disabled via config: status_updates=never)_
 ```
 
 ---
@@ -246,6 +258,7 @@ at the end.
   "documentation_update": "every_milestone",
   "review_strictness": "balanced",
   "re_review_trigger": "required",
+  "status_updates": "pm_only",
   "workspace": {
     "primary_repo": {
       "name": "primary",
@@ -266,6 +279,7 @@ at the end.
 | `documentation_update` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | When Writer.DocumentationUpdate runs |
 | `review_strictness` | `strict` \| `balanced` \| `pragmatic` | `balanced` | Threshold for REQUIRED vs. SUGGESTED in code review |
 | `re_review_trigger` | `required` \| `auto` | `required` | Whether code changes in reconciliation always trigger re-review |
+| `status_updates` | `every_action` \| `pm_only` \| `every_milestone` \| `never` | `pm_only` | How often STATUS.md is written. `pm_only` and below write only via `PM.StatusUpdate` (routing fans approvals/diversions through it so major transitions are still captured) |
 | `workspace` | object | single-repo placeholder | Multi-root workspace definition (primary repo + shared repos) |
 
 For `every_milestone` options: the step runs only on the last phase of each milestone.

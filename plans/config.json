@@ -5,6 +5,7 @@
   "documentation_update": "every_milestone",
   "review_strictness": "balanced",
   "re_review_trigger": "required",
+  "status_updates": "pm_only",
   "workspace": {
     "primary_repo": {
       "name": "primary",

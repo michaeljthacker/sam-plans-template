@@ -8,7 +8,7 @@ ThreadMaintenance is the SOLE action that may delete, restructure, or compress t
 
 Inputs:
 - plans/thread.md
-- plans/config.json (workflow configuration — check before pruning; also defines workspace.primary_repo and workspace.shared_repos for scope routing)
+- plans/config.json (workflow configuration — check before pruning; also defines workspace.primary_repo / workspace.shared_repos for scope routing and `status_updates` for STATUS gating)
 - plans/MILESTONE.md
 - plans/DECISIONS.md (project-specific architectural choices)
 - plans/STANDARDS.md (team-level rules portable across projects)
@@ -100,8 +100,14 @@ Instructions:
    On a subsequent run where the human has rejected proposals: leave the source
    entries unchanged. Note the rejection briefly in plans/thread.md.
 
-7) Update plans/STATUS.md (mandatory) noting maintenance occurred (and any
-   promotion proposals/executions).
+7) Update plans/STATUS.md (config-gated):
+   - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
+   - If `status_updates = "every_action"`:
+     - Refresh the `**Update configuration:**` line at top
+     - Add a Recent bullet noting maintenance occurred (and any promotion
+       proposals/executions).
+   - Otherwise: SKIP. ThreadMaintenance is housekeeping, not a structural transition;
+     downstream PM.StatusUpdate will summarize if relevant.
 
 8) Update plans/state.json:
    - last_action.action_id = PM.ThreadMaintenance

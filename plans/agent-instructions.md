@@ -13,7 +13,9 @@ artifacts live in the `plans/` directory. Read `plans/README.md` for the full sp
    task, constraints, and exact instructions
 5. Read ALL files listed in the action's `inputs` — this is your full context
 6. Execute exactly what the template instructs (bounded to that one task)
-7. Update ALL files listed in `required_outputs` — this always includes `plans/STATUS.md`
+7. Update the files listed in `required_outputs`, following the template's exact
+   instructions. Some writes — notably `plans/STATUS.md` — are config-gated, so do
+   what the template says rather than treating any output as mandatory.
 8. Update `plans/state.json` with `last_action`, `next_action_id`, and `pause_type`
    as specified by the template
 9. Stop. You are done when state.json is updated and all required outputs are written.

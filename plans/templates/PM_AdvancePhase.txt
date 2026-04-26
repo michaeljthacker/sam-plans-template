@@ -5,6 +5,7 @@ Goal: Advance the workflow to the next Phase after the current Phase has been ap
 
 Inputs:
 - plans/state.json (routing + context — current phase_id)
+- plans/config.json (workflow configuration — read `status_updates`)
 - plans/MILESTONE.md (phase list — to determine next Phase)
 - plans/STATUS.md (current snapshot)
 
@@ -15,10 +16,15 @@ Instructions:
      - Advance to the next Phase
    - If the current Phase is the LAST Phase in the milestone:
      - The milestone is complete — route to PM.MilestoneCloseout instead
-3) Update plans/STATUS.md (mandatory):
-   - Now: update Phase ID to the new Phase
-   - Recent: "PM.AdvancePhase — advanced from <old Phase> to <new Phase>"
-   - Next: "Staff.DraftQuestions for <new Phase>"
+3) Update plans/STATUS.md (config-gated):
+   - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
+   - If `status_updates = "every_action"`:
+     - Refresh the `**Update configuration:**` line at top
+     - Now: update Phase ID to the new Phase
+     - Recent: "PM.AdvancePhase — advanced from <old Phase> to <new Phase>"
+     - Next: "Staff.DraftQuestions for <new Phase>"
+   - Otherwise: SKIP. STATUS will lag by one phase under non-`every_action` settings —
+     the next end-of-phase PM.StatusUpdate refreshes Now/Next.
 4) Update plans/state.json:
    - last_action.action_id = PM.AdvancePhase
    - last_action.result = "ok"

@@ -15,7 +15,7 @@ plan.
 
 Inputs:
 - plans/state.json (current position + context)
-- plans/config.json (workspace.shared_repos for scope routing)
+- plans/config.json (workspace.shared_repos for scope routing; `status_updates` for STATUS gating + reroute)
 - plans/BUILD.md (milestone breakdown — may need to change)
 - plans/MILESTONE.md (phase breakdown for current milestone — may need to change)
 - plans/STATUS.md (current snapshot)
@@ -60,23 +60,45 @@ Instructions:
    - Append a plans/thread.md entry: `### Principal.PlanDiversion — <date>` summarizing
      the diversion and the resume point.
 
-5) Update plans/STATUS.md (mandatory):
-   - Recent: "Principal.PlanDiversion — <one-line summary of what changed>"
-   - Next: the action you are routing to in step 6
+5) Update plans/STATUS.md (config-gated):
+   - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
+   - If `status_updates = "every_action"`:
+     - Refresh the `**Update configuration:**` line at top
+     - Recent: "Principal.PlanDiversion — <one-line summary of what changed>"
+     - Next: the action you are routing to in step 6
+   - Otherwise: SKIP. The downstream PM.StatusUpdate (inserted by step 6 routing
+     for scopes (a)/(b), or by Human.ApproveMilestone/Human.ApproveBuild for
+     scopes (c)/(d)) will refresh STATUS for this transition.
 
 6) Update plans/state.json:
    - last_action.action_id = Principal.PlanDiversion
    - last_action.result = "ok"
+   - Re-read `status_updates` from plans/config.json (default: "pm_only" if missing).
+     For scopes (a) and (b) only, the routing changes based on this setting so the
+     diversion is captured in STATUS via PM.StatusUpdate. Scopes (c) and (d) always
+     route to a Human.*Approv* action, which itself fans through PM.StatusUpdate
+     under non-`every_action` settings — so their routing is unchanged here.
    - Route to the correct re-approval or resume point based on scope class:
      - (a) Note only:
-       - next_action_id = the prior next_action_id (the action the workflow was paused
-         at before the diversion — preserve it from context if known, otherwise the
-         action that fits the current phase position)
-       - pause_type = "continue"
+       - Determine the resume target: the action the workflow was paused at before
+         the diversion (preserve from context if known, otherwise the action that
+         fits the current phase position). Call this <resume_target>.
+       - If `status_updates = "every_action"`:
+         - next_action_id = <resume_target>
+         - pause_type = "continue"
+       - Otherwise:
+         - next_action_id = PM.StatusUpdate
+         - pause_type = "continue"
+         - Set context.notes = "After StatusUpdate: proceed to <resume_target>"
      - (b) New steps:
-       - next_action_id = Staff.DraftQuestions
-       - pause_type = "continue"
        - phase_id stays at the current Phase; step_id = null
+       - If `status_updates = "every_action"`:
+         - next_action_id = Staff.DraftQuestions
+         - pause_type = "continue"
+       - Otherwise:
+         - next_action_id = PM.StatusUpdate
+         - pause_type = "continue"
+         - Set context.notes = "After StatusUpdate: proceed to Staff.DraftQuestions"
      - (c) New / restructured Phases (MILESTONE.md changed):
        - next_action_id = Human.ApproveMilestone
        - pause_type = "decision"

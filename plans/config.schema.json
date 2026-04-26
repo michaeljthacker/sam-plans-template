@@ -39,6 +39,12 @@
       "enum": ["required", "auto"],
       "default": "required"
     },
+    "status_updates": {
+      "type": "string",
+      "description": "How often plans/STATUS.md is updated. 'every_action' = every action that currently writes STATUS continues to (backward compatible). 'pm_only' = only PM.StatusUpdate writes STATUS; other actions skip the write. Routing inserts PM.StatusUpdate after Human.ApproveBuild, Human.ApproveMilestone, and Principal.PlanDiversion (scopes a/b) so major transitions are still captured (default). 'every_milestone' = like pm_only, but PM.StatusUpdate writes only on the last phase of each milestone. 'never' = STATUS is not updated (Product.ProductVision creates a disabled stub; PM.StatusUpdate normalizes to the stub if it sees a non-stub file). Under any setting except every_action, expect a one-phase STATUS lag during transitions.",
+      "enum": ["every_action", "pm_only", "every_milestone", "never"],
+      "default": "pm_only"
+    },
     "workspace": {
       "type": "object",
       "description": "Multi-root workspace configuration. Defines the primary repo (which owns plans/) and any shared repos that receive code/STANDARDS/DECISIONS updates without their own plans/ wrapper. For single-repo projects, define primary_repo and leave shared_repos empty. SAM never infers the primary repo from cwd or '.'; it must be explicit.",

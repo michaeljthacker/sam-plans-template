@@ -11,7 +11,7 @@ This is a SINGLE micro-chunk of execution, not an entire milestone.
 
 Inputs:
 - plans/state.json (routing + context)
-- plans/config.json (workflow configuration — read `code_review` and `workspace`)
+- plans/config.json (workflow configuration — read `code_review`, `workspace`, and `status_updates`)
 - plans/MILESTONE.md (what to build, acceptance criteria)
 - plans/thread.md (answers to questions; constraints)
 - plans/DECISIONS.md (project-specific architectural choices)
@@ -47,9 +47,13 @@ Instructions:
        boundary is visible in the log)
      - Acceptance criteria checklist
      - Any known risks or trade-offs
-5) Update plans/STATUS.md (mandatory):
-   - Add a bullet to Recent describing what was implemented
-   - Update Blockers if any emerged
+5) Update plans/STATUS.md (config-gated):
+   - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
+   - If `status_updates = "every_action"`:
+     - Refresh the `**Update configuration:**` line at top
+     - Add a bullet to Recent describing what was implemented
+     - Update Blockers if any emerged
+   - Otherwise: SKIP. The next PM.StatusUpdate will summarize the implementation.
 6) Update plans/state.json:
    - last_action.action_id = Staff.ImplementationExecution
    - If implementation is complete and ready for review:

@@ -11,7 +11,7 @@ This action always runs after Principal.CodeReview. Check plans/state.json
 Inputs:
 - plans/thread.md (review feedback)
 - Code changes / repository state
-- plans/config.json (workflow configuration — read `re_review_trigger` setting)
+- plans/config.json (workflow configuration — read `re_review_trigger`, `workspace`, and `status_updates`)
 - plans/MILESTONE.md (acceptance criteria)
 - plans/DECISIONS.md (project-specific architectural choices)
 - plans/STANDARDS.md (team-level rules portable across projects)
@@ -83,8 +83,12 @@ Instructions:
    - For any change inside a `workspace.shared_repos[].path`, prefix that bullet with
      "shared scope (<repo name>):" so the workspace boundary is visible in the log.
    - Note any follow-up questions if something was unclear.
-6) Update plans/STATUS.md (mandatory):
-   - Add a bullet summarizing reconciliation.
+6) Update plans/STATUS.md (config-gated):
+   - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
+   - If `status_updates = "every_action"`:
+     - Refresh the `**Update configuration:**` line at top
+     - Add a bullet summarizing reconciliation.
+   - Otherwise: SKIP. The PM.StatusUpdate that runs next will summarize.
 7) Update plans/state.json:
    - last_action.action_id = Staff.ReviewReconciliation
    - last_action.result = "ok"

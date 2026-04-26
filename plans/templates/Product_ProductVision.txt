@@ -7,6 +7,7 @@ This is the FIRST action in a new Build. The human has provided a project idea (
 
 Inputs:
 - plans/state.json (routing + context)
+- plans/config.json (workflow configuration — read `status_updates` for STATUS init)
 - plans/thread.md (project idea, answers to setup questions)
 
 Instructions:
@@ -33,10 +34,21 @@ Instructions:
    - Success criteria: measurable outcomes
    - Milestones: propose a reasonable milestone breakdown (M1, M2, …)
    - Risks / assumptions
-4) Initialize plans/STATUS.md with current state:
-   - Now section: Build ID, Milestone M1, no Phase yet
-   - Recent: "Product.ProductVision completed — README.md and BUILD.md drafted"
-   - Next: "Principal.BuildReview to validate feasibility"
+4) Initialize plans/STATUS.md (this action always creates the file — it is the
+   one unconditional STATUS write in the lifecycle):
+   - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
+   - If `status_updates = "never"`: write the disabled stub and stop:
+     ```
+     # STATUS
+
+     _(STATUS updates disabled via config: status_updates=never)_
+     ```
+   - Otherwise, write the normal initial snapshot:
+     - Top: `**Update configuration:** ` + the current `status_updates` value
+     - Now section: Build ID, Milestone M1, no Phase yet
+     - Blockers: None
+     - Recent: "Product.ProductVision completed — README.md and BUILD.md drafted"
+     - Next: "Principal.BuildReview to validate feasibility"
 5) Update plans/state.json:
    - last_action.action_id = Product.ProductVision
    - last_action.result = "ok"

@@ -76,9 +76,25 @@ Template filenames mirror action IDs with underscores: `Staff_DraftQuestions.txt
 | `documentation_update` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | When Writer.DocumentationUpdate runs |
 | `review_strictness` | `strict` \| `balanced` \| `pragmatic` | `balanced` | Threshold for REQUIRED vs. SUGGESTED in code review |
 | `re_review_trigger` | `required` \| `auto` | `required` | Whether code changes in reconciliation always trigger re-review |
+| `status_updates` | `every_action` \| `pm_only` \| `every_milestone` \| `never` | `pm_only` | How often `STATUS.md` is written (see **STATUS.md updates** below) |
 | `workspace` | object | single-repo placeholder | Multi-root workspace: primary repo + shared repos (see below) |
 
 For `every_milestone` options: the step runs only on the **last phase** of each milestone. Templates consult `plans/config.json` when making routing decisions. See `plans/config.schema.json` for full descriptions and `plans/FORMATS.md` for the file format.
+
+### STATUS.md updates
+
+`status_updates` controls how often `plans/STATUS.md` is rewritten. The four settings:
+
+| Value | Behavior |
+|-------|----------|
+| `every_action` | Every action that touches STATUS continues to write it (legacy/full-cadence). |
+| `pm_only` (default) | Only `PM.StatusUpdate` writes STATUS. Routing inserts `PM.StatusUpdate` after `Human.ApproveBuild`, `Human.ApproveMilestone`, and `Principal.PlanDiversion` (note-only / new-steps scopes) so build, milestone, and re-planning transitions are still captured. `Human.PhaseApproval` does **not** route through PM.StatusUpdate — the pre-approval `PM.StatusUpdate` already covered the phase end, and double-writing would be redundant. |
+| `every_milestone` | Like `pm_only`, but `PM.StatusUpdate` writes only on the last phase of each milestone. |
+| `never` | STATUS is not written. `Product.ProductVision` creates a disabled stub on first run. If `PM.StatusUpdate` ever runs and finds a non-stub STATUS file (e.g., the user just switched to `never`), it normalizes the file to the stub. |
+
+Under `pm_only` and `every_milestone` STATUS will lag by one phase across phase transitions (the pre-approval write captures the just-completed phase; `Now:` updates to the new phase only at the next end-of-phase write). `state.json` is correct throughout.
+
+Every action that writes STATUS refreshes a top-of-file line — `**Update configuration:** status_updates=<value>` — so a reader can see the cadence STATUS is being kept at.
 
 ## Multi-root workspaces
 
@@ -126,7 +142,7 @@ for the promotion protocol.
 
 ### Source of truth
 - `plans/state.json` is authoritative for: **what action happens next** (validated by `plans/state.schema.json`)
-- `plans/STATUS.md` is authoritative for: **human-readable snapshot** (must be updated every action)
+- `plans/STATUS.md` is authoritative for: **human-readable snapshot**. Update cadence is controlled by `status_updates` in `config.json` (see **STATUS.md updates** above) — by default, only `PM.StatusUpdate` writes STATUS, with routing fans through it for major transitions.
 
 ### Pause model
 Every action completes, updates state, and **stops**. Prompts never chain automatically.
@@ -150,8 +166,7 @@ Each action is small and bounded. A typical workflow is a sequence of micro-chun
 4. Provide the AI the listed `inputs`
 5. AI must:
    - do exactly the task (bounded)
-   - update all `required_outputs`
-   - update `plans/STATUS.md` (mandatory every action)
+   - update all `required_outputs` that the template instructs it to write (some outputs, notably `plans/STATUS.md`, are config-gated — see **STATUS.md updates**)
    - update `plans/state.json` with `last_action`, `next_action_id`, and `pause_type`
 6. Stop. The workflow pauses until the human triggers the next action.
 
@@ -186,7 +201,7 @@ Each Phase follows this sequence:
 | 3 | `Staff.ImplementationExecution` | Implement the Phase (≥1 commit) | — |
 | 4 | `Principal.CodeReview` | Review implementation | `code_review`, `review_strictness` |
 | 5 | `Staff.ReviewReconciliation` | Address feedback + triage suggestions (targeted re-review if code changed) | `re_review_trigger` |
-| 6 | `PM.StatusUpdate` | Update STATUS/BACKLOG/CHANGELOG | — |
+| 6 | `PM.StatusUpdate` | Update STATUS/BACKLOG/CHANGELOG | `status_updates` (controls STATUS write) |
 | 7 | `Writer.DocumentationUpdate` | Update docs (optional/skippable) | `documentation_update` |
 | 8 | `Human.PhaseApproval` | Human confirms; commit | `formal_approval` |
 | 9 | `PM.AdvancePhase` | Increment phase_id; set up next cycle | — |

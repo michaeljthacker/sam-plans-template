@@ -175,7 +175,7 @@ Bug fixes and usability improvements surfaced by real-world usage (discussion-gu
 
 ---
 
-## Multi-root workspace awareness — Planned
+## Multi-root workspace awareness
 
 Foundational support for SAM operating across multiple repos in a VS Code multi-root
 workspace (e.g., a frontend project repo plus a shared backend repo such as `mjt.pub`).
@@ -257,7 +257,7 @@ within a single Role.Task action.
 
 ---
 
-## DECISIONS / STANDARDS discipline — Planned
+## DECISIONS / STANDARDS discipline
 
 Tighten what gets recorded in `DECISIONS.md` / `STANDARDS.md`. Current behavior produces
 low-signal entries (e.g., "we chose not to add a flag to this function") that drown out
@@ -304,7 +304,7 @@ long-term" line; if rationale is weak or absent, the entry shouldn't exist.
 
 ---
 
-## Build approval gate & plan diversion — Planned
+## Build approval gate & plan diversion
 
 New lifecycle actions: human build-approval gate and mid-flight re-planning.
 
@@ -340,23 +340,24 @@ SAM currently has no action that modifies the plan once execution begins. When r
 
 ---
 
-## STATUS.md update frequency — Planned
+## STATUS.md update frequency
 
 STATUS.md reduction. Currently every action must update STATUS.md, which largely duplicates state.json. Make update frequency configurable, defaulting to PM-only.
 
 ### STATUS.md config option
 
-- [ ] Add `status_updates` key to `config.schema.json` — enum: `every_action` | `pm_only` | `every_milestone` | `never`, default: `pm_only`
+- [x] Add `status_updates` key to `config.schema.json` — enum: `every_action` | `pm_only` | `every_milestone` | `never`, default: `pm_only`
   - `every_action` — current behavior; every action writes STATUS.md (backward compatible)
-  - `pm_only` — only `PM.StatusUpdate` writes STATUS.md; all others skip it (new default — state.json + thread.md are sufficient for inter-action state)
+  - `pm_only` — only `PM.StatusUpdate` writes STATUS.md; all others skip it (new default — state.json + thread.md are sufficient for inter-action state). Routing inserts `PM.StatusUpdate` after `Human.ApproveBuild`, `Human.ApproveMilestone`, and `Principal.PlanDiversion` (note-only / new-steps scopes) so major transitions are still captured. `Human.PhaseApproval` does not reroute — the pre-approval `PM.StatusUpdate` already covers the phase end.
   - `every_milestone` — STATUS.md updated only on the last phase of each milestone (by `PM.StatusUpdate`)
-  - `never` — STATUS.md is not updated; state.json + thread.md are the sole records
-- [ ] Update `plans/config.json` with new key (default `pm_only`)
-- [ ] Update `PM_StatusUpdate.txt` — always writes STATUS.md regardless of config (it's the PM's primary job)
-- [ ] Update all other action templates that currently mandate STATUS.md updates — check `status_updates` config before writing
-- [ ] Update `plans/FORMATS.md` — note that STATUS.md update frequency is configurable
-- [ ] Update `plans/README.md` — add `status_updates` to Configuration table, update "STATUS.md is authoritative for human-readable snapshot" language to reflect new default
-- [ ] Update `plans/copilot-instructions.md` — adjust the "update STATUS.md every action" rule to reference config
+  - `never` — STATUS.md is not updated; `Product.ProductVision` writes a disabled stub on first run, and `PM.StatusUpdate` normalizes any non-stub STATUS file to the stub if invoked under this setting
+- [x] Update `plans/config.json` with new key (default `pm_only`)
+- [x] Update `PM_StatusUpdate.txt` — handles both phase-end and hand-off invocations (via `context.notes` "After StatusUpdate: proceed to <X>"); applies `every_milestone` last-phase gate; applies `never` stub-normalization
+- [x] Update all other action templates that currently mandate STATUS.md updates — check `status_updates` config before writing. Templates updated: `Product_ProductVision` (always creates STATUS, with stub under `never`), `Principal_BuildReview`, `Principal_MilestonePlan`, `Staff_DraftQuestions`, `Principal_AnswerQuestions`, `Staff_ImplementationExecution`, `Principal_CodeReview`, `Staff_ReviewReconciliation`, `Writer_DocumentationUpdate`, `Human_ApproveBuild` (+ routing reroute), `Human_ApproveMilestone` (+ routing reroute), `Human_PhaseApproval`, `PM_AdvancePhase`, `PM_MilestoneCloseout`, `PM_ThreadMaintenance`, `Principal_PlanDiversion` (+ routing reroute for scopes a/b)
+- [x] Update `plans/FORMATS.md` — STATUS.md "Updated by:" line + new `Update configuration:` line in the snapshot template + `status_updates` row in the config table + disabled-stub format
+- [x] Update `plans/README.md` — added `status_updates` to Configuration table, new "STATUS.md updates" subsection, softened "STATUS.md is authoritative" language, updated "Configurable?" column for `PM.StatusUpdate` in phase execution table
+- [x] Update `plans/copilot-instructions.md` — `plans/copilot-instructions.md` is a one-line pointer to `plans/agent-instructions.md`, so updated step 7 there to reference `status_updates` config instead of treating STATUS as unconditional
+- [x] Add `plans/config.json` to registry.json inputs for the 9 actions that didn't already list it
 
 ---
 

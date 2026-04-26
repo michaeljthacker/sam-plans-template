@@ -23,6 +23,7 @@ Do:
 
 Inputs:
 - plans/state.json
+- plans/config.json (workflow configuration — read `status_updates`)
 - plans/BUILD.md (the Build plan to review)
 - plans/thread.md (Principal.BuildReview feedback, if any)
 - plans/STATUS.md
@@ -49,9 +50,18 @@ Instructions:
    - If approved: update plans/state.json:
      - last_action.action_id = Human.ApproveBuild
      - last_action.result = "approved"
-     - next_action_id = Principal.MilestonePlan
-     - pause_type = "continue"
-     - Update plans/STATUS.md noting Build approval
+     - Read `status_updates` from plans/config.json (default: "pm_only" if missing):
+       - If `status_updates = "every_action"`: route directly to Principal.MilestonePlan.
+         - next_action_id = Principal.MilestonePlan
+         - pause_type = "continue"
+         - Update plans/STATUS.md: refresh `**Update configuration:**` line; add a
+           Recent bullet noting Build approval.
+       - Otherwise (`pm_only`, `every_milestone`, `never`): route through PM.StatusUpdate
+         so the major transition is captured (or, under `never`, normalized to stub).
+         - next_action_id = PM.StatusUpdate
+         - pause_type = "continue"
+         - Set context.notes = "After StatusUpdate: proceed to Principal.MilestonePlan"
+         - Do NOT write plans/STATUS.md from this action.
    - If changes needed: update plans/state.json:
      - last_action.action_id = Human.ApproveBuild
      - last_action.result = "changes_required"
@@ -63,6 +73,9 @@ Instructions:
          technical pass is appropriate
      - Add a note to plans/thread.md describing the requested changes and which
        artifact should be revised
+     - STATUS.md write: same gating as the approved path — if `status_updates =
+       "every_action"`, append a Recent bullet noting changes were requested;
+       otherwise skip.
 
 Output format:
 - A short briefing titled "Build Approval Required"
