@@ -74,6 +74,9 @@ Instructions:
 4) Commit any code changes.
    - For shared-repo code edits, commit inside the shared repo using its own commit
      conventions. The primary repo's commit covers the rest.
+   - Do NOT prefix commit messages with `--AUTO-`. That prefix is reserved for
+     automated SAM commits made by `plans/commit.ps1` so organic and automated
+     commits stay distinguishable in `git log`.
 5) Append a new entry to plans/thread.md:
    - Use the entry format: `---` then `### Staff.ReviewReconciliation — <date>`
    - For each REQUIRED item: note how it was addressed.

@@ -175,228 +175,69 @@ Bug fixes and usability improvements surfaced by real-world usage (discussion-gu
 
 ---
 
-## Multi-root workspace awareness
+## v1.4.0 — Completed (2026-04-26)
+
+Five feature areas land together: multi-root workspace support, two new lifecycle
+actions (build approval gate + plan diversion), configurable STATUS.md update
+frequency, structural DECISIONS/STANDARDS discipline, and a helper-script
+ecosystem (status, commit, sync). All changes are additive or backward-compatible
+via config; no schema breaking changes. Architectural milestones (CLI rewrite,
+modular workflow) remain parked at v3+/v4+.
+
+### Multi-root workspace awareness
 
 Foundational support for SAM operating across multiple repos in a VS Code multi-root
-workspace (e.g., a frontend project repo plus a shared backend repo such as `mjt.pub`).
-Only the primary repo owns `plans/`; shared repos receive durable, platform-level
+workspace. Primary repo owns `plans/`; shared repos receive durable, platform-level
 artifact updates (code, `STANDARDS.md`, `DECISIONS.md`) without a `plans/` wrapper.
 
-### Workspace config
+- [x] Added `workspace` block to `plans/config.schema.json` — `primary_repo: { name, path, owns_plans: true }`, `shared_repos[]: [{ name, path, role }]`. Paths absolute or workspace-relative; SAM never infers from cwd. Single-repo projects omit `shared_repos`
+- [x] Updated `plans/config.json` with default `workspace` block (primary only); documented in `plans/FORMATS.md`
+- [x] Documented scope-of-change routing: project artifacts default to `primary_repo/plans/`; shared-repo writes limited to code under `shared_repos[].path` plus that repo's `STANDARDS.md` / `DECISIONS.md` (no `plans/` wrapper). Detection by path match against `shared_repos[].path` — not `.code-workspace`
+- [x] Escalation: `PM.ThreadMaintenance` proposes promotion candidates inline during pruning; human approves/rejects in chat, ThreadMaintenance carries out the shared-repo write — all within one action. No automatic promotion, no new actions
+- [x] Updated DECISIONS/STANDARDS-touching prompts (`Principal.AnswerQuestions`, `PM.ThreadMaintenance`, `Staff.ReviewReconciliation`) to consult `workspace.shared_repos` and route by scope; `Staff.ImplementationExecution` flags shared-repo edits with explicit "shared scope" note
+- [x] Updated `plans/agent-instructions.md` (canonical source) with multi-root rules and the "primary repo owns `plans/`" invariant — flows through to `plans/copilot-instructions.md`, `plans/CLAUDE.md`, and the deployed `.github/copilot-instructions.md` / root `CLAUDE.md`
+- [x] Added "Multi-root workspaces" section to `plans/README.md` (chose a section over a separate `WORKSPACE.md` to keep SAM's doc surface inside `plans/`); quickstart references the workspace config
+- [x] Verified with ajv-cli (draft-07): default and realistic multi-root configs pass; rejects `owns_plans: false`, empty `path`, additionalProperties. Walked end-to-end implementation and escalation scenarios (project DECISIONS for project-scoped findings; shared DECISIONS only after promotion + approval)
 
-- [x] Add a `workspace` block to `plans/config.schema.json`:
-  - `primary_repo`: `{ name, path, owns_plans: true }` — the repo that owns `plans/`
-  - `shared_repos[]`: `[{ name, path, role }]` — repos receiving code + standards/decisions updates
-  - `path` accepts absolute or workspace-relative paths; SAM never infers the primary repo from cwd or `"."`
-  - Single-repo projects omit `shared_repos`
-- [x] Update `plans/config.json` with a default `workspace` block (primary only, empty `shared_repos`)
-- [x] Update `plans/FORMATS.md` `config.json` section to document the new block and the explicit-identification rule
+### DECISIONS / STANDARDS discipline
 
-### Artifact routing
+Tighten what gets recorded. Every entry now requires a `**Why this matters long-term:**` line — if rationale is weak, the entry shouldn't exist. Stops low-signal entries from drowning out durable rationale.
 
-- [x] Document scope-of-change routing in `plans/FORMATS.md` and agent prompts:
-  - Default: all planning artifacts go to `primary_repo/plans/`
-  - Shared-repo writes are limited to: code under `shared_repos[].path`, plus
-    `shared_repos[].path/STANDARDS.md` and `shared_repos[].path/DECISIONS.md` (no `plans/` wrapper)
-  - Project-scoped decisions *about* shared code stay in `primary_repo/plans/DECISIONS.md`
-- [x] Detection rule: scope is determined by path match against `shared_repos[].path`.
-  Edits inside a shared-repo path are shared scope; everything else is project scope.
-  `.code-workspace` may inform context but is not authoritative
+- [x] Added recording rule to FORMATS.md DECISIONS/STANDARDS sections: "Record only if future work would benefit from knowing the rationale." Included positive examples (architectural patterns, testing standards, API design principles) and negative examples (one-off implementation details, local code structure choices)
+- [x] Updated DECISIONS.md and STANDARDS.md entry formats in FORMATS.md to require `**Why this matters long-term:**`; updated placeholders in `plans/DECISIONS.md` and `plans/STANDARDS.md`
+- [x] Embedded classification heuristic ("will this matter in 3 months? does it affect multiple features? is there a non-obvious rationale?") and three-bucket framing (`implementation detail` / `project decision` / `shared/platform standard`) in `Principal.AnswerQuestions`, `PM.ThreadMaintenance`, `Staff.ReviewReconciliation`. Behavior, not file metadata — labels never written into the .md files
+- [x] Resolved as **do not update**: `example/plans/DECISIONS.md` / `STANDARDS.md`. `example/` is a frozen v1.1.0–v1.2.1 snapshot from a real project; updating to match newer conventions would destroy its authenticity. See D-023
 
-### Escalation: project decision → shared standard
+### Build approval gate & plan diversion
 
-No automatic promotion and no new actions. `PM.ThreadMaintenance` proposes promotion
-candidates inline during its normal pruning pass; the human approves (or rejects) in
-the chat, and ThreadMaintenance carries out (or skips) the shared-repo write — all
-within a single Role.Task action.
+Two new lifecycle actions: human-approval gate before milestone planning, and a formal mid-flight re-planning path so BACKLOG stops becoming a junk drawer.
 
-- [x] Update `PM_ThreadMaintenance.txt` so that when it encounters a primary-repo
-  DECISIONS/STANDARDS entry whose rationale generalizes, it surfaces a promotion
-  proposal in the chat (entry text + target shared repo + brief justification) and
-  waits for human approval before writing to the shared repo
-- [x] Spec the proposal payload (entry, source path, proposed target path, rationale)
-  and the approval/rejection responses ThreadMaintenance must accept
-- [x] On approval: ThreadMaintenance appends to the shared repo's `STANDARDS.md` /
-  `DECISIONS.md` and removes/marks the source entry in the primary repo as appropriate.
-  On rejection: the entry stays in the primary repo unchanged
+- [x] `Human.ApproveBuild` — runs after `Principal.BuildReview`, before `Principal.MilestonePlan`. Human reviews `plans/BUILD.md` for scope, goals, milestone breakdown. Approve → `Principal.MilestonePlan`; changes requested → back to `Product.ProductVision` or `Principal.BuildReview` (human specifies). Pause type: `decision`. Quickstart now has 4 build-init steps instead of 3
+- [x] `Principal.PlanDiversion` — human-initiated re-planning. Principal assesses scope (new milestone / new phase / extra steps / note-only) and proposes changes interactively before files are modified. Updates BUILD.md (if milestones change), MILESTONE.md (if phases change), DECISIONS.md (rationale), thread.md (log), state.json (resume point). Routes based on artifact edited: BUILD.md → `Human.ApproveBuild`; MILESTONE.md → `Human.ApproveMilestone`; new steps only → `Staff.DraftQuestions`; minor → resume. Pause type: `decision`
+- [x] Both actions added to `registry.json` (inputs, outputs, gates) and `state.schema.json` `action_id` enum
+- [x] `Principal_BuildReview.txt` routing updated to `Human.ApproveBuild` (was `Principal.MilestonePlan`); README lifecycle docs and action catalog updated
 
-### Templates and instructions
+### STATUS.md update frequency
 
-- [x] Update prompts that may write to DECISIONS/STANDARDS (`Principal.AnswerQuestions`,
-  `PM.ThreadMaintenance`, `Staff.ReviewReconciliation`) to consult `workspace.shared_repos`,
-  classify scope, and route writes accordingly
-- [x] Update `Staff.ImplementationExecution` to flag shared-repo edits in `thread.md`
-  with an explicit "shared scope" note
-- [x] Update `plans/agent-instructions.md`, `plans/copilot-instructions.md`, root
-  `.github/copilot-instructions.md`, and root `CLAUDE.md` with multi-root rules and
-  the "primary repo owns `plans/`" invariant
-  - Updated `plans/agent-instructions.md`. `plans/copilot-instructions.md` and
-    `plans/CLAUDE.md` are one-line pointers to `agent-instructions.md`, so the rules
-    flow through to the `.github/copilot-instructions.md` and root `CLAUDE.md` copies
-    that quickstart deploys into target projects
+STATUS.md was being written by every action — largely duplicating state.json. Now configurable via `status_updates`, defaulting to `pm_only`.
 
-### Documentation
+- [x] Added `status_updates` to `config.schema.json` — enum: `every_action` | `pm_only` | `every_milestone` | `never`, default **`pm_only`**:
+  - `every_action` — prior behavior preserved as opt-in
+  - `pm_only` (new default) — only `PM.StatusUpdate` writes STATUS.md. Routing inserts it after `Human.ApproveBuild`, `Human.ApproveMilestone`, and `Principal.PlanDiversion` (note-only / new-steps scopes) so transitions are still captured. `Human.PhaseApproval` doesn't reroute — the pre-approval `PM.StatusUpdate` already covers phase end
+  - `every_milestone` — last phase of each milestone only
+  - `never` — `Product.ProductVision` writes a disabled stub on first run; `PM.StatusUpdate` normalizes any non-stub file back to the stub
+- [x] Updated `plans/config.json` with new key; `PM_StatusUpdate.txt` handles phase-end and hand-off invocations (via `context.notes` "After StatusUpdate: proceed to <X>"), applies the `every_milestone` last-phase gate and `never` stub-normalization
+- [x] Updated 16 action templates to check `status_updates` before writing: `Product_ProductVision` (always creates STATUS, with stub under `never`), `Principal_BuildReview`, `Principal_MilestonePlan`, `Staff_DraftQuestions`, `Principal_AnswerQuestions`, `Staff_ImplementationExecution`, `Principal_CodeReview`, `Staff_ReviewReconciliation`, `Writer_DocumentationUpdate`, `Human_ApproveBuild` (+ reroute), `Human_ApproveMilestone` (+ reroute), `Human_PhaseApproval`, `PM_AdvancePhase`, `PM_MilestoneCloseout`, `PM_ThreadMaintenance`, `Principal_PlanDiversion` (+ reroute for scopes a/b)
+- [x] Updated `plans/FORMATS.md` (Updated by line, snapshot template's `Update configuration:` line, config table row, disabled-stub format), `plans/README.md` (Configuration table, "STATUS.md updates" subsection, softened "STATUS.md is authoritative" language, Configurable? column for `PM.StatusUpdate`), and `plans/agent-instructions.md` step 7
+- [x] Added `plans/config.json` to registry.json inputs for the 9 actions that didn't already list it
 
-- [x] Add a top-level `WORKSPACE.md` (or new section in `plans/README.md` — decide during
-  implementation) explaining multi-root setup, config example, and routing rules
-  - Chose a "Multi-root workspaces" section in `plans/README.md` over a separate file —
-    keeps the SAM doc surface inside `plans/`
-- [x] Update `plans/README.md` quickstart to mention workspace config for multi-root projects
+### Helper scripts & sync tooling
 
-### Verification
+Zero-install helpers (`plans/*.ps1`, plus one stdlib-only Python script). CLI upgrade to `sam <command>` deferred to v3+.
 
-- [x] Validate updated `config.json` against schema for both single-repo and multi-root cases
-  - Validated with ajv-cli (draft-07): shipped default and a realistic multi-root config
-    both pass; confirmed rejections for `owns_plans: false`, empty `path`, and additional
-    properties under `primary_repo`
-- [x] Walk a multi-repo implementation scenario: a phase touches both repos — confirm
-  artifact routing (project DECISIONS for project-scoped findings, shared DECISIONS only
-  after escalation + approval)
-- [x] Walk an escalation scenario end-to-end: AI proposes promotion → Human approves →
-  entry lands in the shared repo's `STANDARDS.md` / `DECISIONS.md`
-
----
-
-## DECISIONS / STANDARDS discipline
-
-Tighten what gets recorded in `DECISIONS.md` / `STANDARDS.md`. Current behavior produces
-low-signal entries (e.g., "we chose not to add a flag to this function") that drown out
-durable rationale. Enforce structurally: every entry requires a "Why this matters
-long-term" line; if rationale is weak or absent, the entry shouldn't exist.
-
-### Recording rule
-
-- [x] Add the refined rule to the DECISIONS and STANDARDS sections of `plans/FORMATS.md`:
-  > Record only if future work would benefit from knowing the rationale. If there is no
-  > meaningful rationale to preserve, don't log it.
-- [x] In `FORMATS.md`, list positive examples (architectural patterns, testing standards,
-  lint conventions, data model constraints, API design principles) and negative examples
-  (one-off implementation details, local code structure choices, temporary tradeoffs with
-  no long-term relevance)
-
-### Structural enforcement
-
-- [x] Update the DECISIONS.md entry format in `FORMATS.md` to require a
-  `**Why this matters long-term:**` line per entry
-- [x] Update the STANDARDS.md entry format the same way
-- [x] Update placeholders in `plans/DECISIONS.md` and `plans/STANDARDS.md` to show the
-  new structure
-
-### Agent heuristics (prompt-only, not file metadata)
-
-- [x] Embed the classification heuristic in prompts that may write entries
-  (`Principal.AnswerQuestions`, `PM.ThreadMaintenance`, `Staff.ReviewReconciliation`):
-  - "Will this matter in 3 months?"
-  - "Does this affect multiple features or systems?"
-  - "Is there a non-obvious rationale worth preserving?"
-- [x] Embed the three-bucket classification (`implementation detail` / `project decision` /
-  `shared/platform standard`) in the same prompts as a decision-making heuristic.
-  Do NOT write these labels into `DECISIONS.md` / `STANDARDS.md` files — behavior, not
-  metadata clutter
-
-### Worked example
-
-- [x] ~~Update `example/plans/DECISIONS.md` and `example/plans/STANDARDS.md` to demonstrate
-  the new structure with high-signal entries (each with a `Why this matters long-term` line)~~
-  **Resolved as: do not update.** `example/` is a frozen snapshot from a real project at
-  SAM v1.1.0–v1.2.1 (see `example/README.md` version note). Updating it to match newer
-  SAM conventions would destroy its authenticity. See root `DECISIONS.md` D-023.
-
----
-
-## Build approval gate & plan diversion
-
-New lifecycle actions: human build-approval gate and mid-flight re-planning.
-
-### Human.ApproveBuild
-
-Currently there's no human gate between `Principal.BuildReview` and `Principal.MilestonePlan`. The human should confirm build scope before planning begins. Named `Human.ApproveBuild` for consistency with `Human.ApproveMilestone`.
-
-- [x] Design `Human.ApproveBuild` action template
-  - Runs after `Principal.BuildReview`, before `Principal.MilestonePlan`
-  - Human reviews `plans/BUILD.md` for scope, goals, and milestone breakdown
-  - On approval: routes to `Principal.MilestonePlan`
-  - On changes requested: routes back to `Product.ProductVision` or `Principal.BuildReview` (human specifies)
-  - Pause type: `decision`
-- [x] Add `Human.ApproveBuild` to registry.json (inputs, outputs, gates)
-- [x] Add `Human.ApproveBuild` to state.schema.json `action_id` enum
-- [x] Update `Principal_BuildReview.txt` routing — currently routes to `Principal.MilestonePlan`, should route to `Human.ApproveBuild`
-- [x] Update plans/README.md — lifecycle docs, action catalog, quickstart sequence (now 4 build-init steps instead of 3)
-
-### Principal.PlanDiversion
-
-SAM currently has no action that modifies the plan once execution begins. When reality diverges, BACKLOG becomes a junk drawer and there's no formal re-planning path.
-
-- [x] Design `Principal.PlanDiversion` action template
-  - Human-initiated (user sets `next_action_id` or a helper triggers it)
-  - Principal assesses scope: new milestone, new phase, extra steps, or just a note
-  - Interactive: Principal proposes changes, user confirms before files are modified
-  - Updates BUILD.md (if milestones change), MILESTONE.md (if phases change), DECISIONS.md (rationale), thread.md (log), state.json (resume point)
-  - Routes based on which artifact was edited: `Human.ApproveBuild` (if BUILD.md changed — new/restructured milestones), `Human.ApproveMilestone` (if MILESTONE.md changed — new/restructured phases), `Staff.DraftQuestions` (new steps only), or resume previous position (minor change)
-  - Pause type: `decision`
-- [x] Add `Principal.PlanDiversion` to registry.json (inputs, outputs, gates)
-- [x] Add `Principal.PlanDiversion` to state.schema.json `action_id` enum
-- [x] Update plans/README.md — add to action catalog and lifecycle docs
-
----
-
-## STATUS.md update frequency
-
-STATUS.md reduction. Currently every action must update STATUS.md, which largely duplicates state.json. Make update frequency configurable, defaulting to PM-only.
-
-### STATUS.md config option
-
-- [x] Add `status_updates` key to `config.schema.json` — enum: `every_action` | `pm_only` | `every_milestone` | `never`, default: `pm_only`
-  - `every_action` — current behavior; every action writes STATUS.md (backward compatible)
-  - `pm_only` — only `PM.StatusUpdate` writes STATUS.md; all others skip it (new default — state.json + thread.md are sufficient for inter-action state). Routing inserts `PM.StatusUpdate` after `Human.ApproveBuild`, `Human.ApproveMilestone`, and `Principal.PlanDiversion` (note-only / new-steps scopes) so major transitions are still captured. `Human.PhaseApproval` does not reroute — the pre-approval `PM.StatusUpdate` already covers the phase end.
-  - `every_milestone` — STATUS.md updated only on the last phase of each milestone (by `PM.StatusUpdate`)
-  - `never` — STATUS.md is not updated; `Product.ProductVision` writes a disabled stub on first run, and `PM.StatusUpdate` normalizes any non-stub STATUS file to the stub if invoked under this setting
-- [x] Update `plans/config.json` with new key (default `pm_only`)
-- [x] Update `PM_StatusUpdate.txt` — handles both phase-end and hand-off invocations (via `context.notes` "After StatusUpdate: proceed to <X>"); applies `every_milestone` last-phase gate; applies `never` stub-normalization
-- [x] Update all other action templates that currently mandate STATUS.md updates — check `status_updates` config before writing. Templates updated: `Product_ProductVision` (always creates STATUS, with stub under `never`), `Principal_BuildReview`, `Principal_MilestonePlan`, `Staff_DraftQuestions`, `Principal_AnswerQuestions`, `Staff_ImplementationExecution`, `Principal_CodeReview`, `Staff_ReviewReconciliation`, `Writer_DocumentationUpdate`, `Human_ApproveBuild` (+ routing reroute), `Human_ApproveMilestone` (+ routing reroute), `Human_PhaseApproval`, `PM_AdvancePhase`, `PM_MilestoneCloseout`, `PM_ThreadMaintenance`, `Principal_PlanDiversion` (+ routing reroute for scopes a/b)
-- [x] Update `plans/FORMATS.md` — STATUS.md "Updated by:" line + new `Update configuration:` line in the snapshot template + `status_updates` row in the config table + disabled-stub format
-- [x] Update `plans/README.md` — added `status_updates` to Configuration table, new "STATUS.md updates" subsection, softened "STATUS.md is authoritative" language, updated "Configurable?" column for `PM.StatusUpdate` in phase execution table
-- [x] Update `plans/copilot-instructions.md` — `plans/copilot-instructions.md` is a one-line pointer to `plans/agent-instructions.md`, so updated step 7 there to reference `status_updates` config instead of treating STATUS as unconditional
-- [x] Add `plans/config.json` to registry.json inputs for the 9 actions that didn't already list it
-
----
-
-## Helper scripts & sync tooling — Planned
-
-Helper scripts and sync tooling. All helper scripts are `plans/*.ps1` for zero-install simplicity — just copy `plans/` and go. (CLI upgrade to `sam <command>` deferred to v3+.)
-
-### plans/status.ps1
-
-- [ ] Create `plans/status.ps1` — reads state.json and displays a formatted summary
-  - Current position: build, milestone, phase, step
-  - Last action: action_id, result, summary
-  - Next action: next_action_id, pause_type
-  - Active blockers (if any)
-  - Config summary (non-default values only)
-  - No clipboard copy (that's `next.ps1`'s job)
-
-### plans/commit.ps1
-
-- [ ] Create `plans/commit.ps1` — auto-commits with a SAM-formatted message
-  - Runs `git add -A; git commit -m "{message}"`
-  - Message format: `--AUTO-{build_id}-{milestone_id}-{phase_id}-{Role}.{Task}: {last_action.summary}` (all values from state.json)
-  - The `--AUTO-` prefix distinguishes automated SAM commits from manual ones
-  - **Template update:** Add instructions to all action templates that produce organic commits (e.g., `Staff.ImplementationExecution`) telling the AI to NOT use the `--AUTO-` prefix in manual commit messages, so automated vs. organic commits remain distinguishable
-  - **Design note:** Keep as a standalone script (single-purpose). Could later add a `-Commit` switch to `next.ps1` as a convenience alias, but separate scripts are simpler and composable.
-
-### plans/sam-update.py + sync-manifest.json
-
-- [ ] Add `plans/sam-update.py` script and `plans/sync-manifest.json` for updating SAM system files across projects
-  - **Problem:** When SAM system files or templates change, every project repo using SAM needs those updates — but only for system-level files. Instance-level files (BUILD.md, config.json, state.json, etc.) must never be overwritten.
-  - **Approach:**
-    - `sync-manifest.json` declares system-level files to copy and instance-level files to never touch (derived from the taxonomy in `plans/README.md`)
-    - `sam-update.py` reads the manifest and copies system files from a source SAM repo into the target project, including `copilot-instructions.md` → `.github/copilot-instructions.md`
-    - Dry-run by default; `--apply` flag to execute. Show diffs for files that already exist.
-    - Optionally stamp `plans/.sam-version` for tracking which SAM version a project is running
-  - **Invocation:** `python plans/sam-update.py [path/to/sam-template]` (path defaults to `SAM_TEMPLATE_PATH` env var if set)
-  - **Rationale:** Git submodules/subtrees/symlinks don't fit the selective, in-place update need. A manifest-driven script is explicit, maintainable, and lets SAM own the sync rules.
-  - **Note:** Both `sam-update.py` and `sync-manifest.json` are system-level files, so they get synced too — bootstrapping is the only manual copy.
-  - **Note:** This is the one Python script in the toolbox. It stays Python because it's the most complex helper (diffing, manifest parsing, cross-platform potential) and is a natural seed for a future CLI if that path is pursued.
+- [x] `plans/status.ps1` — formatted one-screen summary from `state.json` + `config.json`: position (`B1-M2-P3-S2`), pause_type, last_action, next_action_id, active blockers, non-default config values. Deliberately ignores `STATUS.md` — STATUS is human prose and lags under the `pm_only` default; using it would make the script lie. No clipboard copy (that's `next.ps1`'s job)
+- [x] `plans/commit.ps1` — runs `git add -A; git commit -m "<msg>"` with `--AUTO-{build_id}-{milestone_id}-{phase_id}-{Role.Task}: {last_action.summary}` (pre-phase actions drop the phase segment). The `--AUTO-` prefix marks SAM-automated commits. Updated the three templates that instruct organic commits (`Staff_ImplementationExecution`, `Staff_ReviewReconciliation`, `Human_PhaseApproval`) to forbid `--AUTO-` in manual messages
+- [x] `plans/sam-update.py` + `plans/sync-manifest.json` — manifest-driven sync of SAM system files into target projects without overwriting instance files. Manifest declares `system_files` (always synced), `instance_files` (never touched), `deploy_mappings` (system files that land outside `plans/`, e.g., `plans/copilot-instructions.md` → `.github/copilot-instructions.md`). Dry-run default; `--apply` writes files and stamps `plans/.sam-version`. Hand-rolled top-level config validator (~30 lines, zero deps — preserves the "just copy `plans/`" promise) audits user's `config.json` post-sync and reports REQUIRED / ERROR / WARN drift; exit code `2` for CI; never blocks the sync (chicken-and-egg). Invocation: `python plans/sam-update.py [path]`, falls back to `SAM_TEMPLATE_PATH` env var. Both files are themselves system-level so they self-update — bootstrapping is the only manual copy
 
 ---
 
