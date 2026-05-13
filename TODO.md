@@ -271,6 +271,14 @@ Small, prompt-and-script-only changes. No schema, routing, or config additions.
 
 Items parked until a clear trigger or sufficient friction warrants action.
 
+### Principal engineering-judgment lens — heavyweight version
+
+- [ ] Revisit if the v1.4.1 prompt-only "lite" lens proves insufficient in practice
+  - **Project posture config** — `config.json` knob like `project_posture: { current, target }` with values `prototype` / `mvp` / `production`. Drives both immediate Principal recommendations and long-term BACKLOG entries for one-way-door issues. ("We're scrappy now, but we want to be production — so flag the things that'll bite us later.")
+  - **Foundation checklist** — Principal systematically considers analytics, auth, payments, email, observability, marketing, etc., scoped to posture. Most prototypes don't need most of these; the goal is *thinking about it*, not building it.
+  - **Options-to-human flow** — for genuinely controversial or lock-in choices, Principal may present a slate rather than picking. Distinct from the lite version, which always picks and leaves a breadcrumb.
+  - **Trigger to reconsider:** the lite version misses something important in real use — e.g., AI quietly picks a one-way-door without flagging, or human keeps having to back out of foundational decisions made too early.
+
 ### Folder reorganization
 
 - [ ] Evaluate restructuring `plans/` to reduce top-level clutter
