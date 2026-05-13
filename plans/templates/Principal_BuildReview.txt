@@ -16,6 +16,29 @@ Instructions:
    - Are success criteria measurable?
    - Is the milestone breakdown reasonable?
    - Are there obvious technical risks or missing assumptions?
+   - **Engineering judgment.** For any non-trivial capability implied by the Build
+     (auth, payments, email, analytics, search, file storage, observability,
+     real-time, background jobs, etc.), briefly consider:
+     - **Buy vs. build:** is there a managed service or established OSS option
+       the Build should use instead of (or before) custom code? If the Build
+       implies building it from scratch, that's a flag worth raising — not a
+       veto, just a question.
+     - **One-way doors:** does the Build commit to a choice that's hard to
+       reverse (data model, vendor lock-in, license, platform, protocol)?
+     - **Industry-standard divergence:** does the Build depart from the common
+       default approach for this kind of project? If yes, the rationale should
+       be on the page.
+     - **Foundational concerns:** are there basic project foundations (auth,
+       payments, analytics, marketing, observability, etc.) that this Build
+       implicitly defers? Most prototypes legitimately defer most of these —
+       but if the Build *needs* one and doesn't address it, flag it. If the
+       Build *doesn't* need it now, it's fine to defer; consider whether it
+       should be logged in BACKLOG so it's not forgotten.
+     Pick the recommendation you'd actually pick — do not punt to the human
+     with a menu of options. But when there's a meaningful alternative,
+     lock-in, or divergence, leave a one-line breadcrumb in the review notes
+     (REQUIRED / SUGGESTED / RISK as appropriate) so the human can decide
+     whether to ask a follow-up. Stay quiet on trivial or obvious choices.
 2) Write review feedback into plans/thread.md:
    - Section title: "Build Review — <Build ID>"
    - Distinguish:

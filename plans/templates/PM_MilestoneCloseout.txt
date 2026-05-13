@@ -15,8 +15,10 @@ Inputs:
 Instructions:
 1) Verify all Phases in plans/MILESTONE.md are complete (cross-reference with STATUS.md).
 2) Update plans/CHANGELOG.md:
-   - Move items from "Unreleased" to a dated release section (use current date)
-   - Add a milestone summary entry: "Milestone <ID> complete — <goal>"
+   - Append a milestone summary entry under "Unreleased": "Milestone <ID> complete — <goal>"
+   - Do NOT move items from "Unreleased" to "Released". Milestones are *completed*,
+     not released. The "Unreleased" → "Released" move belongs to BUILD release
+     (when/if that action exists), not milestone closeout.
 3) Update plans/BACKLOG.md:
    - Remove items completed during this milestone
    - Carry forward unresolved items

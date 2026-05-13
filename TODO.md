@@ -245,10 +245,10 @@ Zero-install helpers (`plans/*.ps1`, plus one stdlib-only Python script). CLI up
 
 Small, prompt-and-script-only changes. No schema, routing, or config additions.
 
-- [ ] `PM.MilestoneCloseout`: milestones are **completed**, not **released** — only BUILDs are released. Fix the template wording and grep the rest of `plans/` for stray "released" applied to milestones. Add a DECISION entry codifying the vocabulary (BUILDs released, MILESTONES completed, PHASES approved) so this doesn't recur.
-- [ ] `plans/next.ps1`: remove the `(last: {{state.last_action.summary}})` line — `plans/status.ps1` (v1.4.0) is the right place for that context; `next` should stay targeted.
-- [ ] `plans/status.ps1`: add git basics — current branch and ahead/behind vs. upstream. Must degrade gracefully on no upstream, detached HEAD, or no remote.
-- [ ] **Principal "engineering judgment" lens (lite)** — prompt-only additions to `Principal_BuildReview.txt`, `Principal_MilestonePlan.txt`, and `Principal_AnswerQuestions.txt`. Principal still picks the recommendation it would actually pick (no option-menu punt to human), but must leave one-line breadcrumbs when there's a meaningful alternative or risk:
+- [x] `PM.MilestoneCloseout`: milestones are **completed**, not **released** — only BUILDs are released. Fix the template wording and grep the rest of `plans/` for stray "released" applied to milestones. Add a DECISION entry codifying the vocabulary (BUILDs released, MILESTONES completed, PHASES approved) so this doesn't recur.
+- [x] `plans/next.ps1`: remove the `(last: {{state.last_action.summary}})` line — `plans/status.ps1` (v1.4.0) is the right place for that context; `next` should stay targeted.
+- [x] `plans/status.ps1`: add git basics — current branch and ahead/behind vs. upstream. Must degrade gracefully on no upstream, detached HEAD, or no remote.
+- [x] **Principal "engineering judgment" lens (lite)** — prompt-only additions to `Principal_BuildReview.txt`, `Principal_MilestonePlan.txt`, and `Principal_AnswerQuestions.txt`. Principal still picks the recommendation it would actually pick (no option-menu punt to human), but must leave one-line breadcrumbs when there's a meaningful alternative or risk:
   - **Buy vs. build** for non-trivial capabilities (auth, payments, email, analytics, search, file storage, observability, etc.) — if a managed service or established OSS option exists and you're choosing to build, note *why*.
   - **One-way doors** — flag choices hard to reverse (data model, vendor lock-in, license, platform).
   - **Industry-standard divergence** — if the recommendation departs from the common default, say so explicitly.

@@ -131,7 +131,7 @@ _(STATUS updates disabled via config: status_updates=never)_
 ## CHANGELOG.md
 
 **What it is:** Human-readable record of changes, including brief rationale for notable decisions.
-**Updated by:** `PM.StatusUpdate` (per Phase), `PM.MilestoneCloseout` (moves Unreleased to dated release).
+**Updated by:** `PM.StatusUpdate` (per Phase), `PM.MilestoneCloseout` (appends milestone-complete entry under Unreleased). The "Unreleased" → "Released" move belongs to BUILD release, not milestone closeout — milestones are *completed*, not released.
 
 ```
 # CHANGELOG

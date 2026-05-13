@@ -326,3 +326,29 @@ This applies to every file under `example/` — `example/plans/*`, `example/ROOT
 **How to apply (for AI working on SAM):** When a TODO or task involves changes to file formats, templates, or conventions, scope the change to `plans/` and root-level files only. Do not touch `example/` unless the human explicitly asks for a fresh snapshot. If a TODO item appears to ask for an `example/` update, treat it as suspect and confirm with the human before acting.
 
 **Supersedes:** N/A (additive — clarifies and reinforces D-016)
+
+---
+
+## D-024 — Lifecycle vocabulary: BUILDs released, MILESTONES completed, PHASES approved
+**Date:** 2026-05-12
+**Decision:** Lifecycle units use distinct, non-interchangeable verbs:
+
+| Unit | Start verb | End verb |
+|------|------------|----------|
+| BUILD | approved (`Human.ApproveBuild`) | **released** |
+| MILESTONE | approved (`Human.ApproveMilestone`) | **completed** (`PM.MilestoneCloseout`) |
+| PHASE | — | **approved** (`Human.PhaseApproval`) |
+| STEP | — | (no formal closure) |
+
+Only a BUILD is "released". A milestone closeout does NOT move CHANGELOG entries from "Unreleased" to "Released" — milestones are *completed*. The Unreleased → Released move belongs to BUILD release (a future action, when one exists).
+
+**Rationale:**
+- "Release" has a specific meaning in software (shippable artifact, version tag, deployment). Conflating it with milestone-completion makes the CHANGELOG lie — items get marked released when nothing was actually released.
+- Distinct verbs per lifecycle unit keep state changes legible. "Approved" already does double duty (BUILD start, MILESTONE start, PHASE end); fine — context disambiguates. "Released" must stay reserved.
+
+**How to apply (for AI working on SAM):** When writing or editing templates, prompts, FORMATS.md, or any other system file:
+- Never describe a milestone as "released" or apply the verb "release" to milestone closeout.
+- `PM.MilestoneCloseout` appends a "Milestone <ID> complete" entry under CHANGELOG's Unreleased section. It does not promote anything to Released.
+- BUILD lifecycle uses "approved" → "released". A future `*.BuildRelease` action (not yet defined) would handle the Unreleased → Released move and any release tagging.
+
+**Supersedes:** Prior `PM_MilestoneCloseout.txt` step 2 wording ("Move items from 'Unreleased' to a dated release section") and the matching FORMATS.md line.

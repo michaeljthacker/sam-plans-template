@@ -81,3 +81,26 @@ if ((Test-Path $configPath) -and (Test-Path $schemaPath)) {
         }
     }
 }
+
+# Git: branch + ahead/behind upstream. Degrades gracefully when there's no
+# upstream, the HEAD is detached, or the parent dir isn't a git repo.
+$repoRoot = Split-Path $PSScriptRoot -Parent
+$ErrorActionPreference = 'Continue'
+$branch = & git -C $repoRoot rev-parse --abbrev-ref HEAD 2>$null
+if ($LASTEXITCODE -eq 0 -and $branch) {
+    Write-Output ""
+    if ($branch -eq 'HEAD') {
+        $sha = & git -C $repoRoot rev-parse --short HEAD 2>$null
+        Write-Output ("Git:       detached at {0}" -f $sha)
+    } else {
+        $counts = & git -C $repoRoot rev-list --left-right --count "@{u}...HEAD" 2>$null
+        if ($LASTEXITCODE -eq 0 -and $counts) {
+            $parts  = $counts -split '\s+'
+            $behind = [int]$parts[0]
+            $ahead  = [int]$parts[1]
+            Write-Output ("Git:       {0}  (ahead {1}, behind {2})" -f $branch, $ahead, $behind)
+        } else {
+            Write-Output ("Git:       {0}  (no upstream)" -f $branch)
+        }
+    }
+}

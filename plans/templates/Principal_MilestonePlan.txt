@@ -25,6 +25,21 @@ Instructions:
 4) Keep Phases small enough to implement in a single Staff.ImplementationExecution cycle.
    - Rule of thumb: each Phase should be completable in one focused session
    - If a Phase seems too large, split it into smaller Phases
+4a) **Engineering judgment.** As you draft the plan, apply these checks to each
+    non-trivial capability the milestone introduces (auth, payments, email,
+    analytics, search, file storage, observability, real-time, background jobs,
+    etc.):
+    - **Buy vs. build:** if a managed service or established OSS option exists
+      and you're planning to build it instead, note *why* in the Phase's "What"
+      section as a one-line breadcrumb (e.g., "Building a minimal email
+      dispatcher here; Postmark/Resend deferred — confirm OK").
+    - **One-way doors:** flag Phases that commit to choices hard to reverse
+      (data model, vendor, license, platform).
+    - **Industry-standard divergence:** if a Phase departs from the common
+      default, say so explicitly so the human can challenge it.
+    Pick the recommendation you'd actually pick. The goal is breadcrumbs, not
+    an options menu — but the human must be able to spot the controversial
+    choices without re-deriving them. Stay quiet on trivial or obvious choices.
 5) Update plans/STATUS.md (config-gated):
    - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
    - If `status_updates = "every_action"`:

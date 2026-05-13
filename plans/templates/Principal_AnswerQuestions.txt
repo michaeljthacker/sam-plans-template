@@ -46,6 +46,23 @@ Instructions:
      plans/config.json and the promotion protocol in PM_ThreadMaintenance.txt.)
 3) Keep plans/thread.md small by being concise in your answers.
    Resolved questions will be compressed by PM.ThreadMaintenance later.
+3a) **Engineering judgment.** When an answer involves a non-trivial capability
+    (auth, payments, email, analytics, search, file storage, observability,
+    real-time, background jobs, etc.) or any architectural choice, apply these
+    checks before committing to a recommendation:
+    - **Buy vs. build:** is there a managed service or established OSS option
+      that would solve this better than custom code? If you're recommending
+      build-from-scratch, note *why* in the answer.
+    - **One-way doors:** is this choice hard to reverse (data model, vendor
+      lock-in, license, platform, protocol)? If yes, flag it.
+    - **Industry-standard divergence:** if the recommendation departs from
+      the common default, say so explicitly so the human can challenge it.
+    Pick the recommendation you'd actually pick — do not punt to the human
+    with a menu. But when there's a meaningful alternative, lock-in, or
+    divergence, leave a one-line breadcrumb in the thread entry so the human
+    can decide whether to ask a follow-up. Stay quiet on trivial or obvious
+    choices — this is for "hey boss, I'm handling it but you should know XYZ
+    came up", not running commentary.
 4) Update plans/STATUS.md (config-gated):
    - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
    - If `status_updates = "every_action"`:
