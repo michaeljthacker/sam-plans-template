@@ -256,6 +256,40 @@ Small, prompt-and-script-only changes. No schema, routing, or config additions.
 
 ---
 
+## Next — Quick polish
+
+Small, prompt-and-script-only changes. No schema, routing, or config additions. Pick up when the current batch lands; not promised to a specific version.
+
+- [ ] **`mjt.pub` attribution** — surface "An mjt.pub project" prominently (not just a footer) in the root `README.md` and `plans/README.md`. `mjt.pub` should be a link. Toward the top of each file, not the bottom.
+- [ ] **`--AUTO-` commit format keeps leaking into manual commits** — `Staff.ImplementationExecution` (and others) still produce `--AUTO-B2-M1-P2-Staff.ImplementationExecution: ...` style messages despite explicit prohibition. The v1.4.0 templates added the forbid-line, but the AI is ignoring it. Strengthen wording in `Staff_ImplementationExecution.txt`, `Staff_ReviewReconciliation.txt`, `Human_PhaseApproval.txt` — make it the first instruction, not a footnote. Add a concrete contrast example (✅ good manual message vs ❌ `--AUTO-`-prefixed).
+- [ ] **`thread.md` entry placement and structure drift** — AI inconsistently appends entries to top vs. bottom and keeps re-introducing sectioning (Resolved / Open Issues / etc.) that was abolished long ago. Codify in `plans/FORMATS.md` and every template that writes to thread.md:
+  - **New entries go at the bottom** (user's current preference — promote from "either is fine" to canonical).
+  - **No sub-sections, no grouping, no "Resolved" buckets.** Entry titles as `##` headers are fine; that's it.
+  - **Resolved content gets deleted, not archived in-file.** If it's durable, it belongs in DECISIONS / STANDARDS / CHANGELOG / README — not in a thread.md "resolved" section. `PM.ThreadMaintenance` is the pruner.
+  - No historical-summary narrative. CHANGELOG is for that.
+- [ ] **`plans/status.ps1` — richer git surface and reordering**:
+  - Add counts (not filenames) for: untracked files, unstaged modifications, staged changes. Keeps the one-screen contract but gives a real working-tree pulse beyond ahead/behind.
+  - Move the non-default `config.json` block to the **bottom** of the output — the position / pause / blockers / git block is the action surface; config is reference.
+
+---
+
+## Proposed — Design work
+
+Items that need a small design pass before implementation. Not committed to a version or sequenced as a batch — each can move to Next independently once its shape is clear.
+
+- [ ] **Buy-vs-build lens covers free / OSS / asset-library options, not just paid services.** Current v1.4.1 Principal "engineering judgment" lens nudges toward managed-service consideration, but the AI still defaults to building when the alternative is *free* (Kenney / OpenGameArt / itch.io for game assets, public APIs, free tiers, OSS libraries that solve large chunks of the problem). Update `Principal_BuildReview.txt`, `Principal_MilestonePlan.txt`, `Principal_AnswerQuestions.txt` to explicitly call out *free / public / community* options alongside paid services. Concrete examples in the prompt help (the asset-library case is a good one).
+- [ ] **Configurable planning depth** — SAM's 4-level hierarchy (BUILD → MILESTONE → PHASE → STEP) was right-sized for full-prototype work but feels heavy for small features on an existing product. Two options to evaluate:
+  - **Config knob** in `config.json` (e.g., `planning_depth: full | phase_only | step_only`) — tough to judge correctly before planning starts.
+  - **Principal-decided at BUILD time** — `Principal.BuildReview` (or `Product.ProductVision`) decides depth based on scope, records the decision in DECISIONS, and downstream actions respect it.
+  - Likely the right answer is Principal-decided with a config override. Needs a DECISION entry once shape is settled.
+- [ ] **`Human.HumanOnlyPhase` (or guidance for `Human.ResolveBlocker` as full-phase scope).** When an entire phase is human work (Cloudflare account + R2 bucket + domain + token setup; substantial system provisioning; account/billing setup), the AI gets confused about routing around / after the human work. Two paths:
+  - Add a new `Human.HumanOnlyPhase` task-action with explicit "this phase is entirely human work, here's what to do, here's when to come back" semantics.
+  - Or document `Human.ResolveBlocker` as legitimately scope-able to a whole phase and fix the routing confusion in prompts.
+  - The first is cleaner; the second is cheaper. Decide during design.
+- [ ] **`Principal.AdhocReview` — model-up review escape hatch.** When the user is working in a constrained surface (Copilot in VS Code, no Opus access on their plan) and wants a higher-capability model to weigh in, give them a clean handoff: "Summarize this in `thread.md` and route to `Principal.AdhocReview`." The receiving session (run in a higher-tier surface) picks it up, reviews, writes findings back. Needs: registry entry, template, routing semantics (where it returns to), and a `context.notes` convention for the handoff summary. Distinct from `Principal.CodeReview` (which is in-flow) — this is on-demand.
+
+---
+
 ## v1.5.0 — PlanDiversion combined-approval path
 
 - [ ] Fix double-approval routing when `Principal.PlanDiversion` touches both BUILD and MILESTONE. Today the human ends up approving twice with a confusing PM.StatusUpdate → MilestonePlan detour in the middle (where MilestonePlan reasons the milestone is already drafted and skips to ApproveMilestone, but the human thinks they already approved).
@@ -278,6 +312,14 @@ Items parked until a clear trigger or sufficient friction warrants action.
   - **Foundation checklist** — Principal systematically considers analytics, auth, payments, email, observability, marketing, etc., scoped to posture. Most prototypes don't need most of these; the goal is *thinking about it*, not building it.
   - **Options-to-human flow** — for genuinely controversial or lock-in choices, Principal may present a slate rather than picking. Distinct from the lite version, which always picks and leaves a breadcrumb.
   - **Trigger to reconsider:** the lite version misses something important in real use — e.g., AI quietly picks a one-way-door without flagging, or human keeps having to back out of foundational decisions made too early.
+
+### Cross-platform helper scripts (PowerShell vs. POSIX)
+
+- [ ] `plans/*.ps1` were written Windows-first, but SAM's longer-term direction is dev-container-based development (Linux). Decide and commit to one of:
+  - **Dual-track:** maintain a `.sh` sibling for each `.ps1` (`next.sh`, `status.sh`, `commit.sh`, `sam-update.py` is already cross-platform). Doubles maintenance surface.
+  - **Port to Python** — `sam-update.py` is already stdlib-only Python; the other helpers are small enough to port. Single source, runs anywhere Python runs. Loses the "no install" charm only marginally (Python is everywhere).
+  - **Commit to Linux + dev containers** — drop `.ps1`, write `.sh`, document that SAM assumes a dev container. Honest about the actual direction.
+  - **Trigger:** once the dev-container workflow is real enough that the user notices the PowerShell scripts breaking under it. Until then, the `.ps1`s work where they need to.
 
 ### Folder reorganization
 
