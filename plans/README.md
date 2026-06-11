@@ -281,6 +281,30 @@ All helpers live in `plans/`. PowerShell scripts (`*.ps1`) run on Windows out of
 the box; the one Python script (`sam-update.py`) uses only the standard library
 so no `pip install` is needed.
 
+### Running helpers on Linux / devcontainers
+
+The `.ps1` helpers are written to be cross-platform — the **same command string**
+(`./plans/next.ps1`, `./plans/status.ps1`, `./plans/commit.ps1`) works in both
+Windows PowerShell and a Linux shell, so copy-paste instructions like "run
+`plans/next.ps1`" do not need to fork by OS.
+
+To enable this on Linux (e.g. inside a devcontainer):
+
+1. **Install PowerShell Core** in the container image. On Debian/Ubuntu bases,
+   add `powershell` (from Microsoft's apt repo) to your Dockerfile — see
+   [Microsoft's install guide](https://learn.microsoft.com/powershell/scripting/install/install-ubuntu)
+   for the current one-time recipe.
+2. **Mark the helpers executable** once, so the `#!/usr/bin/env pwsh` shebang on
+   line 1 of each script is honored:
+   ```bash
+   git update-index --chmod=+x plans/next.ps1 plans/status.ps1 plans/commit.ps1
+   ```
+   (Or `chmod +x` locally if you're not committing.)
+
+After that, `./plans/next.ps1` runs the same script identically on both
+platforms. The `.ps1` suffix is the only visible cost; the `pwsh` invocation is
+hidden by the shebang.
+
 ### `plans/next.ps1` — copy a "run next action" prompt
 
 ```powershell

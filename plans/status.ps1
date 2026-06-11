@@ -1,3 +1,4 @@
+#!/usr/bin/env pwsh
 # status.ps1 — formatted summary of the current SAM project state.
 # Reads plans/state.json (always current — routing source of truth) and
 # plans/config.json (compared against schema defaults to surface non-default

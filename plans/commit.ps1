@@ -1,3 +1,4 @@
+#!/usr/bin/env pwsh
 # commit.ps1 — auto-commit with a SAM-formatted message.
 # Reads plans/state.json and runs `git add -A; git commit -m "<message>"`.
 #
