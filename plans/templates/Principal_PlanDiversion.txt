@@ -38,6 +38,19 @@ Instructions:
    (d) New / restructured Milestones — Build needs a new Milestone, a milestone split,
        reorder, or removal. Edits BUILD.md (and likely MILESTONE.md for the active one).
 
+   **Size compatibility check.** Read `size` from plans/BUILD.md frontmatter (treat
+   missing frontmatter as `full` per plans/FORMATS.md). If the diversion grows scope
+   past the current size's cap (see plans/FORMATS.md), the diversion MUST also raise
+   `size` to the smallest value that fits, and the scope class becomes (d) — BUILD.md
+   frontmatter is changing, which requires Human.ApproveBuild.
+   Cap reminders:
+   - `step-only` → adding a 4th+ step or a 2nd phase forces size bump to `phase-only` (4th+ step) or `single-milestone` (2nd phase)
+   - `phase-only` → adding a 2nd phase forces size bump to `single-milestone`
+   - `single-milestone` → adding a 2nd milestone forces size bump to `full`
+   Down-sizing (e.g., `full` → `single-milestone` after dropping a milestone) is allowed
+   but should be noted in plans/thread.md so the change is visible. Down-sizing through
+   scope class (d) still routes through Human.ApproveBuild.
+
 3) Propose, then wait for confirmation. Write a short proposal in chat covering:
    - Scope class (a / b / c / d)
    - Concrete edits planned for each file (BUILD.md, MILESTONE.md, DECISIONS.md,

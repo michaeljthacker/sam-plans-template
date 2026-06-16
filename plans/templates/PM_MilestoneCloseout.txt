@@ -6,6 +6,7 @@ Goal: Close out the current milestone — update project tracking artifacts, arc
 Inputs:
 - plans/state.json (routing + context)
 - plans/config.json (workflow configuration — read `status_updates`)
+- plans/BUILD.md (read `size` from frontmatter — determines whether this milestone ends the Build)
 - plans/MILESTONE.md (completed milestone)
 - plans/STATUS.md (current snapshot)
 - plans/BACKLOG.md (pending work)
@@ -35,20 +36,27 @@ Instructions:
    - Otherwise: SKIP. The end-of-last-phase PM.StatusUpdate already wrote a snapshot;
      the next PM.StatusUpdate (after Human.ApproveMilestone for the new milestone)
      will catch STATUS up to the new position.
-5) Update plans/state.json:
+5) Determine whether this milestone ends the Build:
+   - Read `size` from plans/BUILD.md frontmatter (treat missing frontmatter as
+     `full` per plans/FORMATS.md).
+   - If `size` ∈ {`step-only`, `phase-only`, `single-milestone`}: the Build has
+     exactly one milestone, so completing M1 also ends the Build. Skip the
+     "next milestone" branch below.
+   - Else (`full`): consult plans/BUILD.md's Milestones list as today.
+6) Update plans/state.json:
    - last_action.action_id = PM.MilestoneCloseout
    - last_action.result = "ok"
    - phase_id = null
    - step_id = null
-   - If there is a next milestone in plans/BUILD.md:
+   - If there is a next milestone in plans/BUILD.md (only possible under `size: full`):
      - milestone_id = <next Milestone ID> (e.g., "M2")
      - next_action_id = PM.ThreadMaintenance
      - pause_type = "continue"
-   - If this was the final milestone in the Build:
+   - If this was the final milestone in the Build (always the case for non-`full` sizes):
      - next_action_id = PM.ThreadMaintenance
      - pause_type = "continue"
      - Add a context note: "Build complete after ThreadMaintenance"
-6) Trigger thread cleanup:
+7) Trigger thread cleanup:
    - PM.ThreadMaintenance will run next to prune resolved content
      and promote durable decisions before the next milestone begins
 

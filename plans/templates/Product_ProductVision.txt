@@ -20,21 +20,36 @@ Instructions:
    set last_action.result = "blocked", pause_type = "decision",
    next_action_id = Human.ResolveBlocker,
    and add a blocker requesting the missing information.
-2) Generate the root README.md:
+2) Determine build `size` (recorded in BUILD.md frontmatter — see plans/FORMATS.md):
+   - First, scan plans/thread.md for an explicit hint. Accept either an explicit
+     `size: <value>` line OR natural-language signals such as "patch", "small fix",
+     "dependency bump", "small feature", "full prototype", "MVP", "major build".
+     If the human stated a size, respect it.
+   - If no hint, infer from the project scope using these definitions:
+     - `full` — multi-milestone work (2+ milestones, typical 3+). Full prototype or major feature.
+     - `single-milestone` — substantial feature, single milestone, multiple phases.
+     - `phase-only` — small feature; exactly one phase, multiple steps.
+     - `step-only` — patch / dependency bump / small fix; one phase, 1–3 steps.
+   - If genuinely ambiguous, prefer the smaller size; the human can grow it at
+     Human.ApproveBuild or via Principal.PlanDiversion.
+3) Generate the root README.md:
    - Project name and one-line description
    - What the project does (2–4 sentences)
    - Key features / capabilities (bullet list)
    - Tech stack (if determinable from the idea)
    - Getting started placeholder
    - Keep it concise — this is a living document that will be refined
-3) Generate plans/BUILD.md:
+4) Generate plans/BUILD.md:
+   - Frontmatter at the top: `---\nsize: <chosen size>\n---`
    - Fill in the Build ID (from state.json, typically B1)
    - Purpose: what is being built and why
    - Scope: in-scope and out-of-scope items
    - Success criteria: measurable outcomes
-   - Milestones: propose a reasonable milestone breakdown (M1, M2, …)
+   - Milestones — count must match the declared `size`:
+     - `full`: propose M1, M2, … (typically 3+)
+     - `single-milestone` / `phase-only` / `step-only`: propose exactly one milestone (M1)
    - Risks / assumptions
-4) Initialize plans/STATUS.md (this action always creates the file — it is the
+5) Initialize plans/STATUS.md (this action always creates the file — it is the
    one unconditional STATUS write in the lifecycle):
    - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
    - If `status_updates = "never"`: write the disabled stub and stop:
@@ -49,7 +64,7 @@ Instructions:
      - Blockers: None
      - Recent: "Product.ProductVision completed — README.md and BUILD.md drafted"
      - Next: "Principal.BuildReview to validate feasibility"
-5) Update plans/state.json:
+6) Update plans/state.json:
    - last_action.action_id = Product.ProductVision
    - last_action.result = "ok"
    - next_action_id = Principal.BuildReview
@@ -60,6 +75,8 @@ Constraints:
 - Do not implement any code.
 - Do not create plans/MILESTONE.md (that is Principal.MilestonePlan's job).
 - Keep the README and BUILD concise — they will be reviewed and refined.
+- BUILD.md frontmatter MUST include a valid `size` value (`full`, `single-milestone`, `phase-only`, or `step-only`).
+- The milestone count in BUILD.md MUST match the declared size (one milestone for everything except `full`).
 - If the project idea is too vague to produce meaningful artifacts, set last_action.result = "blocked", pause_type = "decision", next_action_id = Human.ResolveBlocker, and add a blocker asking for clarification.
 
 Output:

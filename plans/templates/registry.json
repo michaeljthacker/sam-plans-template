@@ -140,7 +140,7 @@
       "task": "AdvancePhase",
       "template_path": "plans/templates/PM_AdvancePhase.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/config.json", "plans/MILESTONE.md", "plans/STATUS.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/BUILD.md", "plans/MILESTONE.md", "plans/STATUS.md"],
       "required_outputs": ["plans/state.json", "plans/STATUS.md"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
@@ -150,7 +150,7 @@
       "task": "MilestoneCloseout",
       "template_path": "plans/templates/PM_MilestoneCloseout.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/config.json", "plans/MILESTONE.md", "plans/STATUS.md", "plans/BACKLOG.md", "plans/CHANGELOG.md", "plans/thread.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/BUILD.md", "plans/MILESTONE.md", "plans/STATUS.md", "plans/BACKLOG.md", "plans/CHANGELOG.md", "plans/thread.md"],
       "required_outputs": ["plans/STATUS.md", "plans/BACKLOG.md", "plans/CHANGELOG.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },

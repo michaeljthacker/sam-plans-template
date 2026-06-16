@@ -100,6 +100,21 @@ Under `pm_only` and `every_milestone` STATUS will lag by one phase across phase 
 
 Every action that writes STATUS refreshes a top-of-file line — `**Update configuration:** status_updates=<value>` — so a reader can see the cadence STATUS is being kept at.
 
+## Build sizing
+
+Not every BUILD needs the full BUILD → MILESTONE → PHASE → STEP ceremony. SAM picks a *size* for each Build at vision time and caps the milestone / phase / step counts accordingly. Size is decided by `Product.ProductVision` (taking any hint the human left in `plans/thread.md`) and recorded in `plans/BUILD.md` frontmatter; the human signs off on it at `Human.ApproveBuild`.
+
+| `size` | Milestones | Phases per M | Steps per P | Use case |
+|---|---|---|---|---|
+| `full` | 2+ (typical 3+) | 2+ | 2+ | Full prototype / major feature. Default ceremony. |
+| `single-milestone` | exactly 1 | 2+ | 2+ | Substantial feature on an existing product. |
+| `phase-only` | exactly 1 | exactly 1 | 2+ | Small feature; one cohesive chunk of work. |
+| `step-only` | exactly 1 | exactly 1 | 1–3 | Patch / dependency bump / small fix; minimum ceremony. |
+
+The inner phase loop is identical for every size — `size` only constrains *counts*, not which actions run. It is independent of the `config.json` knobs above. `Principal.PlanDiversion` may resize a build mid-flight (e.g., a `phase-only` build that needs to grow); resizing past the current cap re-routes through `Human.ApproveBuild`.
+
+The human may also pre-declare size in `plans/thread.md` (an explicit `size: phase-only` line, or natural-language signals like "patch" / "MVP" / "full prototype"); `Product.ProductVision` will respect it.
+
 ## Multi-root workspaces
 
 SAM can operate across multiple repos in a VS Code multi-root workspace — for example,

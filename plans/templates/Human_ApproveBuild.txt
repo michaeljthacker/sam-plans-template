@@ -30,10 +30,14 @@ Inputs:
 
 Instructions:
 1) Read plans/BUILD.md and summarize:
+   - **Declared `size`** (from frontmatter) — show this as the first line of the
+     summary, with a one-line gloss of what it implies (e.g., `step-only` → "1
+     milestone, 1 phase, 1–3 steps; minimum ceremony"). See plans/FORMATS.md.
    - Build ID and Purpose (one or two sentences)
    - In/out scope highlights
    - Success criteria
-   - Milestone breakdown (count + names)
+   - Milestone breakdown (count + names) — note whether the count matches the
+     declared size
    - Risks / assumptions worth flagging
 2) Read the most recent Principal.BuildReview entry in plans/thread.md and surface:
    - REQUIRED changes (if any) — these must be resolved before approval
@@ -42,6 +46,9 @@ Instructions:
 3) Highlight areas that need human attention:
    - Is the purpose right?
    - Is the scope correctly bounded (in vs. out)?
+   - Is the declared `size` right? The human can request a size change by routing
+     back to `Product.ProductVision` (re-derive from idea) or `Principal.BuildReview`
+     (adjust frontmatter + milestone count directly).
    - Are the milestones a reasonable decomposition?
    - Anything in BuildReview that the human should weigh in on?
 4) Produce a "Human Action Checklist":

@@ -12,9 +12,12 @@ template/placeholder content with real content. Do not preserve "About this file
 ## BUILD.md
 
 **What it is:** The multi-milestone plan for the current Build — a Build is a major body of work on the product. Describes what is being built, why, scope boundaries, success criteria, and milestone breakdown.
-**Updated by:** Created by `Product.ProductVision`; reviewed (not modified) by `Principal.BuildReview`; updated when Build-level scope changes.
+**Updated by:** Created by `Product.ProductVision`; reviewed (not modified) by `Principal.BuildReview`; updated when Build-level scope changes (including resize via `Principal.PlanDiversion`).
 
 ```
+---
+size: full | single-milestone | phase-only | step-only
+---
 # BUILD — <Build ID>
 
 ## Purpose
@@ -32,11 +35,28 @@ template/placeholder content with real content. Do not preserve "About this file
 
 ## Milestones
 - M1 — <goal>
-- M2 — <goal>
+- M2 — <goal>   <!-- only for size: full -->
 
 ## Risks / assumptions
 - <item>
 ```
+
+### Size
+
+The `size` frontmatter field is **required** and selects the planning depth for this build. It is chosen by `Product.ProductVision` (using any hint the human left in `thread.md`, or inferred from scope) and validated by `Principal.BuildReview` against the milestone breakdown. The four values:
+
+| `size` | Milestones | Phases per M | Steps per P | Use case |
+|---|---|---|---|---|
+| `full` | 2+ (typical 3+) | 2+ | 2+ | Full prototype / major feature. Default ceremony. |
+| `single-milestone` | exactly 1 | 2+ | 2+ | Substantial feature on an existing product. |
+| `phase-only` | exactly 1 | exactly 1 | 2+ | Small feature; one cohesive chunk of work. |
+| `step-only` | exactly 1 | exactly 1 | 1–3 | Patch / dependency bump / small fix; minimum ceremony. |
+
+The inner phase loop (DraftQuestions → … → PhaseApproval) is identical for every size — `size` only caps the number of milestones, phases, and steps that downstream actions may plan. It is independent of all `config.json` knobs.
+
+`Principal.PlanDiversion` may resize a build mid-flight; growing past the current size's caps requires the diversion to update `size` and re-route through `Human.ApproveBuild`.
+
+**Missing frontmatter (legacy builds):** If `size` is absent from BUILD.md frontmatter (e.g., a pre-sizing Build that wasn't backfilled), downstream actions MUST treat the build as `size: full`. `Principal.BuildReview` should also flag the missing frontmatter as REQUIRED so the human can backfill an explicit value.
 
 ---
 
