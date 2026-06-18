@@ -1,7 +1,7 @@
 {
-  "version": "0.2",
+  "version": "0.3",
   "action_id_convention": "Role.Task",
-  "note": "All 18 actions have templates. See plans/templates/ for individual action prompts.",
+  "note": "All 19 actions have templates. See plans/templates/ for individual action prompts.",
 
   "actions": [
     {
@@ -81,6 +81,16 @@
       "template_path": "plans/templates/Staff_ImplementationExecution.txt",
       "status": "ready",
       "inputs": ["plans/state.json", "plans/config.json", "plans/MILESTONE.md", "plans/thread.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/STATUS.md"],
+      "required_outputs": ["plans/thread.md", "plans/STATUS.md", "plans/state.json"],
+      "gates": { "update_status_required": true, "tests_required": true }
+    },
+    {
+      "action_id": "Staff.QuickImplement",
+      "role": "Staff",
+      "task": "QuickImplement",
+      "template_path": "plans/templates/Staff_QuickImplement.txt",
+      "status": "ready",
+      "inputs": ["plans/state.json", "plans/config.json", "plans/BUILD.md", "plans/thread.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/STATUS.md"],
       "required_outputs": ["plans/thread.md", "plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": true }
     },

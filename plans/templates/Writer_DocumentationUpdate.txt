@@ -21,6 +21,10 @@ Instructions:
    - Any other docs referenced in plans/STANDARDS.md
 3) Update documentation:
    - Keep changes proportional to what was implemented
+   - Match prose depth to `size` per plans/FORMATS.md § "Prose depth scales with
+     size." Note: this action is skipped entirely for `size: phase-only` (PM.StatusUpdate
+     routes around it) and never runs for `size: step-only` (carve-out). If you arrive
+     here, the build is `single-milestone` or `full`; use current depth.
    - Follow documentation standards in plans/STANDARDS.md
    - Ensure consistency with plans/DECISIONS.md
    - Do not document planned-but-unbuilt features

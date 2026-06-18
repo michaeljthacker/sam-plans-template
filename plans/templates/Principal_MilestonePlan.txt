@@ -25,7 +25,10 @@ Instructions:
    next_action_id = Human.ResolveBlocker, and add a blocker asking the human to
    either grow `size` (via Principal.PlanDiversion or by re-running ProductVision)
    or trim scope.
-3) Draft plans/MILESTONE.md:
+3) Draft plans/MILESTONE.md. Match prose depth to `size` per plans/FORMATS.md
+   § "Prose depth scales with size" — for `phase-only`, keep phase descriptions
+   and acceptance criteria terse (a few bullets, not paragraphs); for `full` /
+   `single-milestone`, use current depth.
    - Milestone ID and goal (one sentence)
    - Break the milestone into Phases (P1, P2, P3, …), respecting the size cap:
      - Each Phase has a clear "What" section describing the work

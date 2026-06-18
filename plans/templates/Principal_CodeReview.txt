@@ -30,6 +30,13 @@ Instructions:
    - Acceptance criteria in plans/MILESTONE.md
    - DECISIONS and STANDARDS
    - Apply the review_strictness threshold when categorizing findings
+2a) Match review depth to `size` per plans/FORMATS.md § "Prose depth scales with
+    size." Read `size` from plans/BUILD.md frontmatter (treat missing as `full`).
+    For `phase-only`, keep the review terse — a few REQUIRED/SUGGESTED bullets, no
+    multi-paragraph prose. For `single-milestone` / `full`, use current depth.
+    `step-only` shouldn't reach this action (carve-out skips it); if it does, treat
+    as `phase-only` depth and flag the routing mismatch.
+
 3) Append review feedback as a new entry in plans/thread.md.
    - Use the entry format: `---` then `### Principal.CodeReview — <date>`
    - Reference the Review Request being reviewed.

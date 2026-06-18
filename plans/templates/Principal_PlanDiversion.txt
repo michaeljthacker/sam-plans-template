@@ -51,6 +51,17 @@ Instructions:
    but should be noted in plans/thread.md so the change is visible. Down-sizing through
    scope class (d) still routes through Human.ApproveBuild.
 
+   **Escalation off the step-only carve-out.** When escalating *from* `size: step-only`
+   to any larger size, the build switches from the carve-out route (ProductVision →
+   ApproveBuild → QuickImplement) onto the standard chain (ApproveBuild → MilestonePlan
+   → …). The diversion must rewrite plans/BUILD.md so it has the full structure the
+   standard chain expects (Purpose, Scope, Success criteria, Milestones, Risks) — the
+   minimal step-only BUILD.md is not enough for Principal.MilestonePlan to work from.
+   Treat this as scope class (d): the proposal in step 3 must include the rewritten
+   BUILD.md, and routing goes through Human.ApproveBuild → Principal.MilestonePlan.
+   Any code already implemented under the step-only attempt stays; record it in the
+   thread.md diversion entry so the new MilestonePlan can plan around it.
+
 3) Propose, then wait for confirmation. Write a short proposal in chat covering:
    - Scope class (a / b / c / d)
    - Concrete edits planned for each file (BUILD.md, MILESTONE.md, DECISIONS.md,

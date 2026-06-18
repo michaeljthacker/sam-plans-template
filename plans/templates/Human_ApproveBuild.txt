@@ -31,18 +31,31 @@ Inputs:
 Instructions:
 1) Read plans/BUILD.md and summarize:
    - **Declared `size`** (from frontmatter) — show this as the first line of the
-     summary, with a one-line gloss of what it implies (e.g., `step-only` → "1
-     milestone, 1 phase, 1–3 steps; minimum ceremony"). See plans/FORMATS.md.
-   - Build ID and Purpose (one or two sentences)
-   - In/out scope highlights
-   - Success criteria
-   - Milestone breakdown (count + names) — note whether the count matches the
-     declared size
-   - Risks / assumptions worth flagging
+     summary, with a one-line gloss of what it implies (e.g., `step-only` → "not a
+     build; cursory implement after this approval"; `phase-only` → "1 milestone, 1
+     phase, multiple steps"). See plans/FORMATS.md.
+   - **For `size: step-only`** — BUILD.md is intentionally minimal (title + one-line
+     goal, no Scope/Success/Risks/Milestones sections). Summarize the one-line goal
+     and surface the human's original request from plans/thread.md instead of looking
+     for sections that aren't there. This is the *only* human touchpoint on the
+     step-only path, so call out anything that would change the calculus
+     (cross-cutting prerequisites, shared-service dependencies, anything that
+     suggests the change is actually bigger than step-only).
+   - **Otherwise** — full summary:
+     - Build ID and Purpose (one or two sentences)
+     - In/out scope highlights
+     - Success criteria
+     - Milestone breakdown (count + names) — note whether the count matches the
+       declared size
+     - Risks / assumptions worth flagging
 2) Read the most recent Principal.BuildReview entry in plans/thread.md and surface:
    - REQUIRED changes (if any) — these must be resolved before approval
    - SUGGESTED improvements
    - RISKS the human should weigh
+   - **For `size: step-only`** — Principal.BuildReview is skipped on the carve-out
+     path, so there is no review entry to surface. Note this explicitly in the
+     briefing so the human knows this approval is the only check before
+     implementation begins.
 3) Highlight areas that need human attention:
    - Is the purpose right?
    - Is the scope correctly bounded (in vs. out)?
@@ -57,7 +70,15 @@ Instructions:
    - If approved: update plans/state.json:
      - last_action.action_id = Human.ApproveBuild
      - last_action.result = "approved"
-     - Read `status_updates` from plans/config.json (default: "pm_only" if missing):
+     - Read `size` from plans/BUILD.md frontmatter (treat missing as `full` per FORMATS.md).
+     - **If `size: step-only`** — route directly to the carve-out path. This is the
+       single mandatory human touchpoint on that path; Staff.QuickImplement runs next
+       and closes the Build.
+       - next_action_id = Staff.QuickImplement
+       - pause_type = "continue"
+       - Skip the PM.StatusUpdate fan-out (Staff.QuickImplement + PM.ThreadMaintenance
+         handle the close-out STATUS write).
+     - **Otherwise** — read `status_updates` from plans/config.json (default: "pm_only"):
        - If `status_updates = "every_action"`: route directly to Principal.MilestonePlan.
          - next_action_id = Principal.MilestonePlan
          - pause_type = "continue"

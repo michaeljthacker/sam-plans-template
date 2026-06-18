@@ -83,6 +83,11 @@ Instructions:
        when a config key is absent):
 
        a) Is Writer.DocumentationUpdate needed?
+          - First, read `size` from plans/BUILD.md frontmatter (treat missing as
+            `full`). For `size: phase-only`, Writer.DocumentationUpdate is **skipped
+            unconditionally** — the build is too small to justify a separate doc
+            pass, and the closeout CHANGELOG entry covers what changed. Answer NO
+            and proceed to (b). For all other sizes, apply the config gate below.
           - `documentation_update = "every_phase"`: YES
           - `documentation_update = "every_milestone"`: YES only if this is the LAST
             phase in the milestone (check plans/MILESTONE.md). NO otherwise.

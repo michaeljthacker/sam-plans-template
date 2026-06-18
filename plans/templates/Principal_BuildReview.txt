@@ -20,13 +20,27 @@ Instructions:
      is missing entirely (legacy build), flag that as a REQUIRED change so the
      human can backfill an explicit value. Otherwise, verify the declared size
      is consistent with the scope and with the milestone count in BUILD.md:
-     - `step-only` / `phase-only` / `single-milestone` — must list exactly one milestone (M1).
+     - `phase-only` / `single-milestone` — must list exactly one milestone (M1).
      - `full` — must list 2+ milestones (typical 3+).
+     - `step-only` — note that step-only builds **skip Principal.BuildReview**
+       via the carve-out route in ProductVision; you should only see one here if
+       it was routed in manually or if `Principal.PlanDiversion` is escalating
+       *off* step-only. In either case, the appropriate flag is that the BUILD.md
+       needs to be rewritten into full form for the standard chain — make that a
+       REQUIRED change.
      A mismatch (e.g., `size: step-only` with three milestones, or a sprawling scope
      declared as `step-only`) is REQUIRED changes — the human can confirm by re-running
      Product.ProductVision or by adjusting `size` directly. Use your engineering
      judgment on whether the declared size matches what the scope actually demands;
      prefer the smaller size when in doubt.
+   - **Size ↔ depth consistency.** Verify the BUILD.md's prose depth matches the
+     declared `size` per plans/FORMATS.md § "Prose depth scales with size." A
+     `phase-only` BUILD.md with sprawling Scope / Success / Risks sections that
+     read like a `full` build is a defect — flag it as REQUIRED changes ("trim
+     to match size"). Conversely, a `full` BUILD.md that is too thin (e.g., one
+     sentence per section, no real risk analysis) is also REQUIRED — either grow
+     the prose or shrink the declared size. The document's length should
+     embarrass you if it doesn't match the size.
    - Are there obvious technical risks or missing assumptions?
    - **Engineering judgment.** For any non-trivial capability implied by the Build
      (auth, payments, email, analytics, search, file storage, observability,

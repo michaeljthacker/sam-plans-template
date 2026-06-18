@@ -29,7 +29,12 @@ Instructions:
      - `full` — multi-milestone work (2+ milestones, typical 3+). Full prototype or major feature.
      - `single-milestone` — substantial feature, single milestone, multiple phases.
      - `phase-only` — small feature; exactly one phase, multiple steps.
-     - `step-only` — patch / dependency bump / small fix; one phase, 1–3 steps.
+     - `step-only` — **not a build.** Cursory look, brief human check, implement.
+       Pick this when the change is mechanical, well-scoped, and the build process
+       would cost more than the work itself (patches, dependency bumps, small fixes,
+       wiring an existing library into a consumer). The signal is *intent and risk*,
+       not step count — a 5-edit mechanical wire-up is `step-only`; a 2-step feature
+       that needs design questions is `phase-only`.
    - If genuinely ambiguous, prefer the smaller size; the human can grow it at
      Human.ApproveBuild or via Principal.PlanDiversion.
 3) Generate the root README.md:
@@ -39,16 +44,34 @@ Instructions:
    - Tech stack (if determinable from the idea)
    - Getting started placeholder
    - Keep it concise — this is a living document that will be refined
-4) Generate plans/BUILD.md:
-   - Frontmatter at the top: `---\nsize: <chosen size>\n---`
-   - Fill in the Build ID (from state.json, typically B1)
-   - Purpose: what is being built and why
-   - Scope: in-scope and out-of-scope items
-   - Success criteria: measurable outcomes
-   - Milestones — count must match the declared `size`:
-     - `full`: propose M1, M2, … (typically 3+)
-     - `single-milestone` / `phase-only` / `step-only`: propose exactly one milestone (M1)
-   - Risks / assumptions
+4) Generate plans/BUILD.md. Match prose depth to `size` per FORMATS.md
+   § "Prose depth scales with size" — an over-detailed BUILD.md for a small size is
+   a defect.
+   - **If `size: step-only`** — write the minimal BUILD.md only:
+     ```
+     ---
+     size: step-only
+     ---
+     # BUILD — <Build ID>
+
+     <One-line goal>
+     ```
+     Do NOT add Purpose, Scope, Success criteria, Milestones, or Risks sections.
+     The single line under the heading IS the Build. The carve-out route
+     (Human.ApproveBuild → Staff.QuickImplement) reads this line plus thread.md;
+     it does not need prototype-grade framing.
+   - **Otherwise** — full BUILD.md:
+     - Frontmatter at the top: `---\nsize: <chosen size>\n---`
+     - Fill in the Build ID (from state.json, typically B1)
+     - Purpose: what is being built and why
+     - Scope: in-scope and out-of-scope items
+     - Success criteria: measurable outcomes
+     - Milestones — count must match the declared `size`:
+       - `full`: propose M1, M2, … (typically 3+)
+       - `single-milestone` / `phase-only`: propose exactly one milestone (M1)
+     - Risks / assumptions
+     - For `phase-only` / `single-milestone`, keep prose terse — a short paragraph
+       (or a few bullets) per section, scoped to the one milestone.
 5) Initialize plans/STATUS.md (this action always creates the file — it is the
    one unconditional STATUS write in the lifecycle):
    - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
@@ -67,8 +90,13 @@ Instructions:
 6) Update plans/state.json:
    - last_action.action_id = Product.ProductVision
    - last_action.result = "ok"
-   - next_action_id = Principal.BuildReview
-   - pause_type = "continue"
+   - **If `size: step-only`** — route directly to Human.ApproveBuild (the carve-out
+     skips Principal.BuildReview):
+     - next_action_id = Human.ApproveBuild
+     - pause_type = "decision"
+   - **Otherwise** — standard chain:
+     - next_action_id = Principal.BuildReview
+     - pause_type = "continue"
    - Update context.goal with a one-sentence summary of the project
 
 Constraints:
@@ -77,6 +105,7 @@ Constraints:
 - Keep the README and BUILD concise — they will be reviewed and refined.
 - BUILD.md frontmatter MUST include a valid `size` value (`full`, `single-milestone`, `phase-only`, or `step-only`).
 - The milestone count in BUILD.md MUST match the declared size (one milestone for everything except `full`).
+- For `size: step-only`, the BUILD.md is intentionally minimal (no Scope/Success/Risks/Milestones sections); the carve-out route handles the rest.
 - If the project idea is too vague to produce meaningful artifacts, set last_action.result = "blocked", pause_type = "decision", next_action_id = Human.ResolveBlocker, and add a blocker asking for clarification.
 
 Output:

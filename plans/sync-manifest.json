@@ -1,6 +1,6 @@
 {
   "$schema_comment": "Manifest for plans/sam-update.py. Two file lists plus a deploy_mappings table. system_files are copied from a source SAM template into the target project. instance_files are NOT copied from the source — they hold target-owned state. The script never edits instance content authored by the project; the only target-owned file the script writes is plans/.sam-version, stamped on --apply via the stamp_version() helper (not via the copy loop). deploy_mappings handle system files that land outside plans/ (e.g., copilot-instructions.md → .github/copilot-instructions.md, CLAUDE.md → project root).",
-  "version": "1.5.0",
+  "version": "1.5.1",
 
   "system_files": [
     "plans/README.md",
@@ -27,6 +27,7 @@
     "plans/templates/Product_ProductVision.txt",
     "plans/templates/Staff_DraftQuestions.txt",
     "plans/templates/Staff_ImplementationExecution.txt",
+    "plans/templates/Staff_QuickImplement.txt",
     "plans/templates/Staff_ReviewReconciliation.txt",
     "plans/templates/Writer_DocumentationUpdate.txt",
     "plans/next.ps1",

@@ -108,10 +108,12 @@ Not every BUILD needs the full BUILD → MILESTONE → PHASE → STEP ceremony. 
 |---|---|---|---|---|
 | `full` | 2+ (typical 3+) | 2+ | 2+ | Full prototype / major feature. Default ceremony. |
 | `single-milestone` | exactly 1 | 2+ | 2+ | Substantial feature on an existing product. |
-| `phase-only` | exactly 1 | exactly 1 | 2+ | Small feature; one cohesive chunk of work. |
-| `step-only` | exactly 1 | exactly 1 | 1–3 | Patch / dependency bump / small fix; minimum ceremony. |
+| `phase-only` | exactly 1 | exactly 1 | 2+ | Small feature; one cohesive chunk of work. `Writer.DocumentationUpdate` is skipped (closeout's CHANGELOG entry covers it). |
+| `step-only` | exactly 1 | exactly 1 | 1–3 | **Not a build** — cursory look, brief human check, implement. Uses the carve-out route (`Product.ProductVision` → `Human.ApproveBuild` → `Staff.QuickImplement`), skipping BuildReview, MilestonePlan, the Q&A loop, standalone CodeReview/Reconciliation, DocumentationUpdate, PhaseApproval, AdvancePhase, and MilestoneCloseout. Verification still happens — QuickImplement self-verifies. |
 
-The inner phase loop is identical for every size — `size` only constrains *counts*, not which actions run. It is independent of the `config.json` knobs above. `Principal.PlanDiversion` may resize a build mid-flight (e.g., a `phase-only` build that needs to grow); resizing past the current cap re-routes through `Human.ApproveBuild`.
+For sizes other than `step-only`, the inner phase loop is identical — `size` only constrains *counts*, not which actions run, independent of the `config.json` knobs above. `step-only` uses its own short route; `phase-only` additionally skips `Writer.DocumentationUpdate`. `Principal.PlanDiversion` may resize a build mid-flight (e.g., a `step-only` build that needs to grow into a real build); escalating off `step-only` rewrites BUILD.md into full form and re-routes through `Human.ApproveBuild` onto the standard chain.
+
+Prose depth scales with size — see `plans/FORMATS.md` § "Prose depth scales with size." A `step-only` BUILD.md is a title + one-line goal, not a prototype-grade document. `Principal.BuildReview` flags size↔depth mismatches.
 
 The human may also pre-declare size in `plans/thread.md` (an explicit `size: phase-only` line, or natural-language signals like "patch" / "MVP" / "full prototype"); `Product.ProductVision` will respect it.
 

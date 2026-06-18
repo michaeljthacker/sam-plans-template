@@ -50,9 +50,22 @@ The `size` frontmatter field is **required** and selects the planning depth for 
 | `full` | 2+ (typical 3+) | 2+ | 2+ | Full prototype / major feature. Default ceremony. |
 | `single-milestone` | exactly 1 | 2+ | 2+ | Substantial feature on an existing product. |
 | `phase-only` | exactly 1 | exactly 1 | 2+ | Small feature; one cohesive chunk of work. |
-| `step-only` | exactly 1 | exactly 1 | 1–3 | Patch / dependency bump / small fix; minimum ceremony. |
+| `step-only` | exactly 1 | exactly 1 | 1–3 | **Not a build** — cursory look, brief human check, implement. Use when the build process would cost more than the work itself (patches, dependency bumps, mechanical edits, well-scoped small fixes). Chosen by intent/risk, not step count. |
 
-The inner phase loop (DraftQuestions → … → PhaseApproval) is identical for every size — `size` only caps the number of milestones, phases, and steps that downstream actions may plan. It is independent of all `config.json` knobs.
+`step-only` uses a **carve-out route**: `Product.ProductVision` → `Human.ApproveBuild` (the one mandatory human touchpoint) → `Staff.QuickImplement` → done. It skips `Principal.BuildReview`, `Principal.MilestonePlan`, `Human.ApproveMilestone`, the Q&A loop, standalone `Principal.CodeReview` / `Staff.ReviewReconciliation`, `Writer.DocumentationUpdate`, `Human.PhaseApproval`, `PM.AdvancePhase`, and `PM.MilestoneCloseout`. Verification still happens — `Staff.QuickImplement` self-verifies — only the formal review *actions* are cut.
+
+The other three sizes share the standard action chain (DraftQuestions → … → PhaseApproval). `size` only caps the number of milestones, phases, and steps that downstream actions may plan, independent of all `config.json` knobs. `phase-only` has exactly one phase, so `Writer.DocumentationUpdate` is skipped (`PM.AdvancePhase` short-circuits to `PM.MilestoneCloseout` and there is nothing to document yet at that point — closeout's CHANGELOG entry covers it).
+
+### Prose depth scales with size
+
+Artifacts (`BUILD.md`, `MILESTONE.md`, plans, reviews, documentation updates) **MUST** match prose depth to the declared `size`. An over-detailed artifact for a small size is a defect, not thoroughness — `Principal.BuildReview` flags size↔depth mismatches alongside size↔milestone-count mismatches.
+
+- `step-only` — title + one-line goal + `size` frontmatter. Skip Scope / Success / Risks / Milestones sections unless something is genuinely non-obvious. Reviews and notes are a few bullets, not pages.
+- `phase-only` — terse: a short paragraph (or a few bullets) per section. Only the one milestone / one phase that exists.
+- `single-milestone` — current depth, but scoped to the one milestone.
+- `full` — current depth.
+
+Rule of thumb: the document's length should embarrass you if it doesn't match the size. If a `step-only` `BUILD.md` reads like a `full` one, trim it.
 
 `Principal.PlanDiversion` may resize a build mid-flight; growing past the current size's caps requires the diversion to update `size` and re-route through `Human.ApproveBuild`.
 
