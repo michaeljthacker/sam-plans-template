@@ -6,11 +6,18 @@ Goal: Review plans/BUILD.md for technical feasibility, scope clarity, and comple
 Inputs:
 - plans/state.json (routing + context)
 - plans/config.json (workflow configuration — read `status_updates`)
+- plans/VISION.md (the concept brief — the human's original intent for this Build)
 - plans/BUILD.md (the Build plan to review)
 - plans/STATUS.md (current snapshot)
 
 Instructions:
 1) Review plans/BUILD.md against these criteria:
+   - **Fidelity to the concept brief.** Read plans/VISION.md — the human's original
+     intent — and check that BUILD.md faithfully captures it: the right goal, scope,
+     and any constraints the human called out. Flag drift (BUILD.md solving a different
+     problem, quietly dropping a stated constraint, or over/under-scoping vs. the
+     brief). VISION.md is the durable reference of what the human actually asked for;
+     do NOT modify it — read it for grounding only.
    - Is the purpose clear and specific?
    - Is the scope well-defined (in/out)?
    - Are success criteria measurable?
@@ -102,6 +109,7 @@ Instructions:
 Constraints:
 - Do not implement code.
 - Do not modify plans/BUILD.md yourself — flag issues for resolution.
+- Do not modify plans/VISION.md — it is the human-owned concept brief, read-only to actions.
 - Do not create plans/MILESTONE.md (that is the next action after Human.ApproveBuild).
 
 Output:

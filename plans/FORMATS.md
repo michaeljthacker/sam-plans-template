@@ -9,10 +9,30 @@ template/placeholder content with real content. Do not preserve "About this file
 
 ---
 
+## VISION.md
+
+**What it is:** The **concept brief** — the durable seed for the Build. The human writes their project idea, intent, constraints, and any early thinking here in whatever form they have (one sentence to several paragraphs). It is the answer to "what are we building and why," captured *before* any planning artifact exists.
+**Updated by:** **Human only.** No action ever modifies `VISION.md` — it is read-only to the workflow. `Product.ProductVision` reads it as the seed for `README.md` / `BUILD.md`; `Principal.BuildReview` and `Principal.MilestonePlan` (and any later action) consult it to recover original intent. It is left **untouched, for future reference** — a stable record of the founding concept that does not get pruned or rewritten as the Build evolves.
+
+**VISION.md vs. thread.md:** `VISION.md` is the *durable* seed (original concept, never pruned). `thread.md` is *transient* working memory (questions, answers, review notes) that `PM.ThreadMaintenance` prunes over time. Put the founding idea in `VISION.md`, not `thread.md`.
+
+```
+# VISION
+
+<Free-form concept brief: what the project is, why it exists, who it's for,
+ key constraints, and any early scope or design thinking. Prose or bullets —
+ whatever the human has. May include a size hint (e.g., "size: phase-only"
+ or natural-language signals like "small fix" / "full prototype").>
+```
+
+There is no required structure — this is human input, read by AI. Keep it as the founding statement of intent; ongoing decisions belong in `DECISIONS.md` / `STANDARDS.md`, and day-to-day working memory belongs in `thread.md`.
+
+---
+
 ## BUILD.md
 
 **What it is:** The multi-milestone plan for the current Build — a Build is a major body of work on the product. Describes what is being built, why, scope boundaries, success criteria, and milestone breakdown.
-**Updated by:** Created by `Product.ProductVision`; reviewed (not modified) by `Principal.BuildReview`; updated when Build-level scope changes (including resize via `Principal.PlanDiversion`).
+**Updated by:** Created by `Product.ProductVision` (seeded from `VISION.md`); reviewed (not modified) by `Principal.BuildReview`; updated when Build-level scope changes (including resize via `Principal.PlanDiversion`).
 
 ```
 ---
@@ -43,7 +63,7 @@ size: full | single-milestone | phase-only | step-only
 
 ### Size
 
-The `size` frontmatter field is **required** and selects the planning depth for this build. It is chosen by `Product.ProductVision` (using any hint the human left in `thread.md`, or inferred from scope) and validated by `Principal.BuildReview` against the milestone breakdown. The four values:
+The `size` frontmatter field is **required** and selects the planning depth for this build. It is chosen by `Product.ProductVision` (using any hint the human left in `VISION.md`, or inferred from scope) and validated by `Principal.BuildReview` against the milestone breakdown. The four values:
 
 | `size` | Milestones | Phases per M | Steps per P | Use case |
 |---|---|---|---|---|
@@ -249,7 +269,7 @@ Every entry MUST include a `**Why this matters long-term:**` line. If you can't 
 
 ## thread.md — Append-Only Protocol
 
-**What it is:** Active working memory for the project — a chronological log of questions, answers, review requests, feedback, and decisions. AI-readable, not machine-parseable.
+**What it is:** Active working memory for the project — a chronological log of questions, answers, review requests, feedback, and decisions. AI-readable, not machine-parseable. (The *founding concept* lives in `VISION.md`, not here — see the VISION.md section above.)
 **Updated by:** Most actions append to it; only `PM.ThreadMaintenance` may prune or restructure.
 
 `thread.md` is an **append-only chronological log**. It is not a structured document

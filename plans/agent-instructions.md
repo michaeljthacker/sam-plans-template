@@ -49,6 +49,10 @@ BACKLOG.md, CHANGELOG.md, DECISIONS.md, STANDARDS.md, thread.md), replace all
 template/placeholder content with real content. Reference `plans/FORMATS.md` for the
 expected structure of each file. Do not preserve explanatory preamble from template stubs.
 
+`plans/VISION.md` is the exception: it is the human-authored **concept brief** (the seed
+for the Build) and is **read-only to every action** — read it for original intent, never
+write to it. See `plans/FORMATS.md` for details.
+
 ### Multi-root workspaces
 If `plans/config.json` defines `workspace.shared_repos`, this is a multi-root project
 and scope-of-change routing applies. Read `plans/FORMATS.md` ("workspace block" and

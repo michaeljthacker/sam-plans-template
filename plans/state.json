@@ -24,7 +24,7 @@
     "notes": [
       "STATE is the routing source of truth.",
       "STATUS must be updated every action.",
-      "Thread is active working memory; prune regularly."
+      "Thread is active working memory; prune when there is genuinely prunable/promotable content, not merely because it is long (prunability gate — see plans/README.md 'Thread management' and D-026). Cannot prune before most content before Code Review and Human Approval."
     ]
   }
 }

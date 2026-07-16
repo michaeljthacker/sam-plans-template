@@ -77,8 +77,35 @@ Instructions:
      an "After StatusUpdate: proceed to <X>" entry, the destination is X. Clear
      that entry from context.notes and skip the phase-end logic in 5b.
    - **5b) Phase-end destination** (when no hand-off entry is present):
-     - First, assess whether plans/thread.md needs maintenance (has it grown long,
-       or does it contain substantial resolved content that should be pruned?).
+     - First, run a **cursory prunability check** to decide whether routing through
+       PM.ThreadMaintenance is worthwhile *right now*. Length alone is NOT sufficient —
+       a long thread whose content is all still needed should NOT be routed to
+       maintenance (that just churns and re-routes with nothing pruned, which is the
+       failure mode this check exists to prevent). Route to ThreadMaintenance only if
+       there is content it could actually remove, compress, or promote *given the
+       current config and state*. Apply these gates (use defaults when a config key
+       is absent):
+         - `code_review = "every_milestone"` and this is NOT the last phase of the
+           milestone → this milestone's implementation details, review requests, and
+           Q&A are still needed (CodeReview hasn't run) → not prunable yet.
+         - `formal_approval = "every_milestone"` and NOT the last phase → phase
+           summaries / acceptance notes are still needed → not prunable yet.
+         - `documentation_update = "every_milestone"` and NOT the last phase → this
+           milestone's implementation details are still needed by Writer → not
+           prunable yet.
+       After applying the gates, thread maintenance is worthwhile only if at least one
+       of these is true:
+         - There is resolved content from an already-closed phase (whose gates above
+           have passed) that can be compressed or dropped.
+         - There is a durable decision/standard sitting in thread.md that should be
+           promoted to DECISIONS.md / STANDARDS.md now.
+         - The thread contains substantial genuinely-resolved back-and-forth not
+           protected by any gate above.
+       If NONE of these hold (e.g., everything in the thread belongs to the current,
+       still-open milestone under an `every_milestone` gate), do NOT route to
+       ThreadMaintenance — proceed straight to the destination below. When in doubt,
+       skip maintenance; it will get another chance next phase and always runs at
+       milestone closeout.
      - Then, determine the DESTINATION action by evaluating in order (use defaults
        when a config key is absent):
 
@@ -101,7 +128,7 @@ Instructions:
           - Else if PhaseApproval needed → destination = Human.PhaseApproval
           - Else → destination = PM.AdvancePhase
 
-     - If thread needs maintenance:
+     - If the prunability check above concluded maintenance is worthwhile:
        - pause_type = "continue"
        - next_action_id = PM.ThreadMaintenance
        - Add a context.notes entry: "After ThreadMaintenance: proceed to <destination>"

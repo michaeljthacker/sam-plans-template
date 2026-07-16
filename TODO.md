@@ -270,6 +270,7 @@ Small, prompt-and-script-only changes. No schema, routing, or config additions. 
 - [ ] **`plans/status.ps1` — richer git surface and reordering**:
   - Add counts (not filenames) for: untracked files, unstaged modifications, staged changes. Keeps the one-screen contract but gives a real working-tree pulse beyond ahead/behind.
   - Move the non-default `config.json` block to the **bottom** of the output — the position / pause / blockers / git block is the action surface; config is reference.
+- [ ] **`PM.AdvancePhase` should handle milestone closeout inline.** Today, when the current phase is the last in the milestone, `PM.AdvancePhase` does nothing structural and routes to `PM.MilestoneCloseout` — a tiny separate action. Let `PM.AdvancePhase` just *do* the closeout when that's the appropriate route, rather than bouncing to another action for a small task. (Feedback 2026-07-16.) Keep them able to coexist — closeout still exists as its own action for direct invocation — but AdvancePhase shouldn't punt when it's already the right actor. Touches: `PM_AdvancePhase.txt`, `PM_MilestoneCloseout.txt`, routing docs; confirm no double-closeout. Small-ish, but decide whether it's a merge or an inline call before doing it.
 
 ---
 
@@ -285,6 +286,14 @@ Items that need a small design pass before implementation. Not committed to a ve
   - The first is cleaner; the second is cheaper. Decide during design.
 - [ ] **`Principal.AdhocReview` — model-up review escape hatch.** When the user is working in a constrained surface (Copilot in VS Code, no Opus access on their plan) and wants a higher-capability model to weigh in, give them a clean handoff: "Summarize this in `thread.md` and route to `Principal.AdhocReview`." The receiving session (run in a higher-tier surface) picks it up, reviews, writes findings back. Needs: registry entry, template, routing semantics (where it returns to), and a `context.notes` convention for the handoff summary. Distinct from `Principal.CodeReview` (which is in-flow) — this is on-demand.
 
+- [ ] **`Human.*` task-action naming is ambiguous.** `Human.ApproveBuild` / `Human.ApproveMilestone` approve **plans** (`BUILD.md` / `MILESTONE.md`), but `Human.PhaseApproval` approves the **completed work** of a phase. The `Approve{thing}` vs. `{thing}Approval` distinction is too subtle — someone new to SAM (or the AI mid-run) can't tell "approve the plan" from "approve the work" by name alone. (Feedback 2026-07-16.) Proposed convention: `Approve{thing}` = approve a plan; `{thing}Approval` = approve completed work — or pick clearer names outright. **Larger-scale confusion risk, small implementation** (single user today), but a rename touches `state.schema.json` `action_id` enum, `registry.json`, every routing reference in templates, `README.md`, and helper scripts. Do it as one atomic pass with no stale remnants; add a DECISION entry.
+
+- [ ] **Remove `STEP` from `state.json`.** A "chunk" of work should always be a **phase**, not a step. When a right-sized BUILD is used (e.g., `phase-only`), the process currently tries to execute STEPS as if they were PHASES, which defeats the point of right-sizing. (Feedback 2026-07-16.) Drop `step_id` from `state.json` / `state.schema.json` and rework any routing/vocabulary that treats a step as an executable unit. **Design pass needed:** steps still appear in `MILESTONE.md` as planning sub-bullets and in ID conventions (`B1-M2-P4-S2`) and commit messages (`commit.ps1`); decide whether steps survive as a *planning-only* concept (no state) or are removed entirely. Touches state schema, `commit.ps1`/`next.ps1`/`status.ps1`, FORMATS.md, README ID conventions, and several templates. Add a DECISION entry.
+
+- [ ] **`context.notes` vs. `thread.md` — clarify or collapse the boundary.** Some SAM repos barely touch `state.json > context.notes`; others lean on it. Working mental model: `thread.md` = full conversation log, `notes` = "top of mind" highlights + routing hand-offs (e.g., "After ThreadMaintenance: proceed to X"). Is that distinction necessary, and is the boundary crisp enough to state? (Feedback 2026-07-16 — "is it fine? No strong feeling.") **Design pass:** either (a) document the boundary explicitly in FORMATS.md (notes = machine-relevant routing hand-offs + short-lived highlights; thread = human/AI narrative) and audit templates for misuse, or (b) collapse `context.notes` into thread.md if it earns its keep only as routing hand-offs (but those are structured and machine-read, which argues for keeping notes). Low urgency; decide direction first.
+
+- [ ] **BUILD END / release-runner action.** Add a build-completion task that drafts a clear **deployment runner doc** into `thread.md` (preferred over actually running the deploy) so the human can execute it. Should cover, for all relevant repos (frontend + backend as appropriate): PRs to `main`, version bumps, git tags, CHANGELOG `Unreleased` → `Released` move (this is the "BUILD released" action foreshadowed in D-024), env var updates, deployment steps, migrations, smoke-test best practices, and rollback plans per deployed repo. (Feedback 2026-07-16.) **Design pass:** new registry entry + template + routing (reached from `PM.MilestoneCloseout` when the final milestone of the Build completes — ties into the D-024 "future `*.BuildRelease` action"). Decide role (`PM.*`? `Writer.*`? new `Product.*`?) and whether it also performs the Unreleased→Released CHANGELOG move or just documents it. Multi-root aware (per-repo runner sections).
+
 ---
 
 ## v1.5.0 — PlanDiversion combined-approval path
@@ -295,6 +304,28 @@ Items that need a small design pass before implementation. Not committed to a ve
     - **Combined** (small build delta, substantive milestone): single approval gate covering both, one StatusUpdate, back to `Staff.DraftQuestions`. Likely a context flag on `Human.ApproveMilestone` rather than a new action — avoids template proliferation.
   - Touches: `Principal_PlanDiversion.txt`, `Human_ApproveBuild.txt`, `Human_ApproveMilestone.txt`, `PM_StatusUpdate.txt`, registry, possibly state schema for the flag.
   - Needs a DECISION entry.
+
+---
+
+## v1.6.0 — Completed (2026-07-16)
+
+Two feedback-driven changes: a durable concept-brief seed file, and a prunability gate
+so mid-lifecycle thread maintenance stops firing on no-op. See D-025 and D-026.
+
+### `plans/VISION.md` concept brief (D-025)
+
+- [x] Created `plans/VISION.md` — human-authored concept brief; the durable, read-only seed for a Build. Actions read it but never modify it; it is not pruned like `thread.md`.
+- [x] Added VISION.md section to `plans/FORMATS.md` with a VISION-vs-thread boundary note; updated the BUILD.md "Updated by" line and the size-hint source (now VISION.md).
+- [x] Updated `Product_ProductVision.txt` (primary seed = VISION.md, thread.md fallback; read-only guard), `Principal_BuildReview.txt` (fidelity-to-concept-brief check), `Principal_MilestonePlan.txt` (consult original intent), `Staff_QuickImplement.txt` (VISION.md is the real spec for step-only) — all with explicit "do not modify VISION.md" constraints.
+- [x] Added `plans/VISION.md` to those four actions' `registry.json` inputs and to `sync-manifest.json` `instance_files` (bumped manifest to 1.6.0).
+- [x] Updated `plans/README.md` (instance-file list, sizing, lifecycle §1, quickstart step 3, thread management) and `plans/agent-instructions.md` (read-only exception in instance-file hygiene).
+- [x] Backward compat: empty/absent VISION.md falls back to `thread.md`.
+
+### Prunability gate before ThreadMaintenance (D-026)
+
+- [x] `PM_StatusUpdate.txt`: replaced the naive "thread has grown long" trigger with a cursory prunability check — routes to `PM.ThreadMaintenance` only if, after applying `every_milestone` config gates and state, there is genuinely prunable/promotable content. When in doubt, skip (closeout always runs maintenance).
+- [x] `PM_ThreadMaintenance.txt`: added a no-op guard so a manual or closeout-triggered invocation with nothing to do leaves files unchanged, sets `result = "ok"`, and routes onward instead of inventing pruning.
+- [x] `plans/README.md`: documented the prunability gate in the Thread management section.
 
 ---
 

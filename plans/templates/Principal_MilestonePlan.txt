@@ -6,6 +6,7 @@ Goal: Draft plans/MILESTONE.md for the current milestone — a detailed, phased 
 Inputs:
 - plans/state.json (routing + context — identifies which milestone to plan)
 - plans/config.json (workflow configuration — read `status_updates`)
+- plans/VISION.md (the concept brief — the human's original intent for this Build)
 - plans/BUILD.md (overall Build scope and milestone list)
 - plans/DECISIONS.md (project-specific architectural choices)
 - plans/STANDARDS.md (team-level rules portable across projects)
@@ -13,6 +14,11 @@ Inputs:
 
 Instructions:
 1) Identify the current milestone from plans/state.json (milestone_id).
+   Consult plans/VISION.md — the human's original concept brief — for grounding on
+   what this Build is ultimately for and any constraints the human stated up front.
+   It is the durable reference of original intent; do NOT modify it (read-only). Let
+   it inform the phase breakdown so the plan stays true to the founding concept, not
+   just to BUILD.md's summarized restatement of it.
 2) Read plans/BUILD.md for the milestone's high-level goal and scope, AND the
    `size` field from BUILD.md frontmatter. If frontmatter is missing entirely
    (legacy build), treat as `size: full` per plans/FORMATS.md. The size caps the
@@ -74,6 +80,7 @@ Instructions:
 Constraints:
 - Do not implement code.
 - Do not modify plans/BUILD.md.
+- Do not modify plans/VISION.md — it is the human-owned concept brief, read-only to actions.
 - Phases must be concrete and actionable — avoid vague descriptions.
 - Acceptance criteria must be verifiable (not "looks good" but "unit tests pass for X").
 

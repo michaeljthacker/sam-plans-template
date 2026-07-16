@@ -26,6 +26,19 @@ Instructions:
    - If `documentation_update = "every_milestone"`: do NOT prune implementation
      details that Writer.DocumentationUpdate will need.
    - If any setting is `"every_phase"` or `"never"`, prune normally for those concerns.
+1a) **No-op guard.** After reading config, check whether there is actually anything to
+    do. If, once the gates above are applied, there is NO prunable resolved content, NO
+    durable decision/standard worth promoting, and NO structural cleanup needed (i.e.,
+    everything in thread.md is still-active or protected by an `every_milestone` gate on
+    an open milestone), then this is a legitimate no-op. Do NOT invent pruning or promote
+    low-signal entries just to justify the run. Instead:
+    - Leave plans/thread.md, DECISIONS.md, STANDARDS.md, and MILESTONE.md unchanged.
+    - Set last_action.result = "ok" (nothing to prune is success, not failure).
+    - Skip to step 8 to route onward (honor any "After ThreadMaintenance: proceed to <X>"
+      note in context.notes).
+    Note that upstream PM.StatusUpdate now runs its own prunability check before routing
+    here, so a no-op should be rare — but this guard keeps a manual or closeout-triggered
+    invocation from churning.
 2) Identify resolved questions/discussions in plans/thread.md.
 3) Promote information (within the primary repo):
    - **Before promoting, classify** each candidate as one of:

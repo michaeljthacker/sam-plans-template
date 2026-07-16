@@ -10,7 +10,7 @@
       "task": "ProductVision",
       "template_path": "plans/templates/Product_ProductVision.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/config.json", "plans/thread.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/VISION.md", "plans/thread.md"],
       "required_outputs": ["README.md", "plans/BUILD.md", "plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
@@ -20,7 +20,7 @@
       "task": "BuildReview",
       "template_path": "plans/templates/Principal_BuildReview.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/config.json", "plans/BUILD.md", "plans/STATUS.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/VISION.md", "plans/BUILD.md", "plans/STATUS.md"],
       "required_outputs": ["plans/thread.md", "plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
@@ -40,7 +40,7 @@
       "task": "MilestonePlan",
       "template_path": "plans/templates/Principal_MilestonePlan.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/config.json", "plans/BUILD.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/STATUS.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/VISION.md", "plans/BUILD.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/STATUS.md"],
       "required_outputs": ["plans/MILESTONE.md", "plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
@@ -90,7 +90,7 @@
       "task": "QuickImplement",
       "template_path": "plans/templates/Staff_QuickImplement.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/config.json", "plans/BUILD.md", "plans/thread.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/STATUS.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/VISION.md", "plans/BUILD.md", "plans/thread.md", "plans/DECISIONS.md", "plans/STANDARDS.md", "plans/STATUS.md"],
       "required_outputs": ["plans/thread.md", "plans/STATUS.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": true }
     },

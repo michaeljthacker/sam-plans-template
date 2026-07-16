@@ -352,3 +352,31 @@ Only a BUILD is "released". A milestone closeout does NOT move CHANGELOG entries
 - BUILD lifecycle uses "approved" → "released". A future `*.BuildRelease` action (not yet defined) would handle the Unreleased → Released move and any release tagging.
 
 **Supersedes:** Prior `PM_MilestoneCloseout.txt` step 2 wording ("Move items from 'Unreleased' to a dated release section") and the matching FORMATS.md line.
+
+---
+
+## D-025 — `plans/VISION.md` is the concept brief; the durable, read-only seed for a Build
+**Date:** 2026-07-16
+**Decision:** The human's founding project idea — the **concept brief** — lives in a new instance file `plans/VISION.md`, not in `plans/thread.md`. VISION.md is **human-authored and read-only to every action**: `Product.ProductVision` seeds `README.md` / `BUILD.md` from it; `Principal.BuildReview`, `Principal.MilestonePlan`, and `Staff.QuickImplement` (step-only) read it for original intent; no action ever writes to it. It is left untouched, for future reference — a stable record of the founding concept that is never pruned.
+
+Backward compatibility: if `VISION.md` is empty or absent (legacy setups), `Product.ProductVision` falls back to reading the idea from `thread.md`. Size hints (`size:` line or natural-language signals) are read from `VISION.md` first, then `thread.md`.
+
+Files touched: created `plans/VISION.md` stub; added a VISION.md section to `plans/FORMATS.md` (with a VISION vs. thread boundary note); updated `Product_ProductVision.txt`, `Principal_BuildReview.txt`, `Principal_MilestonePlan.txt`, `Staff_QuickImplement.txt` (inputs + read-only guard); added `plans/VISION.md` to those four actions' `registry.json` inputs and to `sync-manifest.json` `instance_files`; updated `plans/README.md` (file list, sizing, lifecycle, quickstart, thread management) and `plans/agent-instructions.md` (read-only exception in instance-file hygiene). Per D-023, `example/` was left frozen.
+
+**Why this matters long-term:** thread.md is transient working memory that `PM.ThreadMaintenance` prunes, so the original concept was at risk of being compressed or dropped exactly when a later action (e.g., MilestonePlan several milestones in) most needs to recover *why* the Build exists. Separating the durable seed (VISION.md) from transient working memory (thread.md) gives every downstream action a stable, authoritative statement of intent to check plans against, and removes the "did the idea get pruned?" ambiguity. The boundary — VISION = founding intent, DECISIONS/STANDARDS = ongoing durable choices, thread = day-to-day memory — keeps each file's job legible.
+
+**Supersedes:** "Write your project idea in `plans/thread.md`" guidance from v1.3.0 (the thread.md path remains a supported legacy fallback, not the recommended location).
+
+---
+
+## D-026 — Prunability gate before routing to PM.ThreadMaintenance
+**Date:** 2026-07-16
+**Decision:** `PM.StatusUpdate` must run a cursory prunability check before routing to `PM.ThreadMaintenance`. Thread *length alone is not a trigger*. Maintenance is worthwhile only if, after applying the current `config.json` gates and state, there is content that can actually be removed, compressed, or promoted right now:
+- Content protected by an `every_milestone` gate (`code_review` / `formal_approval` / `documentation_update`) on the still-open milestone is NOT prunable yet — the gated action hasn't run and still needs that context.
+- Maintenance is worthwhile only when there is resolved content from an already-closed phase, a durable decision/standard worth promoting, or substantial genuinely-resolved back-and-forth not protected by a gate.
+
+If nothing qualifies, `PM.StatusUpdate` routes straight to its normal destination and skips maintenance. `PM.ThreadMaintenance` also gained a no-op guard (leave files unchanged, `result = "ok"`, route onward) so a manual or closeout-triggered invocation with nothing to do doesn't invent pruning. Maintenance still always runs at milestone closeout, where the whole milestone's thread becomes prunable.
+
+**Why this matters long-term:** the mid-lifecycle trigger (D-020) keyed on "thread has grown long," which under `every_milestone` config gates is a false positive for most of a milestone — the thread is long *and* everything in it is still needed. That produced a loop where SAM kept routing to ThreadMaintenance, which pruned nothing and routed back, wasting a whole action each phase. Gating the route on genuine prunability aligns the trigger with ThreadMaintenance's own config-aware constraints (D-021/D-020) so the two can't disagree.
+
+**Supersedes:** D-020's unconditional "if the thread has grown long or contains substantial resolved content" trigger — now qualified by the prunability gate.

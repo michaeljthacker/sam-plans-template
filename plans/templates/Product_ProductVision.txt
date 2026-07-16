@@ -3,28 +3,34 @@ TASK: ProductVision
 
 Goal: Transform the human's project idea into a concrete product vision — a root README.md and plans/BUILD.md that define what is being built, why, and at what scope.
 
-This is the FIRST action in a new Build. The human has provided a project idea (in plans/thread.md or verbally). Your job is to draft the foundational artifacts.
+This is the FIRST action in a new Build. The human has seeded their project idea as a
+**concept brief** in plans/VISION.md (or, for legacy setups, in plans/thread.md or
+verbally). Your job is to draft the foundational artifacts from that seed.
 
 Inputs:
 - plans/state.json (routing + context)
 - plans/config.json (workflow configuration — read `status_updates` for STATUS init)
-- plans/thread.md (project idea, answers to setup questions)
+- plans/VISION.md (the concept brief — the durable seed for this Build)
+- plans/thread.md (fallback seed location + any setup context)
 
 Instructions:
-1) Read plans/thread.md for the human's project idea and any setup context.
-   If the thread does not yet contain sufficient project context, check for:
+1) Read plans/VISION.md for the human's concept brief — this is the primary seed for
+   the Build. If VISION.md is empty or absent (legacy setups), fall back to plans/thread.md
+   for the project idea. Look for enough context to draft the artifacts:
    - A one-sentence project goal
    - A Build B1 short name or description
    - A Milestone M1 goal
-   If any of these are missing and cannot be inferred from the provided idea,
+   If any of these are missing and cannot be inferred from the provided material,
    set last_action.result = "blocked", pause_type = "decision",
    next_action_id = Human.ResolveBlocker,
    and add a blocker requesting the missing information.
+   **Do NOT modify plans/VISION.md** — it is the human-owned concept brief and is left
+   untouched, for future reference. Read from it; never write to it.
 2) Determine build `size` (recorded in BUILD.md frontmatter — see plans/FORMATS.md):
-   - First, scan plans/thread.md for an explicit hint. Accept either an explicit
-     `size: <value>` line OR natural-language signals such as "patch", "small fix",
-     "dependency bump", "small feature", "full prototype", "MVP", "major build".
-     If the human stated a size, respect it.
+   - First, scan plans/VISION.md (then plans/thread.md) for an explicit hint. Accept
+     either an explicit `size: <value>` line OR natural-language signals such as "patch",
+     "small fix", "dependency bump", "small feature", "full prototype", "MVP", "major
+     build". If the human stated a size, respect it.
    - If no hint, infer from the project scope using these definitions:
      - `full` — multi-milestone work (2+ milestones, typical 3+). Full prototype or major feature.
      - `single-milestone` — substantial feature, single milestone, multiple phases.
@@ -58,8 +64,8 @@ Instructions:
      ```
      Do NOT add Purpose, Scope, Success criteria, Milestones, or Risks sections.
      The single line under the heading IS the Build. The carve-out route
-     (Human.ApproveBuild → Staff.QuickImplement) reads this line plus thread.md;
-     it does not need prototype-grade framing.
+     (Human.ApproveBuild → Staff.QuickImplement) reads this line plus VISION.md /
+     thread.md; it does not need prototype-grade framing.
    - **Otherwise** — full BUILD.md:
      - Frontmatter at the top: `---\nsize: <chosen size>\n---`
      - Fill in the Build ID (from state.json, typically B1)
@@ -101,6 +107,7 @@ Instructions:
 
 Constraints:
 - Do not implement any code.
+- Do not modify plans/VISION.md — it is the human-owned concept brief, read-only to actions.
 - Do not create plans/MILESTONE.md (that is Principal.MilestonePlan's job).
 - Keep the README and BUILD concise — they will be reviewed and refined.
 - BUILD.md frontmatter MUST include a valid `size` value (`full`, `single-milestone`, `phase-only`, or `step-only`).
