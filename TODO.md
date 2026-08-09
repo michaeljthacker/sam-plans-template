@@ -1,7 +1,7 @@
 # SAM v0 — Implementation Backlog
 
 Prioritized work to complete SAM v0.
-Future chat sessions: read `DECISIONS.md` for rationale, `plans/README.md` for the spec, then pick up from here.
+Future chat sessions: read `DECISIONS.md` for rationale, `plans/README.md` for the spec, then pick up from the **Open work** section below. Completed history is archived at the bottom.
 
 ---
 
@@ -11,6 +11,124 @@ Future chat sessions: read `DECISIONS.md` for rationale, `plans/README.md` for t
 - [x] Done
 
 ---
+
+# Open work
+
+## Next — Quick polish
+
+Small, prompt-and-script-only changes. No schema, routing, or config additions. Pick up when the current batch lands; not promised to a specific version.
+
+- [ ] **`mjt.pub` attribution** — surface "An mjt.pub project" prominently (not just a footer) in the root `README.md` and `plans/README.md`. `mjt.pub` should be a link. Toward the top of each file, not the bottom.
+- [ ] **`--AUTO-` commit format keeps leaking into manual commits** — `Staff.ImplementationExecution` (and others) still produce `--AUTO-B2-M1-P2-Staff.ImplementationExecution: ...` style messages despite explicit prohibition. The v1.4.0 templates added the forbid-line, but the AI is ignoring it. Strengthen wording in `Staff_ImplementationExecution.txt`, `Staff_ReviewReconciliation.txt`, `Human_PhaseApproval.txt` — make it the first instruction, not a footnote. Add a concrete contrast example (✅ good manual message vs ❌ `--AUTO-`-prefixed).
+- [ ] **`thread.md` entry placement and structure drift** — AI inconsistently appends entries to top vs. bottom and keeps re-introducing sectioning (Resolved / Open Issues / etc.) that was abolished long ago. Codify in `plans/FORMATS.md` and every template that writes to thread.md:
+  - **New entries go at the bottom** (user's current preference — promote from "either is fine" to canonical).
+  - **No sub-sections, no grouping, no "Resolved" buckets.** Entry titles as `##` headers are fine; that's it.
+  - **Resolved content gets deleted, not archived in-file.** If it's durable, it belongs in DECISIONS / STANDARDS / CHANGELOG / README — not in a thread.md "resolved" section. `PM.ThreadMaintenance` is the pruner.
+  - No historical-summary narrative. CHANGELOG is for that.
+- [ ] **`plans/status.ps1` — richer git surface and reordering**:
+  - Add counts (not filenames) for: untracked files, unstaged modifications, staged changes. Keeps the one-screen contract but gives a real working-tree pulse beyond ahead/behind.
+  - Move the non-default `config.json` block to the **bottom** of the output — the position / pause / blockers / git block is the action surface; config is reference.
+- [ ] **`PM.AdvancePhase` should handle milestone closeout inline.** Today, when the current phase is the last in the milestone, `PM.AdvancePhase` does nothing structural and routes to `PM.MilestoneCloseout` — a tiny separate action. Let `PM.AdvancePhase` just *do* the closeout when that's the appropriate route, rather than bouncing to another action for a small task. (Feedback 2026-07-16.) Keep them able to coexist — closeout still exists as its own action for direct invocation — but AdvancePhase shouldn't punt when it's already the right actor. Touches: `PM_AdvancePhase.txt`, `PM_MilestoneCloseout.txt`, routing docs; confirm no double-closeout. Small-ish, but decide whether it's a merge or an inline call before doing it.
+
+- [ ] **`config.json` defaults refresh.** (Feedback 2026-08-09.) Update the shipped `plans/config.json` defaults to: `{ "$schema": "config.schema.json", "code_review": "every_milestone", "formal_approval": "every_milestone", "documentation_update": "every_milestone", "review_strictness": "balanced", "re_review_trigger": "auto", "status_updates": "pm_only" }`. This shifts `code_review`, `formal_approval`, and `documentation_update` to `every_milestone` (from per-phase). Confirm each key/enum exists in `config.schema.json`; update the `default` in the schema too so the two stay in sync, and update the FORMATS.md config table + README Configuration table. Verify no template's "if key absent, use default" fallback contradicts the new defaults.
+
+- [ ] **`last_action.summary` is drifting into justification, not description.** (Feedback 2026-08-09.) The `state.json > last_action.summary` field increasingly reads as a *defense of how the action was handled* rather than a plain "I did X." Real example carried parenthetical rationale like `(status_updates=pm_only)` explaining why STATUS wasn't touched, hand-off-note bookkeeping, and `pause_type` justification — all of which is already derivable from config + state. Tune the templates (and the FORMATS.md `state.json` guidance) so `summary` states *what was done*, briefly, and omits: config-value citations used to justify a non-action, "no X changes because…" explanations, and pause_type reasoning. Keep the useful specifics (position, next action) but cut the meta-justification. Don't over-correct into terseness — many summaries are 2–3× longer than needed; aim for the short, factual end.
+
+- [ ] **`Human.PhaseApproval` must brief the whole milestone when `formal_approval: every_milestone`.** (Feedback 2026-08-09.) When config gates approval to `every_milestone`, the phase-approval gate is *actually* a milestone approval — but the template still briefs the human on just the last phase. The briefing must cover the entire milestone's work, not the final phase alone. Update `Human_PhaseApproval.txt` to detect the `every_milestone` case and assemble a milestone-scoped briefing (all phases since the last approval). Pairs with the `Principal.CodeReview` fix below and the naming ambiguity above.
+
+- [ ] **`Principal.CodeReview` must review the full milestone under `code_review: every_milestone`.** (Feedback 2026-08-09.) Add an explicit config check to `Principal_CodeReview.txt`: when `code_review` is `every_milestone`, review all phases of the milestone, not just the last phase's diff. Currently the review scope silently stays phase-local regardless of config, so `every_milestone` reviews miss earlier phases. Mirror the same "read config, widen scope" logic used for `Human.PhaseApproval` above.
+
+- [ ] **`sam-update.py` / sync-manifest: scaffold missing instance files (copy-if-missing).** (Regression, feedback 2026-08-09.) When an `instance_files` entry does not exist *at all* in the target repo, copy it from the source template (copy-if-missing, never overwrite) so the file gets scaffolded. Existing instance files must still never be touched. Regression case: `plans/VISION.md` was skipped as absent and had to be copied by hand. Add a test/dry-run assertion that an absent instance file is reported as "will scaffold" while a present one stays "skipped (instance)".
+
+---
+
+## Proposed — Design work
+
+Items that need a small design pass before implementation. Not committed to a version or sequenced as a batch — each can move to Next independently once its shape is clear.
+
+- [ ] **Buy-vs-build lens covers free / OSS / asset-library options, not just paid services.** Current v1.4.1 Principal "engineering judgment" lens nudges toward managed-service consideration, but the AI still defaults to building when the alternative is *free* (Kenney / OpenGameArt / itch.io for game assets, public APIs, free tiers, OSS libraries that solve large chunks of the problem). Update `Principal_BuildReview.txt`, `Principal_MilestonePlan.txt`, `Principal_AnswerQuestions.txt` to explicitly call out *free / public / community* options alongside paid services. Concrete examples in the prompt help (the asset-library case is a good one).
+- [ ] **`Human.HumanOnlyPhase` (or guidance for `Human.ResolveBlocker` as full-phase scope).** When an entire phase is human work (Cloudflare account + R2 bucket + domain + token setup; substantial system provisioning; account/billing setup), the AI gets confused about routing around / after the human work. Two paths:
+  - Add a new `Human.HumanOnlyPhase` task-action with explicit "this phase is entirely human work, here's what to do, here's when to come back" semantics.
+  - Or document `Human.ResolveBlocker` as legitimately scope-able to a whole phase and fix the routing confusion in prompts.
+  - The first is cleaner; the second is cheaper. Decide during design.
+- [ ] **`Principal.AdhocReview` — model-up review escape hatch.** When the user is working in a constrained surface (Copilot in VS Code, no Opus access on their plan) and wants a higher-capability model to weigh in, give them a clean handoff: "Summarize this in `thread.md` and route to `Principal.AdhocReview`." The receiving session (run in a higher-tier surface) picks it up, reviews, writes findings back. Needs: registry entry, template, routing semantics (where it returns to), and a `context.notes` convention for the handoff summary. Distinct from `Principal.CodeReview` (which is in-flow) — this is on-demand.
+
+- [ ] **Action naming once-over — several names don't say what they do.** (Feedback 2026-07-16 and 2026-08-09.) Do a single "what else doesn't make sense right now?" pass and rename as one atomic operation. Known offenders:
+  - **`Human.*` approve-plan vs. approve-work.** `Human.ApproveBuild` / `Human.ApproveMilestone` approve **plans** (`BUILD.md` / `MILESTONE.md`), but `Human.PhaseApproval` approves the **completed work** of a phase. The `Approve{thing}` vs. `{thing}Approval` distinction is too subtle — someone new to SAM (or the AI mid-run) can't tell "approve the plan" from "approve the work" by name alone. Proposed convention: `Approve{thing}` = approve a plan; `{thing}Approval` = approve completed work (e.g. `Human.ImplementationApproval`) — or pick clearer names outright.
+  - **`Staff.ImplementationExecution`** reads as redundant ("execution" adds nothing over "implementation").
+  - **`Principal.BuildReview` vs. `Human.PhaseApproval`** — `BuildReview` reviews the `BUILD.md` *file*, while `PhaseApproval` approves finished *work*; the "Review"/"Approval" words don't consistently track file-vs-work.
+  - **Larger-scale confusion risk, small implementation** (single user today), but a rename touches `state.schema.json` `action_id` enum, `registry.json`, every routing reference in templates, `README.md`, and helper scripts. Do it with no stale remnants; add a DECISION entry codifying the final naming convention.
+
+- [ ] **Remove `STEP` from `state.json`.** A "chunk" of work should always be a **phase**, not a step. When a right-sized BUILD is used (e.g., `phase-only`), the process currently tries to execute STEPS as if they were PHASES, which defeats the point of right-sizing. (Feedback 2026-07-16.) Drop `step_id` from `state.json` / `state.schema.json` and rework any routing/vocabulary that treats a step as an executable unit. **Design pass needed:** steps still appear in `MILESTONE.md` as planning sub-bullets and in ID conventions (`B1-M2-P4-S2`) and commit messages (`commit.ps1`); decide whether steps survive as a *planning-only* concept (no state) or are removed entirely. Touches state schema, `commit.ps1`/`next.ps1`/`status.ps1`, FORMATS.md, README ID conventions, and several templates. Add a DECISION entry.
+
+- [ ] **`context.notes` vs. `thread.md` — clarify or collapse the boundary.** Some SAM repos barely touch `state.json > context.notes`; others lean on it. Working mental model: `thread.md` = full conversation log, `notes` = "top of mind" highlights + routing hand-offs (e.g., "After ThreadMaintenance: proceed to X"). Is that distinction necessary, and is the boundary crisp enough to state? (Feedback 2026-07-16 — "is it fine? No strong feeling.") **Design pass:** either (a) document the boundary explicitly in FORMATS.md (notes = machine-relevant routing hand-offs + short-lived highlights; thread = human/AI narrative) and audit templates for misuse, or (b) collapse `context.notes` into thread.md if it earns its keep only as routing hand-offs (but those are structured and machine-read, which argues for keeping notes). Low urgency; decide direction first.
+
+- [ ] **BUILD END / release-runner action.** Add a build-completion task that drafts a clear **deployment runner doc** so the human can execute it (preferred over actually running the deploy). Should cover, for all relevant repos (frontend + backend as appropriate): PRs to `main`, version bumps, git tags, CHANGELOG `Unreleased` → `Released` move (this is the "BUILD released" action foreshadowed in D-024), env var updates, deployment steps, migrations, smoke-test best practices, and rollback plans per deployed repo. (Feedback 2026-07-16.) **Design pass:** new registry entry + template + routing (reached from `PM.MilestoneCloseout` when the final milestone of the Build completes — ties into the D-024 "future `*.BuildRelease` action"). Decide role (`PM.*`? `Writer.*`? new `Product.*`?) and whether it also performs the Unreleased→Released CHANGELOG move or just documents it. Multi-root aware (per-repo runner sections).
+  - **Preferred output shape (feedback 2026-08-09):** the runner should not live in `thread.md`. Instead, standardize a durable, per-repo `DEPLOYMENT.md` that the action simply *updates* for the specific deployment (version numbers, tags, env deltas, migration notes) rather than regenerating from scratch each time. First run scaffolds `DEPLOYMENT.md`; subsequent releases patch it. Decide whether it's a system-scaffolded instance file (like STATUS.md) or fully human/AI-owned. Multi-root: one `DEPLOYMENT.md` per deployed repo.
+
+- [ ] **"Not a Build" mode — maintenance chores below the Build threshold.** (Feedback 2026-08-09.) Some work isn't a Build at all: "fix the Dependabot alerts," bump a dependency, apply a security patch. Today the smallest unit is a `step-only` Build with a B-number, which is heavier than the task deserves and pollutes Build numbering. Design a lightweight track — a template/action (or a distinct entry mode) for chores that carry **no BUILD number**: read the alert/chore, make the fix, log it, done. Roughly the `step-only` class but without the Build wrapper. **Design pass:** decide whether it's a new `action_id` (e.g. `Staff.Chore` / `Maintenance.*`), how it records in state.json (does `build_id` become nullable / a sentinel?), where it logs (CHANGELOG? a maintenance log?), and how `next.ps1` / `status.ps1` / `commit.ps1` render an ID with no B-number. Add a DECISION entry.
+
+- [ ] **Configurable `PM.ThreadMaintenance` timing.** (Feedback 2026-08-09.) Add a config knob — `thread_maintenance: auto | every_milestone` (proposed **new default `every_milestone`**). `auto` preserves current mid-lifecycle prunability-gate behavior (D-026). Under `every_milestone`, maintenance runs *late* — right before `PM.AdvancePhase` / `PM.MilestoneCloseout` — instead of opportunistically mid-flight. **Sequencing note:** this interacts with the pending "AdvancePhase handles closeout inline" change and the closeout→ThreadMaintenance routing; settle those first (or design together) so the "run maintenance right before the transition" hook lands in the right place. Touches `config.schema.json`, `config.json`, `PM_StatusUpdate.txt` (routing gate), `PM_ThreadMaintenance.txt`, `PM_AdvancePhase.txt` / `PM_MilestoneCloseout.txt`, FORMATS.md, README Configuration table. Add a DECISION entry.
+
+---
+
+## PlanDiversion combined-approval path
+
+- [ ] Fix double-approval routing when `Principal.PlanDiversion` touches both BUILD and MILESTONE. Today the human ends up approving twice with a confusing PM.StatusUpdate → MilestonePlan detour in the middle (where MilestonePlan reasons the milestone is already drafted and skips to ApproveMilestone, but the human thinks they already approved).
+  - Two modes based on magnitude:
+    - **Sequential** (large overhaul): ApproveBuild → StatusUpdate → MilestonePlan (re-plan, not skip) → ApproveMilestone. Needs `context.notes` annotation so MilestonePlan knows to re-plan and ApproveMilestone knows it's a fresh approval.
+    - **Combined** (small build delta, substantive milestone): single approval gate covering both, one StatusUpdate, back to `Staff.DraftQuestions`. Likely a context flag on `Human.ApproveMilestone` rather than a new action — avoids template proliferation.
+  - Touches: `Principal_PlanDiversion.txt`, `Human_ApproveBuild.txt`, `Human_ApproveMilestone.txt`, `PM_StatusUpdate.txt`, registry, possibly state schema for the flag.
+  - Needs a DECISION entry.
+
+---
+
+## Deferred / Future
+
+Items parked until a clear trigger or sufficient friction warrants action.
+
+### Principal engineering-judgment lens — heavyweight version
+
+- [ ] Revisit if the v1.4.1 prompt-only "lite" lens proves insufficient in practice
+  - **Project posture config** — `config.json` knob like `project_posture: { current, target }` with values `prototype` / `mvp` / `production`. Drives both immediate Principal recommendations and long-term BACKLOG entries for one-way-door issues. ("We're scrappy now, but we want to be production — so flag the things that'll bite us later.")
+  - **Foundation checklist** — Principal systematically considers analytics, auth, payments, email, observability, marketing, etc., scoped to posture. Most prototypes don't need most of these; the goal is *thinking about it*, not building it.
+  - **Options-to-human flow** — for genuinely controversial or lock-in choices, Principal may present a slate rather than picking. Distinct from the lite version, which always picks and leaves a breadcrumb.
+  - **Trigger to reconsider:** the lite version misses something important in real use — e.g., AI quietly picks a one-way-door without flagging, or human keeps having to back out of foundational decisions made too early.
+
+### Cross-platform helper scripts (PowerShell vs. POSIX)
+
+- [ ] `plans/*.ps1` were written Windows-first, but SAM's longer-term direction is dev-container-based development (Linux). Decide and commit to one of:
+  - **Dual-track:** maintain a `.sh` sibling for each `.ps1` (`next.sh`, `status.sh`, `commit.sh`, `sam-update.py` is already cross-platform). Doubles maintenance surface.
+  - **Port to Python** — `sam-update.py` is already stdlib-only Python; the other helpers are small enough to port. Single source, runs anywhere Python runs. Loses the "no install" charm only marginally (Python is everywhere).
+  - **Commit to Linux + dev containers** — drop `.ps1`, write `.sh`, document that SAM assumes a dev container. Honest about the actual direction.
+  - **Trigger:** once the dev-container workflow is real enough that the user notices the PowerShell scripts breaking under it. Until then, the `.ps1`s work where they need to.
+
+### Folder reorganization
+
+- [ ] Evaluate restructuring `plans/` to reduce top-level clutter
+  - Currently everything except prompt templates lives flat under `plans/` — system docs, instance artifacts, schemas, config, helpers, and state all at the same level.
+  - Possible directions: separate system files from instance files, or group by function (e.g., `plans/schemas/`, `plans/scripts/`).
+  - **Constraints:** Every template hardcodes `plans/` paths — restructuring means updating all templates, registry.json, copilot-instructions.md, and the sync manifest. Instance-level files must remain easy for the AI to find.
+  - **Trigger:** Reassess after v1.6.0 adds more scripts. If the file count still isn't causing friction, keep deferring.
+
+### CLI tool — `sam <command>` (v3+)
+
+- [ ] Evaluate upgrading `plans/*.ps1` scripts into a proper CLI tool (`sam next`, `sam commit`, `sam status`, `sam update`)
+  - **Pros:** Clean UX, cross-platform (Python or Node), single entry point, could add features like `sam init` (scaffold plans/), `sam validate` (check state.json against schema), `sam log` (formatted thread.md viewer)
+  - **Cons:** Requires install step (pip/npm), breaks the "just copy plans/" simplicity, adds a runtime dependency, distribution/versioning overhead
+  - **Current position:** `plans/*.ps1` scripts are zero-install, single-purpose, and cover the core needs. The simplicity of "copy plans/ to your repo" is a major feature, not a limitation. Upgrade to CLI only if the script count or complexity outgrows the pattern.
+  - **Note:** If pursued, `sam-update.py` is the natural starting point — it's already Python and the most complex helper.
+
+### Modular / configurable workflow (v4+)
+
+- [ ] Explore fully configurable workflow engine where users can: group multiple steps into one `plans/next` invocation (e.g., PM.StatusUpdate + PM.AdvancePhase), drop actions entirely, or define custom project-specific actions
+  - Would require a workflow definition format, dynamic template loading, and significant registry/routing rework
+  - The current `config.json` knobs (v1.2.0) handle ~80% of the process-weight need; this is the remaining 20% for power users
+  - **Far-future vision** — park until config.json proves insufficient
+
+---
+
+# Completed
 
 ## P0 — Must complete for a working v0
 
@@ -241,7 +359,7 @@ Zero-install helpers (`plans/*.ps1`, plus one stdlib-only Python script). CLI up
 
 ---
 
-## v1.4.1 — Quick polish (next)
+## v1.4.1 — Completed (quick polish)
 
 Small, prompt-and-script-only changes. No schema, routing, or config additions.
 
@@ -256,80 +374,12 @@ Small, prompt-and-script-only changes. No schema, routing, or config additions.
 
 ---
 
-## Next — Quick polish
-
-Small, prompt-and-script-only changes. No schema, routing, or config additions. Pick up when the current batch lands; not promised to a specific version.
-
-- [ ] **`mjt.pub` attribution** — surface "An mjt.pub project" prominently (not just a footer) in the root `README.md` and `plans/README.md`. `mjt.pub` should be a link. Toward the top of each file, not the bottom.
-- [ ] **`--AUTO-` commit format keeps leaking into manual commits** — `Staff.ImplementationExecution` (and others) still produce `--AUTO-B2-M1-P2-Staff.ImplementationExecution: ...` style messages despite explicit prohibition. The v1.4.0 templates added the forbid-line, but the AI is ignoring it. Strengthen wording in `Staff_ImplementationExecution.txt`, `Staff_ReviewReconciliation.txt`, `Human_PhaseApproval.txt` — make it the first instruction, not a footnote. Add a concrete contrast example (✅ good manual message vs ❌ `--AUTO-`-prefixed).
-- [ ] **`thread.md` entry placement and structure drift** — AI inconsistently appends entries to top vs. bottom and keeps re-introducing sectioning (Resolved / Open Issues / etc.) that was abolished long ago. Codify in `plans/FORMATS.md` and every template that writes to thread.md:
-  - **New entries go at the bottom** (user's current preference — promote from "either is fine" to canonical).
-  - **No sub-sections, no grouping, no "Resolved" buckets.** Entry titles as `##` headers are fine; that's it.
-  - **Resolved content gets deleted, not archived in-file.** If it's durable, it belongs in DECISIONS / STANDARDS / CHANGELOG / README — not in a thread.md "resolved" section. `PM.ThreadMaintenance` is the pruner.
-  - No historical-summary narrative. CHANGELOG is for that.
-- [ ] **`plans/status.ps1` — richer git surface and reordering**:
-  - Add counts (not filenames) for: untracked files, unstaged modifications, staged changes. Keeps the one-screen contract but gives a real working-tree pulse beyond ahead/behind.
-  - Move the non-default `config.json` block to the **bottom** of the output — the position / pause / blockers / git block is the action surface; config is reference.
-- [ ] **`PM.AdvancePhase` should handle milestone closeout inline.** Today, when the current phase is the last in the milestone, `PM.AdvancePhase` does nothing structural and routes to `PM.MilestoneCloseout` — a tiny separate action. Let `PM.AdvancePhase` just *do* the closeout when that's the appropriate route, rather than bouncing to another action for a small task. (Feedback 2026-07-16.) Keep them able to coexist — closeout still exists as its own action for direct invocation — but AdvancePhase shouldn't punt when it's already the right actor. Touches: `PM_AdvancePhase.txt`, `PM_MilestoneCloseout.txt`, routing docs; confirm no double-closeout. Small-ish, but decide whether it's a merge or an inline call before doing it.
-
-- [ ] **`config.json` defaults refresh.** (Feedback 2026-08-09.) Update the shipped `plans/config.json` defaults to: `{ "$schema": "config.schema.json", "code_review": "every_milestone", "formal_approval": "every_milestone", "documentation_update": "every_milestone", "review_strictness": "balanced", "re_review_trigger": "auto", "status_updates": "pm_only" }`. This shifts `code_review`, `formal_approval`, and `documentation_update` to `every_milestone` (from per-phase). Confirm each key/enum exists in `config.schema.json`; update the `default` in the schema too so the two stay in sync, and update the FORMATS.md config table + README Configuration table. Verify no template's "if key absent, use default" fallback contradicts the new defaults.
-
-- [ ] **`last_action.summary` is drifting into justification, not description.** (Feedback 2026-08-09.) The `state.json > last_action.summary` field increasingly reads as a *defense of how the action was handled* rather than a plain "I did X." Real example carried parenthetical rationale like `(status_updates=pm_only)` explaining why STATUS wasn't touched, hand-off-note bookkeeping, and `pause_type` justification — all of which is already derivable from config + state. Tune the templates (and the FORMATS.md `state.json` guidance) so `summary` states *what was done*, briefly, and omits: config-value citations used to justify a non-action, "no X changes because…" explanations, and pause_type reasoning. Keep the useful specifics (position, next action) but cut the meta-justification. Don't over-correct into terseness — many summaries are 2–3× longer than needed; aim for the short, factual end.
-
-- [ ] **`Human.PhaseApproval` must brief the whole milestone when `formal_approval: every_milestone`.** (Feedback 2026-08-09.) When config gates approval to `every_milestone`, the phase-approval gate is *actually* a milestone approval — but the template still briefs the human on just the last phase. The briefing must cover the entire milestone's work, not the final phase alone. Update `Human_PhaseApproval.txt` to detect the `every_milestone` case and assemble a milestone-scoped briefing (all phases since the last approval). Pairs with the `Principal.CodeReview` fix below and the naming ambiguity above.
-
-- [ ] **`Principal.CodeReview` must review the full milestone under `code_review: every_milestone`.** (Feedback 2026-08-09.) Add an explicit config check to `Principal_CodeReview.txt`: when `code_review` is `every_milestone`, review all phases of the milestone, not just the last phase's diff. Currently the review scope silently stays phase-local regardless of config, so `every_milestone` reviews miss earlier phases. Mirror the same "read config, widen scope" logic used for `Human.PhaseApproval` above.
-
-- [ ] **`sam-update.py` / sync-manifest: scaffold missing instance files (copy-if-missing).** (Regression, feedback 2026-08-09.) When an `instance_files` entry does not exist *at all* in the target repo, copy it from the source template (copy-if-missing, never overwrite) so the file gets scaffolded. Existing instance files must still never be touched. Regression case: `plans/VISION.md` was skipped as absent and had to be copied by hand. Add a test/dry-run assertion that an absent instance file is reported as "will scaffold" while a present one stays "skipped (instance)".
-
----
-
-## Proposed — Design work
-
-Items that need a small design pass before implementation. Not committed to a version or sequenced as a batch — each can move to Next independently once its shape is clear.
-
-- [ ] **Buy-vs-build lens covers free / OSS / asset-library options, not just paid services.** Current v1.4.1 Principal "engineering judgment" lens nudges toward managed-service consideration, but the AI still defaults to building when the alternative is *free* (Kenney / OpenGameArt / itch.io for game assets, public APIs, free tiers, OSS libraries that solve large chunks of the problem). Update `Principal_BuildReview.txt`, `Principal_MilestonePlan.txt`, `Principal_AnswerQuestions.txt` to explicitly call out *free / public / community* options alongside paid services. Concrete examples in the prompt help (the asset-library case is a good one).
-- [x] **Configurable planning depth** — Shipped as BUILD.md frontmatter `size` field (`full` | `single-milestone` | `phase-only` | `step-only`), decided by `Product.ProductVision` with optional `thread.md` hint and human sign-off at `Human.ApproveBuild`. Caps milestone/phase/step counts downstream; `Principal.PlanDiversion` may resize mid-flight. See `plans/FORMATS.md` and `plans/README.md` "Build sizing" for details.
-- [ ] **`Human.HumanOnlyPhase` (or guidance for `Human.ResolveBlocker` as full-phase scope).** When an entire phase is human work (Cloudflare account + R2 bucket + domain + token setup; substantial system provisioning; account/billing setup), the AI gets confused about routing around / after the human work. Two paths:
-  - Add a new `Human.HumanOnlyPhase` task-action with explicit "this phase is entirely human work, here's what to do, here's when to come back" semantics.
-  - Or document `Human.ResolveBlocker` as legitimately scope-able to a whole phase and fix the routing confusion in prompts.
-  - The first is cleaner; the second is cheaper. Decide during design.
-- [ ] **`Principal.AdhocReview` — model-up review escape hatch.** When the user is working in a constrained surface (Copilot in VS Code, no Opus access on their plan) and wants a higher-capability model to weigh in, give them a clean handoff: "Summarize this in `thread.md` and route to `Principal.AdhocReview`." The receiving session (run in a higher-tier surface) picks it up, reviews, writes findings back. Needs: registry entry, template, routing semantics (where it returns to), and a `context.notes` convention for the handoff summary. Distinct from `Principal.CodeReview` (which is in-flow) — this is on-demand.
-
-- [ ] **Action naming once-over — several names don't say what they do.** (Feedback 2026-07-16 and 2026-08-09.) Do a single "what else doesn't make sense right now?" pass and rename as one atomic operation. Known offenders:
-  - **`Human.*` approve-plan vs. approve-work.** `Human.ApproveBuild` / `Human.ApproveMilestone` approve **plans** (`BUILD.md` / `MILESTONE.md`), but `Human.PhaseApproval` approves the **completed work** of a phase. The `Approve{thing}` vs. `{thing}Approval` distinction is too subtle — someone new to SAM (or the AI mid-run) can't tell "approve the plan" from "approve the work" by name alone. Proposed convention: `Approve{thing}` = approve a plan; `{thing}Approval` = approve completed work (e.g. `Human.ImplementationApproval`) — or pick clearer names outright.
-  - **`Staff.ImplementationExecution`** reads as redundant ("execution" adds nothing over "implementation").
-  - **`Principal.BuildReview` vs. `Human.PhaseApproval`** — `BuildReview` reviews the `BUILD.md` *file*, while `PhaseApproval` approves finished *work*; the "Review"/"Approval" words don't consistently track file-vs-work.
-  - **Larger-scale confusion risk, small implementation** (single user today), but a rename touches `state.schema.json` `action_id` enum, `registry.json`, every routing reference in templates, `README.md`, and helper scripts. Do it with no stale remnants; add a DECISION entry codifying the final naming convention.
-
-- [ ] **Remove `STEP` from `state.json`.** A "chunk" of work should always be a **phase**, not a step. When a right-sized BUILD is used (e.g., `phase-only`), the process currently tries to execute STEPS as if they were PHASES, which defeats the point of right-sizing. (Feedback 2026-07-16.) Drop `step_id` from `state.json` / `state.schema.json` and rework any routing/vocabulary that treats a step as an executable unit. **Design pass needed:** steps still appear in `MILESTONE.md` as planning sub-bullets and in ID conventions (`B1-M2-P4-S2`) and commit messages (`commit.ps1`); decide whether steps survive as a *planning-only* concept (no state) or are removed entirely. Touches state schema, `commit.ps1`/`next.ps1`/`status.ps1`, FORMATS.md, README ID conventions, and several templates. Add a DECISION entry.
-
-- [ ] **`context.notes` vs. `thread.md` — clarify or collapse the boundary.** Some SAM repos barely touch `state.json > context.notes`; others lean on it. Working mental model: `thread.md` = full conversation log, `notes` = "top of mind" highlights + routing hand-offs (e.g., "After ThreadMaintenance: proceed to X"). Is that distinction necessary, and is the boundary crisp enough to state? (Feedback 2026-07-16 — "is it fine? No strong feeling.") **Design pass:** either (a) document the boundary explicitly in FORMATS.md (notes = machine-relevant routing hand-offs + short-lived highlights; thread = human/AI narrative) and audit templates for misuse, or (b) collapse `context.notes` into thread.md if it earns its keep only as routing hand-offs (but those are structured and machine-read, which argues for keeping notes). Low urgency; decide direction first.
-
-- [ ] **BUILD END / release-runner action.** Add a build-completion task that drafts a clear **deployment runner doc** so the human can execute it (preferred over actually running the deploy). Should cover, for all relevant repos (frontend + backend as appropriate): PRs to `main`, version bumps, git tags, CHANGELOG `Unreleased` → `Released` move (this is the "BUILD released" action foreshadowed in D-024), env var updates, deployment steps, migrations, smoke-test best practices, and rollback plans per deployed repo. (Feedback 2026-07-16.) **Design pass:** new registry entry + template + routing (reached from `PM.MilestoneCloseout` when the final milestone of the Build completes — ties into the D-024 "future `*.BuildRelease` action"). Decide role (`PM.*`? `Writer.*`? new `Product.*`?) and whether it also performs the Unreleased→Released CHANGELOG move or just documents it. Multi-root aware (per-repo runner sections).
-  - **Preferred output shape (feedback 2026-08-09):** the runner should not live in `thread.md`. Instead, standardize a durable, per-repo `DEPLOYMENT.md` that the action simply *updates* for the specific deployment (version numbers, tags, env deltas, migration notes) rather than regenerating from scratch each time. First run scaffolds `DEPLOYMENT.md`; subsequent releases patch it. Decide whether it's a system-scaffolded instance file (like STATUS.md) or fully human/AI-owned. Multi-root: one `DEPLOYMENT.md` per deployed repo.
-
-- [ ] **"Not a Build" mode — maintenance chores below the Build threshold.** (Feedback 2026-08-09.) Some work isn't a Build at all: "fix the Dependabot alerts," bump a dependency, apply a security patch. Today the smallest unit is a `step-only` Build with a B-number, which is heavier than the task deserves and pollutes Build numbering. Design a lightweight track — a template/action (or a distinct entry mode) for chores that carry **no BUILD number**: read the alert/chore, make the fix, log it, done. Roughly the `step-only` class but without the Build wrapper. **Design pass:** decide whether it's a new `action_id` (e.g. `Staff.Chore` / `Maintenance.*`), how it records in state.json (does `build_id` become nullable / a sentinel?), where it logs (CHANGELOG? a maintenance log?), and how `next.ps1` / `status.ps1` / `commit.ps1` render an ID with no B-number. Add a DECISION entry.
-
-- [ ] **Configurable `PM.ThreadMaintenance` timing.** (Feedback 2026-08-09.) Add a config knob — `thread_maintenance: auto | every_milestone` (proposed **new default `every_milestone`**). `auto` preserves current mid-lifecycle prunability-gate behavior (D-026). Under `every_milestone`, maintenance runs *late* — right before `PM.AdvancePhase` / `PM.MilestoneCloseout` — instead of opportunistically mid-flight. **Sequencing note:** this interacts with the pending "AdvancePhase handles closeout inline" change and the closeout→ThreadMaintenance routing; settle those first (or design together) so the "run maintenance right before the transition" hook lands in the right place. Touches `config.schema.json`, `config.json`, `PM_StatusUpdate.txt` (routing gate), `PM_ThreadMaintenance.txt`, `PM_AdvancePhase.txt` / `PM_MilestoneCloseout.txt`, FORMATS.md, README Configuration table. Add a DECISION entry.
-
----
-
-## v1.5.0 — PlanDiversion combined-approval path
-
-- [ ] Fix double-approval routing when `Principal.PlanDiversion` touches both BUILD and MILESTONE. Today the human ends up approving twice with a confusing PM.StatusUpdate → MilestonePlan detour in the middle (where MilestonePlan reasons the milestone is already drafted and skips to ApproveMilestone, but the human thinks they already approved).
-  - Two modes based on magnitude:
-    - **Sequential** (large overhaul): ApproveBuild → StatusUpdate → MilestonePlan (re-plan, not skip) → ApproveMilestone. Needs `context.notes` annotation so MilestonePlan knows to re-plan and ApproveMilestone knows it's a fresh approval.
-    - **Combined** (small build delta, substantive milestone): single approval gate covering both, one StatusUpdate, back to `Staff.DraftQuestions`. Likely a context flag on `Human.ApproveMilestone` rather than a new action — avoids template proliferation.
-  - Touches: `Principal_PlanDiversion.txt`, `Human_ApproveBuild.txt`, `Human_ApproveMilestone.txt`, `PM_StatusUpdate.txt`, registry, possibly state schema for the flag.
-  - Needs a DECISION entry.
-
----
-
 ## v1.6.0 — Completed (2026-07-16)
 
 Two feedback-driven changes: a durable concept-brief seed file, and a prunability gate
 so mid-lifecycle thread maintenance stops firing on no-op. See D-025 and D-026.
+
+Also shipped: **Configurable planning depth** — BUILD.md frontmatter `size` field (`full` | `single-milestone` | `phase-only` | `step-only`), decided by `Product.ProductVision` with optional `thread.md` hint and human sign-off at `Human.ApproveBuild`. Caps milestone/phase/step counts downstream; `Principal.PlanDiversion` may resize mid-flight. See `plans/FORMATS.md` and `plans/README.md` "Build sizing" for details. (Originated as a "Proposed — Design work" item.)
 
 ### `plans/VISION.md` concept brief (D-025)
 
@@ -345,48 +395,3 @@ so mid-lifecycle thread maintenance stops firing on no-op. See D-025 and D-026.
 - [x] `PM_StatusUpdate.txt`: replaced the naive "thread has grown long" trigger with a cursory prunability check — routes to `PM.ThreadMaintenance` only if, after applying `every_milestone` config gates and state, there is genuinely prunable/promotable content. When in doubt, skip (closeout always runs maintenance).
 - [x] `PM_ThreadMaintenance.txt`: added a no-op guard so a manual or closeout-triggered invocation with nothing to do leaves files unchanged, sets `result = "ok"`, and routes onward instead of inventing pruning.
 - [x] `plans/README.md`: documented the prunability gate in the Thread management section.
-
----
-
-## Deferred / Future
-
-Items parked until a clear trigger or sufficient friction warrants action.
-
-### Principal engineering-judgment lens — heavyweight version
-
-- [ ] Revisit if the v1.4.1 prompt-only "lite" lens proves insufficient in practice
-  - **Project posture config** — `config.json` knob like `project_posture: { current, target }` with values `prototype` / `mvp` / `production`. Drives both immediate Principal recommendations and long-term BACKLOG entries for one-way-door issues. ("We're scrappy now, but we want to be production — so flag the things that'll bite us later.")
-  - **Foundation checklist** — Principal systematically considers analytics, auth, payments, email, observability, marketing, etc., scoped to posture. Most prototypes don't need most of these; the goal is *thinking about it*, not building it.
-  - **Options-to-human flow** — for genuinely controversial or lock-in choices, Principal may present a slate rather than picking. Distinct from the lite version, which always picks and leaves a breadcrumb.
-  - **Trigger to reconsider:** the lite version misses something important in real use — e.g., AI quietly picks a one-way-door without flagging, or human keeps having to back out of foundational decisions made too early.
-
-### Cross-platform helper scripts (PowerShell vs. POSIX)
-
-- [ ] `plans/*.ps1` were written Windows-first, but SAM's longer-term direction is dev-container-based development (Linux). Decide and commit to one of:
-  - **Dual-track:** maintain a `.sh` sibling for each `.ps1` (`next.sh`, `status.sh`, `commit.sh`, `sam-update.py` is already cross-platform). Doubles maintenance surface.
-  - **Port to Python** — `sam-update.py` is already stdlib-only Python; the other helpers are small enough to port. Single source, runs anywhere Python runs. Loses the "no install" charm only marginally (Python is everywhere).
-  - **Commit to Linux + dev containers** — drop `.ps1`, write `.sh`, document that SAM assumes a dev container. Honest about the actual direction.
-  - **Trigger:** once the dev-container workflow is real enough that the user notices the PowerShell scripts breaking under it. Until then, the `.ps1`s work where they need to.
-
-### Folder reorganization
-
-- [ ] Evaluate restructuring `plans/` to reduce top-level clutter
-  - Currently everything except prompt templates lives flat under `plans/` — system docs, instance artifacts, schemas, config, helpers, and state all at the same level.
-  - Possible directions: separate system files from instance files, or group by function (e.g., `plans/schemas/`, `plans/scripts/`).
-  - **Constraints:** Every template hardcodes `plans/` paths — restructuring means updating all templates, registry.json, copilot-instructions.md, and the sync manifest. Instance-level files must remain easy for the AI to find.
-  - **Trigger:** Reassess after v1.6.0 adds more scripts. If the file count still isn't causing friction, keep deferring.
-
-### CLI tool — `sam <command>` (v3+)
-
-- [ ] Evaluate upgrading `plans/*.ps1` scripts into a proper CLI tool (`sam next`, `sam commit`, `sam status`, `sam update`)
-  - **Pros:** Clean UX, cross-platform (Python or Node), single entry point, could add features like `sam init` (scaffold plans/), `sam validate` (check state.json against schema), `sam log` (formatted thread.md viewer)
-  - **Cons:** Requires install step (pip/npm), breaks the "just copy plans/" simplicity, adds a runtime dependency, distribution/versioning overhead
-  - **Current position:** `plans/*.ps1` scripts are zero-install, single-purpose, and cover the core needs. The simplicity of "copy plans/ to your repo" is a major feature, not a limitation. Upgrade to CLI only if the script count or complexity outgrows the pattern.
-  - **Note:** If pursued, `sam-update.py` is the natural starting point — it's already Python and the most complex helper.
-
-### Modular / configurable workflow (v4+)
-
-- [ ] Explore fully configurable workflow engine where users can: group multiple steps into one `plans/next` invocation (e.g., PM.StatusUpdate + PM.AdvancePhase), drop actions entirely, or define custom project-specific actions
-  - Would require a workflow definition format, dynamic template loading, and significant registry/routing rework
-  - The current `config.json` knobs (v1.2.0) handle ~80% of the process-weight need; this is the remaining 20% for power users
-  - **Far-future vision** — park until config.json proves insufficient
