@@ -1,5 +1,7 @@
 # SAM (Structured AI Method) — `plans/` System
 
+**An [mjt.pub](https://mjt.pub) project.**
+
 ## What this is
 SAM is a **human-directed, AI-executed** micro-chunk workflow for building software through:
 - a fixed planning/execution hierarchy,
@@ -76,11 +78,11 @@ Template filenames mirror action IDs with underscores: `Staff_DraftQuestions.txt
 
 | Key | Options | Default | What it controls |
 |-----|---------|---------|------------------|
-| `code_review` | `every_phase` \| `every_milestone` \| `never` | `every_phase` | When Principal.CodeReview runs after implementation |
-| `formal_approval` | `every_phase` \| `every_milestone` \| `never` | `every_phase` | When Human.PhaseApproval runs |
+| `code_review` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | When Principal.CodeReview runs after implementation (under `every_milestone`, reviews all phases of the milestone) |
+| `formal_approval` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | When Human.PhaseApproval runs (under `every_milestone`, briefs the whole milestone) |
 | `documentation_update` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | When Writer.DocumentationUpdate runs |
 | `review_strictness` | `strict` \| `balanced` \| `pragmatic` | `balanced` | Threshold for REQUIRED vs. SUGGESTED in code review |
-| `re_review_trigger` | `required` \| `auto` | `required` | Whether code changes in reconciliation always trigger re-review |
+| `re_review_trigger` | `required` \| `auto` | `auto` | Whether code changes in reconciliation always trigger re-review |
 | `status_updates` | `every_action` \| `pm_only` \| `every_milestone` \| `never` | `pm_only` | How often `STATUS.md` is written (see **STATUS.md updates** below) |
 | `workspace` | object | single-repo placeholder | Multi-root workspace: primary repo + shared repos (see below) |
 

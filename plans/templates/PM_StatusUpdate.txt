@@ -73,6 +73,9 @@ Instructions:
 5) Update plans/state.json:
    - last_action.action_id = PM.StatusUpdate
    - last_action.result = "ok"
+   - last_action.summary: state plainly what was updated and the resume point. Do NOT
+     justify non-actions with config citations (e.g. "(status_updates=pm_only)") or
+     pause_type reasoning — see plans/FORMATS.md § "`last_action.summary` guidance".
    - **5a) Hand-off destination (takes precedence):** if `context.notes` contains
      an "After StatusUpdate: proceed to <X>" entry, the destination is X. Clear
      that entry from context.notes and skip the phase-end logic in 5b.

@@ -4,11 +4,20 @@ TASK: CodeReview
 Goal:
 Review the most recent Staff implementation for correctness, clarity, and alignment with plans and standards.
 
-This is a SINGLE micro-chunk review, scoped to the most recent Phase/Step.
+Review scope is config-driven — read `code_review` from plans/config.json (if the
+file is missing or the key is absent, use the default `every_milestone`):
+- `every_phase` — review only the most recent Phase/Step (a single micro-chunk).
+- `every_milestone` — this action is reached only on the LAST phase of the milestone,
+  so review the diff of ALL phases in the current milestone (everything since the
+  previous milestone boundary), not just the last phase. Widen the git diff range and
+  the acceptance-criteria set accordingly.
+- `never` — this action does not normally run; if invoked manually, review the most
+  recent Phase/Step.
 
 Inputs:
-- Code changes (git diff / commits)
-- plans/config.json (workflow configuration — read `review_strictness` and `status_updates`)
+- Code changes (git diff / commits) — scoped per `code_review` (single phase, or the
+  whole milestone under `every_milestone`)
+- plans/config.json (workflow configuration — read `code_review`, `review_strictness`, and `status_updates`)
 - plans/MILESTONE.md (acceptance criteria)
 - plans/DECISIONS.md (project-specific architectural choices)
 - plans/STANDARDS.md (team-level rules portable across projects)
@@ -26,8 +35,9 @@ Instructions:
      preferences and minor best-practice suggestions are SUGGESTED. (This is the default.)
    - "pragmatic": Only functional correctness and security issues are REQUIRED. Everything
      else (style, patterns, best practices, minor standard deviations) is SUGGESTED.
-2) Review the implementation against:
-   - Acceptance criteria in plans/MILESTONE.md
+2) Review the implementation (scoped per `code_review` — a single phase, or every
+   phase of the milestone under `every_milestone`) against:
+   - Acceptance criteria in plans/MILESTONE.md (all in-scope phases under `every_milestone`)
    - DECISIONS and STANDARDS
    - Apply the review_strictness threshold when categorizing findings
 2a) Match review depth to `size` per plans/FORMATS.md § "Prose depth scales with
@@ -37,7 +47,7 @@ Instructions:
     `step-only` shouldn't reach this action (carve-out skips it); if it does, treat
     as `phase-only` depth and flag the routing mismatch.
 
-3) Append review feedback as a new entry in plans/thread.md.
+3) Append review feedback as a new entry at the bottom of plans/thread.md.
    - Use the entry format: `---` then `### Principal.CodeReview — <date>`
    - Reference the Review Request being reviewed.
    - Use clear bullets.

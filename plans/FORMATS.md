@@ -274,7 +274,7 @@ Every entry MUST include a `**Why this matters long-term:**` line. If you can't 
 
 `thread.md` is an **append-only chronological log**. It is not a structured document
 with permanent sections. Each action that writes to `thread.md` appends a new entry
-at the end.
+**at the bottom**.
 
 ### Entry format
 
@@ -286,14 +286,22 @@ at the end.
 
 ### Rules
 
-1. **Append only.** Never delete, modify, or reorder existing entries.
-2. **PM.ThreadMaintenance is the sole exception.** It may prune resolved content,
-   compress verbose back-and-forth into brief summaries, and promote durable decisions
-   to DECISIONS.md or STANDARDS.md.
-3. **Use Q-### IDs for questions** (e.g., Q-001). Reference them by ID when answering.
-4. **Review Requests and review feedback are separate entries.** Staff appends the
+1. **New entries go at the bottom.** The log is chronological, oldest-first. Never
+   prepend at the top or interleave with older entries.
+2. **No sub-sections, grouping, or status buckets.** Do not create "Resolved",
+   "Open Issues", "Summary", or any other grouping headers. The only headers are the
+   per-entry `### [Action.ID] — YYYY-MM-DD` titles. The log is a flat sequence of entries.
+3. **Append only.** Never delete, modify, or reorder existing entries.
+4. **PM.ThreadMaintenance is the sole exception, and it prunes by deletion.** When
+   content is resolved it is **deleted**, not archived in-file. There is no "resolved
+   summary" block. Durable content is promoted out of the thread to its permanent home
+   (DECISIONS.md, STANDARDS.md, CHANGELOG, or README) before deletion; everything else
+   is simply removed. No historical-summary narrative lives here — the CHANGELOG owns
+   project history.
+5. **Use Q-### IDs for questions** (e.g., Q-001). Reference them by ID when answering.
+6. **Review Requests and review feedback are separate entries.** Staff appends the
    request; Principal appends the feedback as the next entry, referencing the request.
-5. **Keep entries concise and actionable.** The thread will be pruned periodically,
+7. **Keep entries concise and actionable.** The thread will be pruned periodically,
    but shorter entries delay the need for maintenance.
 
 ---
@@ -306,11 +314,11 @@ at the end.
 ```
 {
   "$schema": "config.schema.json",
-  "code_review": "every_phase",
-  "formal_approval": "every_phase",
+  "code_review": "every_milestone",
+  "formal_approval": "every_milestone",
   "documentation_update": "every_milestone",
   "review_strictness": "balanced",
-  "re_review_trigger": "required",
+  "re_review_trigger": "auto",
   "status_updates": "pm_only",
   "workspace": {
     "primary_repo": {
@@ -327,11 +335,11 @@ at the end.
 
 | Key | Options | Default | Effect |
 |-----|---------|---------|--------|
-| `code_review` | `every_phase` \| `every_milestone` \| `never` | `every_phase` | When Principal.CodeReview runs after implementation |
-| `formal_approval` | `every_phase` \| `every_milestone` \| `never` | `every_phase` | When Human.PhaseApproval runs |
+| `code_review` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | When Principal.CodeReview runs after implementation (under `every_milestone`, reviews all phases of the milestone) |
+| `formal_approval` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | When Human.PhaseApproval runs (under `every_milestone`, briefs the whole milestone) |
 | `documentation_update` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | When Writer.DocumentationUpdate runs |
 | `review_strictness` | `strict` \| `balanced` \| `pragmatic` | `balanced` | Threshold for REQUIRED vs. SUGGESTED in code review |
-| `re_review_trigger` | `required` \| `auto` | `required` | Whether code changes in reconciliation always trigger re-review |
+| `re_review_trigger` | `required` \| `auto` | `auto` | Whether code changes in reconciliation always trigger re-review |
 | `status_updates` | `every_action` \| `pm_only` \| `every_milestone` \| `never` | `pm_only` | How often STATUS.md is written. `pm_only` and below write only via `PM.StatusUpdate` (routing fans approvals/diversions through it so major transitions are still captured) |
 | `workspace` | object | single-repo placeholder | Multi-root workspace definition (primary repo + shared repos) |
 
@@ -398,3 +406,23 @@ The `result` field MUST be one of these schema-valid enum values. Do NOT use "co
 | `blocked` | Action cannot proceed; a blocker has been added to `blockers[]`. |
 | `error` | Unexpected failure occurred; `Human.ResolveBlocker` is next. |
 | `skipped` | Action was intentionally skipped (e.g., DraftQuestions self-skip when path is clear, DocumentationUpdate when no doc changes needed). |
+
+### `last_action.summary` guidance
+
+`summary` is a plain, factual description of **what was done** — not a defense of *how* it
+was handled. State the action and its concrete result; keep the useful specifics (what
+changed, current position, what runs next). Aim short and factual: most summaries need
+one or two sentences. Don't over-correct into cryptic terseness — a summary should still
+read as a sentence.
+
+**Omit** meta-justification that is already derivable from `config.json` + `state.json`:
+- Config-value citations used to explain a *non-action* — e.g. `(status_updates=pm_only)`
+  to justify not touching STATUS.md, or `(code_review=every_milestone)` to justify skipping review.
+- "No X changes because…" explanations for things that simply didn't happen.
+- `pause_type` reasoning (the `pause_type` field already carries it).
+
+```
+✅ "Implemented search pagination; 3 files changed. Next: Principal.CodeReview."
+❌ "Implemented search pagination. Did not update STATUS.md because status_updates=pm_only,
+    and set pause_type=continue since the next actor is not Human.*. No config changes."
+```

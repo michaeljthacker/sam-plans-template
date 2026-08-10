@@ -81,8 +81,8 @@ Instructions:
      long-term:**` line. Project-scoped entries go to the primary repo's
      plans/DECISIONS.md — never write directly to a shared repo from this action;
      promotion is PM.ThreadMaintenance's job.
-   - Append a plans/thread.md entry: `### Principal.PlanDiversion — <date>` summarizing
-     the diversion and the resume point.
+   - Append a plans/thread.md entry at the bottom: `### Principal.PlanDiversion — <date>`
+     summarizing the diversion and the resume point.
 
 5) Update plans/STATUS.md (config-gated):
    - Read `status_updates` from plans/config.json (default: "pm_only" if missing).

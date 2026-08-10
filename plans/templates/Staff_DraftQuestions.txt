@@ -25,7 +25,7 @@ Instructions:
      - next_action_id = Staff.ImplementationExecution
      - pause_type = "continue"
    - Stop here.
-3) If you DO have questions, append a new entry to plans/thread.md with your questions.
+3) If you DO have questions, append a new entry at the bottom of plans/thread.md with your questions.
    - Use the entry format: `---` then `### Staff.DraftQuestions — <date>`
    - Use IDs: Q-###.
    - Mark Blocking: Yes/No.

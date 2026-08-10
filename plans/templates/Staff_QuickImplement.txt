@@ -55,17 +55,21 @@ Instructions:
      next_action_id = Human.ResolveBlocker, and add a blocker.
 
 5) Commit your work.
+   - **NEVER prefix commit messages with `--AUTO-`.** That prefix is reserved
+     exclusively for automated SAM commits made by `plans/commit.ps1`; a manual
+     commit that carries it corrupts the organic-vs-automated distinction in
+     `git log`. Write a plain, human-readable subject describing the change.
+       ✅ good:  `Bump lodash to 4.17.21 (security patch)`
+       ❌ WRONG: `--AUTO-B3-Staff.QuickImplement: bump lodash`
    - Minimum: ≥1 commit.
    - Shared-repo code edits commit inside the shared repo using its own conventions.
-   - Do NOT prefix commit messages with `--AUTO-`. That prefix is reserved for
-     automated SAM commits made by `plans/commit.ps1`.
 
 6) Optional CHANGELOG line.
    - If plans/CHANGELOG.md exists, append one short bullet under "Unreleased"
      describing the change. One line, not a paragraph.
    - If the repo has no CHANGELOG, skip this step.
 
-7) Append a brief thread.md entry:
+7) Append a brief thread.md entry at the bottom:
    - Use the entry format: `---` then `### Staff.QuickImplement — <date>`
    - One short paragraph: what was changed, key files touched, verification performed.
    - Match step-only depth: a few sentences, not a review request.

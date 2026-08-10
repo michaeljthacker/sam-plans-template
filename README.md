@@ -1,5 +1,7 @@
 # SAM (Structured AI Method) — Micro-Chunk Workflow Template
 
+**An [mjt.pub](https://mjt.pub) project.**
+
 SAM is a human-directed, AI-executed workflow for building software one small step at a time.
 
 ## Getting started

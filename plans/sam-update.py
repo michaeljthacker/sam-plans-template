@@ -122,6 +122,8 @@ def sync_files(
         "created": [],
         "updated": [],
         "unchanged": [],
+        "scaffolded": [],
+        "skipped": [],
         "missing-in-source": [],
     }
 
@@ -135,16 +137,31 @@ def sync_files(
         status, name = sync_file(src_root, dst_root, entry["source"], entry["target"], apply)
         summary.setdefault(status, []).append(name)
 
-    print("\nInstance files (not copied from source):")
+    print("\nInstance files (scaffolded if absent, never overwritten):")
     manifest_version = manifest.get("version", "unknown")
     for rel in manifest.get("instance_files", []):
         if rel == VERSION_FILE_REL:
             verb = "stamped" if apply else "will stamp"
             print(f"  [{verb}]  {rel}  (manifest version: {manifest_version})")
             continue
-        present = (dst_root / rel).exists()
-        marker = "exists" if present else "absent"
-        print(f"  [skipped]    {rel}  ({marker})")
+        dst_file = dst_root / rel
+        if dst_file.exists():
+            # Present instance file — never touched.
+            print(f"  [skipped]    {rel}  (instance)")
+            summary["skipped"].append(rel)
+            continue
+        # Absent in the target: scaffold it from the template (copy-if-missing).
+        src_file = src_root / rel
+        if src_file.is_file():
+            verb = "scaffolded" if apply else "will scaffold"
+            print(f"  [{verb}] {rel}  (absent - copying from template)")
+            if apply:
+                dst_file.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src_file, dst_file)
+            summary["scaffolded"].append(rel)
+        else:
+            print(f"  [skipped]    {rel}  (absent; not in template)")
+            summary["skipped"].append(rel)
 
     return summary
 
@@ -237,6 +254,37 @@ def audit_config(config_path: Path, schema_path: Path) -> list[tuple[str, str]]:
     return issues
 
 
+def print_summary(summary: dict[str, list[str]], apply: bool) -> None:
+    """Render a scannable end-of-run recap. The per-file diffs above dominate the
+    output; this block is the at-a-glance picture of what happened. Changed buckets
+    (created / updated / scaffolded) list their filenames; unchanged / skipped show
+    counts only to stay tight. Printed in both dry-run and --apply."""
+    label = {
+        "unchanged": "unchanged",
+        "created": "created" if apply else "will create",
+        "updated": "updated" if apply else "will update",
+        "scaffolded": "scaffolded" if apply else "will scaffold",
+        "skipped": "skipped",
+        "missing-in-source": "missing in source",
+    }
+    order = ["unchanged", "created", "updated", "scaffolded", "skipped", "missing-in-source"]
+    detailed = {"created", "updated", "scaffolded"}  # list filenames for these
+    width = max(len(v) for v in label.values())
+
+    print("\nSummary")
+    for key in order:
+        items = summary.get(key, [])
+        n = len(items)
+        if key == "missing-in-source" and n == 0:
+            continue  # only surface this when it actually happens
+        line = f"  {(label[key] + ':').ljust(width + 1)} {n:>3}"
+        if n and key in detailed:
+            line += f"   ({', '.join(items)})"
+        elif n and key == "skipped":
+            line += "   (instance files, unchanged)"
+        print(line)
+
+
 def print_audit(issues: list[tuple[str, str]]) -> int:
     print("\nConfig audit (plans/config.json vs new plans/config.schema.json):")
     if not issues:
@@ -282,18 +330,13 @@ def main() -> int:
     if args.apply:
         stamp_version(dst_root, manifest, src_root)
 
-    print(
-        "\nSummary: "
-        f"{len(summary.get('created', []))} created, "
-        f"{len(summary.get('updated', []))} updated, "
-        f"{len(summary.get('unchanged', []))} unchanged, "
-        f"{len(summary.get('missing-in-source', []))} missing-in-source"
-    )
-
     config_path = dst_root / CONFIG_REL
     schema_path = (dst_root if args.apply else src_root) / SCHEMA_REL
     issues = audit_config(config_path, schema_path)
     audit_exit = print_audit(issues)
+
+    # Bottom-most: the scannable recap after all the per-file diffs and the audit.
+    print_summary(summary, args.apply)
 
     if not args.apply:
         print("\n(dry run - re-run with --apply to write changes)")

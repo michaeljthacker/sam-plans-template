@@ -72,8 +72,9 @@ Instructions:
      lock-in, or divergence, leave a one-line breadcrumb in the review notes
      (REQUIRED / SUGGESTED / RISK as appropriate) so the human can decide
      whether to ask a follow-up. Stay quiet on trivial or obvious choices.
-2) Write review feedback into plans/thread.md:
-   - Section title: "Build Review — <Build ID>"
+2) Append review feedback as a new entry at the bottom of plans/thread.md:
+   - Use the entry format: `---` then `### Principal.BuildReview — <date>`
+   - Within the entry, note it is the Build Review for <Build ID>.
    - Distinguish:
      - REQUIRED changes (blocking — must be addressed before milestone planning)
      - SUGGESTED improvements (non-blocking — can be addressed later)

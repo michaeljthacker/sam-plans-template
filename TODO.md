@@ -18,27 +18,7 @@ Future chat sessions: read `DECISIONS.md` for rationale, `plans/README.md` for t
 
 Small, prompt-and-script-only changes. No schema, routing, or config additions. Pick up when the current batch lands; not promised to a specific version.
 
-- [ ] **`mjt.pub` attribution** — surface "An mjt.pub project" prominently (not just a footer) in the root `README.md` and `plans/README.md`. `mjt.pub` should be a link. Toward the top of each file, not the bottom.
-- [ ] **`--AUTO-` commit format keeps leaking into manual commits** — `Staff.ImplementationExecution` (and others) still produce `--AUTO-B2-M1-P2-Staff.ImplementationExecution: ...` style messages despite explicit prohibition. The v1.4.0 templates added the forbid-line, but the AI is ignoring it. Strengthen wording in `Staff_ImplementationExecution.txt`, `Staff_ReviewReconciliation.txt`, `Human_PhaseApproval.txt` — make it the first instruction, not a footnote. Add a concrete contrast example (✅ good manual message vs ❌ `--AUTO-`-prefixed).
-- [ ] **`thread.md` entry placement and structure drift** — AI inconsistently appends entries to top vs. bottom and keeps re-introducing sectioning (Resolved / Open Issues / etc.) that was abolished long ago. Codify in `plans/FORMATS.md` and every template that writes to thread.md:
-  - **New entries go at the bottom** (user's current preference — promote from "either is fine" to canonical).
-  - **No sub-sections, no grouping, no "Resolved" buckets.** Entry titles as `##` headers are fine; that's it.
-  - **Resolved content gets deleted, not archived in-file.** If it's durable, it belongs in DECISIONS / STANDARDS / CHANGELOG / README — not in a thread.md "resolved" section. `PM.ThreadMaintenance` is the pruner.
-  - No historical-summary narrative. CHANGELOG is for that.
-- [ ] **`plans/status.ps1` — richer git surface and reordering**:
-  - Add counts (not filenames) for: untracked files, unstaged modifications, staged changes. Keeps the one-screen contract but gives a real working-tree pulse beyond ahead/behind.
-  - Move the non-default `config.json` block to the **bottom** of the output — the position / pause / blockers / git block is the action surface; config is reference.
 - [ ] **`PM.AdvancePhase` should handle milestone closeout inline.** Today, when the current phase is the last in the milestone, `PM.AdvancePhase` does nothing structural and routes to `PM.MilestoneCloseout` — a tiny separate action. Let `PM.AdvancePhase` just *do* the closeout when that's the appropriate route, rather than bouncing to another action for a small task. (Feedback 2026-07-16.) Keep them able to coexist — closeout still exists as its own action for direct invocation — but AdvancePhase shouldn't punt when it's already the right actor. Touches: `PM_AdvancePhase.txt`, `PM_MilestoneCloseout.txt`, routing docs; confirm no double-closeout. Small-ish, but decide whether it's a merge or an inline call before doing it.
-
-- [ ] **`config.json` defaults refresh.** (Feedback 2026-08-09.) Update the shipped `plans/config.json` defaults to: `{ "$schema": "config.schema.json", "code_review": "every_milestone", "formal_approval": "every_milestone", "documentation_update": "every_milestone", "review_strictness": "balanced", "re_review_trigger": "auto", "status_updates": "pm_only" }`. This shifts `code_review`, `formal_approval`, and `documentation_update` to `every_milestone` (from per-phase). Confirm each key/enum exists in `config.schema.json`; update the `default` in the schema too so the two stay in sync, and update the FORMATS.md config table + README Configuration table. Verify no template's "if key absent, use default" fallback contradicts the new defaults.
-
-- [ ] **`last_action.summary` is drifting into justification, not description.** (Feedback 2026-08-09.) The `state.json > last_action.summary` field increasingly reads as a *defense of how the action was handled* rather than a plain "I did X." Real example carried parenthetical rationale like `(status_updates=pm_only)` explaining why STATUS wasn't touched, hand-off-note bookkeeping, and `pause_type` justification — all of which is already derivable from config + state. Tune the templates (and the FORMATS.md `state.json` guidance) so `summary` states *what was done*, briefly, and omits: config-value citations used to justify a non-action, "no X changes because…" explanations, and pause_type reasoning. Keep the useful specifics (position, next action) but cut the meta-justification. Don't over-correct into terseness — many summaries are 2–3× longer than needed; aim for the short, factual end.
-
-- [ ] **`Human.PhaseApproval` must brief the whole milestone when `formal_approval: every_milestone`.** (Feedback 2026-08-09.) When config gates approval to `every_milestone`, the phase-approval gate is *actually* a milestone approval — but the template still briefs the human on just the last phase. The briefing must cover the entire milestone's work, not the final phase alone. Update `Human_PhaseApproval.txt` to detect the `every_milestone` case and assemble a milestone-scoped briefing (all phases since the last approval). Pairs with the `Principal.CodeReview` fix below and the naming ambiguity above.
-
-- [ ] **`Principal.CodeReview` must review the full milestone under `code_review: every_milestone`.** (Feedback 2026-08-09.) Add an explicit config check to `Principal_CodeReview.txt`: when `code_review` is `every_milestone`, review all phases of the milestone, not just the last phase's diff. Currently the review scope silently stays phase-local regardless of config, so `every_milestone` reviews miss earlier phases. Mirror the same "read config, widen scope" logic used for `Human.PhaseApproval` above.
-
-- [ ] **`sam-update.py` / sync-manifest: scaffold missing instance files (copy-if-missing).** (Regression, feedback 2026-08-09.) When an `instance_files` entry does not exist *at all* in the target repo, copy it from the source template (copy-if-missing, never overwrite) so the file gets scaffolded. Existing instance files must still never be touched. Regression case: `plans/VISION.md` was skipped as absent and had to be copied by hand. Add a test/dry-run assertion that an absent instance file is reported as "will scaffold" while a present one stays "skipped (instance)".
 
 ---
 
@@ -395,3 +375,40 @@ Also shipped: **Configurable planning depth** — BUILD.md frontmatter `size` fi
 - [x] `PM_StatusUpdate.txt`: replaced the naive "thread has grown long" trigger with a cursory prunability check — routes to `PM.ThreadMaintenance` only if, after applying `every_milestone` config gates and state, there is genuinely prunable/promotable content. When in doubt, skip (closeout always runs maintenance).
 - [x] `PM_ThreadMaintenance.txt`: added a no-op guard so a manual or closeout-triggered invocation with nothing to do leaves files unchanged, sets `result = "ok"`, and routes onward instead of inventing pruning.
 - [x] `plans/README.md`: documented the prunability gate in the Thread management section.
+
+---
+
+## v1.7.0 — Completed (2026-08-09)
+
+Quick-polish batch (prompt/script/config only — no schema or routing-graph rework),
+plus a `sam-update.py` output improvement. Manifest bumped to 1.7.0.
+
+### Config defaults refresh + coupled milestone-scope fixes
+
+- [x] `config.json` + `config.schema.json` defaults now `code_review=every_milestone`, `formal_approval=every_milestone`, `re_review_trigger=auto` (documentation_update/review_strictness/status_updates already at target). Descriptions + FORMATS.md and README config tables updated; the three template "if key absent, use default" fallbacks reconciled to match.
+- [x] `Principal_CodeReview.txt`: reads `code_review` and reviews the WHOLE milestone (all phases since the last boundary) under `every_milestone`, not just the last phase.
+- [x] `Human_PhaseApproval.txt`: reads `formal_approval` and assembles a milestone-scoped briefing ("Milestone Approval Required") under `every_milestone`. Pairs with the CodeReview fix so the new default gates aren't silently last-phase-only.
+
+### thread.md entry-placement & structure canon
+
+- [x] `plans/FORMATS.md` thread.md rules: new entries go at the **bottom**; no sub-sections / grouping / "Resolved" buckets; resolved content is **deleted** (durable bits promoted to DECISIONS/STANDARDS/CHANGELOG/README first), not archived in-file.
+- [x] `PM_ThreadMaintenance.txt`: rewrote the prune step (was "resolved summary at the top") to delete + promote, leaving only still-active entries in chronological order.
+- [x] Added "at the bottom" to every thread.md writer template (DraftQuestions, AnswerQuestions, ImplementationExecution, CodeReview, ReviewReconciliation, QuickImplement, BuildReview, PlanDiversion).
+
+### `--AUTO-` prohibition
+
+- [x] Promoted from footnote to the **first** commit-block instruction, with ✅/❌ contrast examples, in `Staff_ImplementationExecution.txt`, `Staff_ReviewReconciliation.txt`, `Human_PhaseApproval.txt`, and `Staff_QuickImplement.txt`.
+
+### `last_action.summary` guidance
+
+- [x] `plans/FORMATS.md` state.json section: `summary` states what was done and omits config-value citations for non-actions, "no X because…" explanations, and pause_type reasoning (with ✅/❌ example). Reminder added to `PM_StatusUpdate.txt`.
+
+### Helper scripts
+
+- [x] `plans/status.ps1`: added working-tree counts (staged / unstaged / untracked); moved the config block below the git block (action surface first, reference last).
+- [x] `plans/sam-update.py`: copy-if-missing scaffolding — absent instance files are copied from the template (present ones never touched); verified `--apply` leaves an existing `config.json` byte-identical and re-runs are idempotent.
+- [x] `plans/sam-update.py`: readable end-of-run SUMMARY block (unchanged / created / updated / scaffolded / skipped, with filenames for changed buckets) in both dry-run and `--apply`, replacing the single dense count line. (Feedback 2026-08-09.)
+
+### Attribution
+
+- [x] "An mjt.pub project" (linked) added near the top of root `README.md` and `plans/README.md`.

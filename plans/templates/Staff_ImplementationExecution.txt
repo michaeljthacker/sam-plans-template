@@ -34,13 +34,16 @@ Instructions:
      primary repo's plans/DECISIONS.md or plans/STANDARDS.md and let the promotion
      protocol handle it.
 3) Commit your work.
+   - **NEVER prefix commit messages with `--AUTO-`.** That prefix is reserved
+     exclusively for automated SAM commits made by `plans/commit.ps1`; a manual
+     commit that carries it corrupts the organic-vs-automated distinction in
+     `git log`. Write a plain, human-readable subject describing the change.
+       ✅ good:  `Add password reset to the login flow`
+       ❌ WRONG: `--AUTO-B2-M1-P2-Staff.ImplementationExecution: add password reset`
    - Minimum: ≥1 commit per Phase.
    - More commits allowed if complexity warrants.
    - Shared-repo code edits commit inside the shared repo using its own conventions.
-   - Do NOT prefix commit messages with `--AUTO-`. That prefix is reserved for
-     automated SAM commits made by `plans/commit.ps1` so organic and automated
-     commits stay distinguishable in `git log`.
-4) Append a review request entry to plans/thread.md:
+4) Append a review request entry at the bottom of plans/thread.md:
    - Use the entry format: `---` then `### Staff.ImplementationExecution — <date>`
    - Title within entry: "Review Request — <Phase ID>"
    - Include:
@@ -61,7 +64,7 @@ Instructions:
    - last_action.action_id = Staff.ImplementationExecution
    - If implementation is complete and ready for review:
      - last_action.result = "ok"
-     - Read `code_review` from plans/config.json (default: "every_phase" if missing):
+     - Read `code_review` from plans/config.json (default: "every_milestone" if missing):
        - "every_phase": pause_type = "continue", next_action_id = Principal.CodeReview
        - "every_milestone": check plans/MILESTONE.md — if this is the LAST phase in the
          milestone, pause_type = "continue", next_action_id = Principal.CodeReview.

@@ -12,7 +12,7 @@ Inputs:
 - plans/state.json (routing)
 
 Instructions:
-1) Append a new entry to plans/thread.md answering each open question by Q-### ID.
+1) Append a new entry at the bottom of plans/thread.md answering each open question by Q-### ID.
    - Use the entry format: `---` then `### Principal.AnswerQuestions — <date>`
    - Answer concisely. Do not modify or delete previous entries.
 2) Promote durable decisions (always to the primary repo):

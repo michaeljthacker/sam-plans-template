@@ -72,12 +72,15 @@ Instructions:
      line** capturing the rationale. If you can't write a meaningful one, the entry
      doesn't belong there. See plans/FORMATS.md for the entry format.
 4) Commit any code changes.
+   - **NEVER prefix commit messages with `--AUTO-`.** That prefix is reserved
+     exclusively for automated SAM commits made by `plans/commit.ps1`; a manual
+     commit that carries it corrupts the organic-vs-automated distinction in
+     `git log`. Write a plain, human-readable subject describing the change.
+       ✅ good:  `Address review: validate empty search input`
+       ❌ WRONG: `--AUTO-B2-M1-P2-Staff.ReviewReconciliation: fix input validation`
    - For shared-repo code edits, commit inside the shared repo using its own commit
      conventions. The primary repo's commit covers the rest.
-   - Do NOT prefix commit messages with `--AUTO-`. That prefix is reserved for
-     automated SAM commits made by `plans/commit.ps1` so organic and automated
-     commits stay distinguishable in `git log`.
-5) Append a new entry to plans/thread.md:
+5) Append a new entry at the bottom of plans/thread.md:
    - Use the entry format: `---` then `### Staff.ReviewReconciliation — <date>`
    - For each REQUIRED item: note how it was addressed.
    - For each SUGGESTED item: note whether it was implemented or logged to BACKLOG.
@@ -96,7 +99,7 @@ Instructions:
    - last_action.action_id = Staff.ReviewReconciliation
    - last_action.result = "ok"
    - If any code was changed (REQUIRED fixes or implemented suggestions):
-     - Read `re_review_trigger` from plans/config.json (default: "required" if missing):
+     - Read `re_review_trigger` from plans/config.json (default: "auto" if missing):
        - "required": pause_type = "continue", next_action_id = Principal.CodeReview
          (Principal will perform a targeted re-review scoped to reconciliation changes.)
        - "auto": Evaluate whether the scope and nature of the changes warrant re-review.
