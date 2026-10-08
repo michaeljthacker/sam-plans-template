@@ -71,6 +71,7 @@ Template filenames mirror action IDs with underscores: `Staff_DraftQuestions.txt
 - `plans/STANDARDS.md` — team-level technical standards (seed from defaults)
 - `plans/thread.md` — active working memory (AI-readable, not machine-parseable)
 - `plans/state.json` — **routing source of truth**
+- `DEPLOYMENT.md` — at the **root** of each deployed repo, not in `plans/`: the deployment runner, scaffolded and then patched by `PM.BuildRelease` (see `plans/FORMATS.md`)
 
 ## Configuration
 
@@ -112,9 +113,11 @@ Not every BUILD needs the full BUILD → MILESTONE → PHASE → STEP ceremony. 
 | `full` | 2+ (typical 3+) | 2+ | 2+ | Full prototype / major feature. Default ceremony. |
 | `single-milestone` | exactly 1 | 2+ | 2+ | Substantial feature on an existing product. |
 | `phase-only` | exactly 1 | exactly 1 | 2+ | Small feature; one cohesive chunk of work. `Writer.DocumentationUpdate` is skipped (closeout's CHANGELOG entry covers it). |
-| `step-only` | exactly 1 | exactly 1 | 1–3 | **Not a build** — cursory look, brief human check, implement. Uses the carve-out route (`Product.ProductVision` → `Human.ApproveBuild` → `Staff.QuickImplement`), skipping BuildReview, MilestonePlan, the Q&A loop, standalone CodeReview/Reconciliation, DocumentationUpdate, PhaseApproval, AdvancePhase, and MilestoneCloseout. Verification still happens — QuickImplement self-verifies. |
+| `step-only` | exactly 1 | exactly 1 | 1–3 | The smallest Build — cursory look, brief human check, implement. Uses the carve-out route (`Product.ProductVision` → `Human.ApproveBuild` → `Staff.QuickImplement`), skipping BuildReview, MilestonePlan, the Q&A loop, standalone CodeReview/Reconciliation, DocumentationUpdate, PhaseApproval, AdvancePhase, and MilestoneCloseout. Verification still happens — QuickImplement self-verifies. |
 
 For sizes other than `step-only`, the inner phase loop is identical — `size` only constrains *counts*, not which actions run, independent of the `config.json` knobs above. `step-only` uses its own short route; `phase-only` additionally skips `Writer.DocumentationUpdate`. `Principal.PlanDiversion` may resize a build mid-flight (e.g., a `step-only` build that needs to grow into a real build); escalating off `step-only` rewrites BUILD.md into full form and re-routes through `Human.ApproveBuild` onto the standard chain.
+
+Pure upkeep with no product change — dependency/security patches, Dependabot alerts — is not a Build at any size. Use `Staff.Patch` (see **Patches (outside a Build)** below).
 
 Prose depth scales with size — see `plans/FORMATS.md` § "Prose depth scales with size." A `step-only` BUILD.md is a title + one-line goal, not a prototype-grade document. `Principal.BuildReview` flags size↔depth mismatches.
 
@@ -124,8 +127,8 @@ The human may also pre-declare size in `plans/VISION.md` (an explicit `size: pha
 
 SAM can operate across multiple repos in a VS Code multi-root workspace — for example,
 a frontend project plus a shared backend like `mjt.pub`. **Only the primary repo owns
-`plans/`.** Shared repos receive code edits and (with explicit human approval)
-`STANDARDS.md` / `DECISIONS.md` updates, but no `plans/` wrapper.
+`plans/`.** Shared repos receive code edits, a `DEPLOYMENT.md` if deployed, and (with
+explicit human approval) `STANDARDS.md` / `DECISIONS.md` updates, but no `plans/` wrapper.
 
 ### Configuration
 
@@ -151,7 +154,7 @@ template).
 
 - **Project scope** (default) — all `plans/` artifacts go to `primary_repo/plans/`.
 - **Shared scope** — code edits inside `shared_repos[].path`, plus that repo's own
-  `STANDARDS.md` and `DECISIONS.md` (no `plans/` wrapper).
+  `STANDARDS.md`, `DECISIONS.md`, and `DEPLOYMENT.md` (no `plans/` wrapper).
 - **Detection** — path match against `shared_repos[].path`. SAM never falls back to
   cwd or `"."` to infer the primary repo.
 - **Project-scoped decisions about shared code** stay in
@@ -228,16 +231,27 @@ Each Phase follows this sequence:
 | 6 | `PM.StatusUpdate` | Update STATUS/BACKLOG/CHANGELOG | `status_updates` (controls STATUS write) |
 | 7 | `Writer.DocumentationUpdate` | Update docs (optional/skippable) | `documentation_update` |
 | 8 | `Human.PhaseApproval` | Human confirms; commit | `formal_approval` |
-| 9 | `PM.AdvancePhase` | Increment phase_id; set up next cycle | — |
+| 9 | `PM.AdvancePhase` | Increment phase_id; set up next cycle. After the last phase, closes out the milestone inline | — |
 
 See **Configuration** above for how these knobs affect routing.
 
 ### 4. Milestone closeout
-- `PM.MilestoneCloseout` → update BACKLOG/CHANGELOG, trigger ThreadMaintenance
-- Proceed to next milestone (`Principal.MilestonePlan`) or end build
+- `PM.AdvancePhase` closes out the milestone **inline** once its last phase is approved: update BACKLOG/CHANGELOG, route to `PM.ThreadMaintenance`. (`PM.MilestoneCloseout` holds the closeout procedure and can still be invoked directly; it refuses to close a milestone twice.)
+- Then the next milestone (`Principal.MilestonePlan`) or, after the final milestone, the Build release
+
+### 5. Build release
+- `PM.BuildRelease` → the last action of every Build, all sizes (reached via `PM.ThreadMaintenance`)
+- Bumps the version, moves CHANGELOG "Unreleased" → "Released", and scaffolds/patches `DEPLOYMENT.md` in each deployed repo — PRs, tag, env changes, migrations, deploy steps, smoke tests, rollback
+- **The AI prepares; the human ships.** It never pushes, tags, or deploys — the tag is a runner step, created after any final commits land
+- Opens the next Build: `build_id` → B<n+1>, next `Product.ProductVision`. Write the new concept brief in `plans/VISION.md` first
 
 ### Mid-flight re-planning
 When reality diverges from the plan — discovered work, scope shift, milestone needs to be split — the human sets `next_action_id = Principal.PlanDiversion` (manually, or via a helper). Principal classifies the change (note only / new steps / new phases / new milestones), proposes the edits in chat, waits for human confirmation, then applies them and routes to the appropriate re-approval gate (`Human.ApproveBuild` for milestone changes, `Human.ApproveMilestone` for phase changes) or back to `Staff.DraftQuestions` for step-level changes. This is the only sanctioned way to modify `BUILD.md` / `MILESTONE.md` after execution has begun — BACKLOG should not become a junk drawer for in-plan work.
+
+### Patches (outside a Build)
+Some work isn't a Build: Dependabot alerts, a security patch, a small dependency bump. Run it by name — "Run Staff.Patch: fix the Dependabot alerts" — at any point, even mid-Build. `Staff.Patch` is **out-of-band**: it never touches `state.json`, consumes no Build number, and the in-flight Build resumes where it was.
+
+It briefs you in chat (alerts via `gh` or the ecosystem's audit tool, severity, proposed fix, patch-now vs. backlog), waits for explicit approval, applies only the approved patch-sized fixes, bumps the PATCH version, logs to CHANGELOG/BACKLOG, and ends with a short deployment runbook. Major or breaking upgrades go to BACKLOG.
 
 ## Thread management (keep it small)
 `plans/thread.md` is an **append-only log** — each action that writes to it appends a new dated entry at the end. It is AI-readable, not machine-parseable.
@@ -263,6 +277,7 @@ When a Phase completes or the thread gets long/noisy, `PM.ThreadMaintenance` pru
 ## Execution model assumptions
 - **Single-threaded.** One Phase is active at a time. `state.json` tracks a single active `build_id`, `milestone_id`, and `phase_id`.
 - If a bug in a previous milestone is found, handle it as an unplanned Step in the current Phase, document in `thread.md` and `CHANGELOG.md`, and resume.
+- **Validation is scoped, and recorded once.** Targeted tests while iterating; one full checkpoint (suite + lint/format/type gates) before an action that changed code finishes, recorded as a `Validation:` line in thread.md. Review, approval, and release reuse that record instead of re-running checks on unchanged code — `plans/`-only commits don't count as changes. See `plans/agent-instructions.md` § "Validation scope".
 - **Branching** is a project decision, not SAM-prescribed. Record your branching convention in `STANDARDS.md` or your project README.
 
 ## ID conventions (recommended)

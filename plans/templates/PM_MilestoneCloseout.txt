@@ -1,7 +1,9 @@
 ROLE: PM
 TASK: MilestoneCloseout
 
-Goal: Close out the current milestone — update project tracking artifacts, archive the milestone's thread content, and set up routing for the next milestone or end of Build.
+Goal: Close out the current milestone — update project tracking artifacts and set up routing for the next milestone or the end of the Build.
+
+Normally these instructions run INLINE inside PM.AdvancePhase when the last Phase of a milestone is approved — nothing routes here in the standard flow. This action remains for direct invocation (manual runs, or a state.json written before closeout moved inline). When run inline, PM.AdvancePhase records itself as last_action; everything else below applies as written.
 
 Inputs:
 - plans/state.json (routing + context)
@@ -14,12 +16,25 @@ Inputs:
 - plans/thread.md (active working memory)
 
 Instructions:
+0) Already-closed guard. Closeout must never run twice. It has already run if EITHER:
+   - plans/CHANGELOG.md "Unreleased" already contains "Milestone <Build ID>-<Milestone ID>
+     complete" for the milestone described in plans/MILESTONE.md, OR
+   - plans/MILESTONE.md's milestone (its `# MILESTONE — <Build ID>-<Milestone ID>`
+     heading) no longer matches state.json's build_id-milestone_id (closeout already
+     advanced milestone_id).
+   If so, make NO file edits except state.json, set last_action.result = "skipped",
+   and route onward:
+   - If context.notes has an "After ThreadMaintenance: proceed to <X>" note, thread
+     maintenance hasn't run yet → next_action_id = PM.ThreadMaintenance.
+   - Otherwise → the lifecycle position closeout set up: Principal.MilestonePlan for a
+     next milestone, or PM.BuildRelease at the end of the Build.
+   - pause_type = "continue". Stop here.
 1) Verify all Phases in plans/MILESTONE.md are complete (cross-reference with STATUS.md).
 2) Update plans/CHANGELOG.md:
-   - Append a milestone summary entry under "Unreleased": "Milestone <ID> complete — <goal>"
+   - Append a milestone summary entry under "Unreleased":
+     "Milestone <Build ID>-<Milestone ID> complete — <goal>" (e.g., "Milestone B1-M2 complete — …")
    - Do NOT move items from "Unreleased" to "Released". Milestones are *completed*,
-     not released. The "Unreleased" → "Released" move belongs to BUILD release
-     (when/if that action exists), not milestone closeout.
+     not released. The "Unreleased" → "Released" move belongs to PM.BuildRelease.
 3) Update plans/BACKLOG.md:
    - Remove items completed during this milestone
    - Carry forward unresolved items
@@ -30,9 +45,9 @@ Instructions:
    - If `status_updates = "every_action"`:
      - Refresh the `**Update configuration:**` line at top
      - Now: clear Phase ID (milestone complete)
-     - Recent: "PM.MilestoneCloseout — <Milestone ID> closed"
+     - Recent: "<Milestone ID> closed out"
      - Blockers: clear milestone-specific blockers
-     - Next: indicate whether another milestone follows or Build is complete
+     - Next: indicate whether another milestone follows or the Build goes to release
    - Otherwise: SKIP. The end-of-last-phase PM.StatusUpdate already wrote a snapshot;
      the next PM.StatusUpdate (after Human.ApproveMilestone for the new milestone)
      will catch STATUS up to the new position.
@@ -48,17 +63,16 @@ Instructions:
    - last_action.result = "ok"
    - phase_id = null
    - step_id = null
+   - next_action_id = PM.ThreadMaintenance
+   - pause_type = "continue"
    - If there is a next milestone in plans/BUILD.md (only possible under `size: full`):
      - milestone_id = <next Milestone ID> (e.g., "M2")
-     - next_action_id = PM.ThreadMaintenance
-     - pause_type = "continue"
+     - Add a context note: "After ThreadMaintenance: proceed to Principal.MilestonePlan"
    - If this was the final milestone in the Build (always the case for non-`full` sizes):
-     - next_action_id = PM.ThreadMaintenance
-     - pause_type = "continue"
-     - Add a context note: "Build complete after ThreadMaintenance"
+     - Add a context note: "After ThreadMaintenance: proceed to PM.BuildRelease"
 7) Trigger thread cleanup:
    - PM.ThreadMaintenance will run next to prune resolved content
-     and promote durable decisions before the next milestone begins
+     and promote durable decisions before the next milestone (or the release) begins
 
 Constraints:
 - Do not implement code.

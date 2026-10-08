@@ -21,6 +21,35 @@ artifacts live in the `plans/` directory. Read `plans/README.md` for the full sp
 9. Stop. You are done when state.json is updated and all required outputs are written.
    Do not continue to the next action.
 
+### Out-of-band actions
+Actions marked `"out_of_band": true` in `registry.json` (currently `Staff.Patch`) are
+invoked **by name** — e.g., "Run Staff.Patch: fix the Dependabot alerts". Run them
+regardless of `next_action_id`, and **do not modify `plans/state.json`**: they sit outside
+the Build, consume no Build number, and leave an in-flight Build exactly where it was.
+
+### Validation scope (tests, lint, type checks)
+Verification is required; repeating it is not. Spend expensive checks where they buy
+confidence.
+
+- **Iterative validation** — while implementing or fixing, run the narrowest checks that
+  give meaningful feedback on the code you are touching (targeted tests; lint/format on
+  changed files). After a local fix, re-run only those. Broaden only when the change is
+  cross-cutting or targeted checks can't give confidence.
+- **Checkpoint validation** — once, before an action that changed code declares its work
+  done: the full suite plus the lint/format/type gates the project requires. Fix failures
+  before completing. If `plans/STANDARDS.md` names the commands, use them.
+- **Record it once, reuse it.** The action that ran the checkpoint records a
+  `Validation:` line in its thread.md entry — commands, result, and the commit it ran
+  against. Later actions (review, approval, release) do **not** re-run checks on code that
+  hasn't changed since that record.
+- **"Changed" means code, not commits.** Decide whether a record still holds by looking at
+  which files changed since its commit (`git diff --name-only <commit>` plus uncommitted
+  changes). Ignore `plans/` and anything that can't affect the checks (SAM bookkeeping,
+  docs-only edits). A new commit SHA by itself means nothing.
+- **If code did change, or there is no record, run the checks yourself** — the narrowest
+  ones that cover the change — rather than routing back to an earlier action just to get
+  them run. Only a *failure* goes back through normal routing.
+
 ### Key files
 - `plans/README.md` — full SAM system spec (vocabulary, lifecycle, pause model, etc.)
 - `plans/FORMATS.md` — expected structure of all instance-level files — reference when creating or updating
@@ -61,9 +90,10 @@ and scope-of-change routing applies. Read `plans/FORMATS.md` ("workspace block" 
 - **The primary repo owns `plans/`.** No shared repo ever gets a `plans/` directory.
 - **Project scope** (everything not inside a `shared_repos[].path`) → writes go to the
   primary repo's `plans/` (BUILD/MILESTONE/STATUS/BACKLOG/CHANGELOG/DECISIONS/STANDARDS/thread).
-- **Shared scope** (path matches a `shared_repos[].path`) → only code edits and, with
-  prior human approval via `PM.ThreadMaintenance`, that repo's own `STANDARDS.md` /
-  `DECISIONS.md` (no `plans/` wrapper). Project-scoped decisions *about* shared code
+- **Shared scope** (path matches a `shared_repos[].path`) → only code edits, that repo's
+  `DEPLOYMENT.md` (written by `PM.BuildRelease`), and, with prior human approval via
+  `PM.ThreadMaintenance`, that repo's own `STANDARDS.md` / `DECISIONS.md` (no `plans/`
+  wrapper). Project-scoped decisions *about* shared code
   stay in the primary repo's `plans/DECISIONS.md`.
 - **Detection:** path match against `shared_repos[].path`. SAM never falls back to cwd
   or `"."` to infer the primary repo — the config is authoritative.

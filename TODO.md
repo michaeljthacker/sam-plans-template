@@ -18,7 +18,7 @@ Future chat sessions: read `DECISIONS.md` for rationale, `plans/README.md` for t
 
 Small, prompt-and-script-only changes. No schema, routing, or config additions. Pick up when the current batch lands; not promised to a specific version.
 
-- [ ] **`PM.AdvancePhase` should handle milestone closeout inline.** Today, when the current phase is the last in the milestone, `PM.AdvancePhase` does nothing structural and routes to `PM.MilestoneCloseout` — a tiny separate action. Let `PM.AdvancePhase` just *do* the closeout when that's the appropriate route, rather than bouncing to another action for a small task. (Feedback 2026-07-16.) Keep them able to coexist — closeout still exists as its own action for direct invocation — but AdvancePhase shouldn't punt when it's already the right actor. Touches: `PM_AdvancePhase.txt`, `PM_MilestoneCloseout.txt`, routing docs; confirm no double-closeout. Small-ish, but decide whether it's a merge or an inline call before doing it.
+_Nothing queued._
 
 ---
 
@@ -43,14 +43,7 @@ Items that need a small design pass before implementation. Not committed to a ve
 
 - [ ] **`context.notes` vs. `thread.md` — clarify or collapse the boundary.** Some SAM repos barely touch `state.json > context.notes`; others lean on it. Working mental model: `thread.md` = full conversation log, `notes` = "top of mind" highlights + routing hand-offs (e.g., "After ThreadMaintenance: proceed to X"). Is that distinction necessary, and is the boundary crisp enough to state? (Feedback 2026-07-16 — "is it fine? No strong feeling.") **Design pass:** either (a) document the boundary explicitly in FORMATS.md (notes = machine-relevant routing hand-offs + short-lived highlights; thread = human/AI narrative) and audit templates for misuse, or (b) collapse `context.notes` into thread.md if it earns its keep only as routing hand-offs (but those are structured and machine-read, which argues for keeping notes). Low urgency; decide direction first.
 
-- [ ] **BUILD END / release-runner action.** Add a build-completion task that drafts a clear **deployment runner doc** so the human can execute it (preferred over actually running the deploy). Should cover, for all relevant repos (frontend + backend as appropriate): PRs to `main`, version bumps, git tags, CHANGELOG `Unreleased` → `Released` move (this is the "BUILD released" action foreshadowed in D-024), env var updates, deployment steps, migrations, smoke-test best practices, and rollback plans per deployed repo. (Feedback 2026-07-16.) **Design pass:** new registry entry + template + routing (reached from `PM.MilestoneCloseout` when the final milestone of the Build completes — ties into the D-024 "future `*.BuildRelease` action"). Decide role (`PM.*`? `Writer.*`? new `Product.*`?) and whether it also performs the Unreleased→Released CHANGELOG move or just documents it. Multi-root aware (per-repo runner sections).
-  - **Preferred output shape (feedback 2026-08-09):** the runner should not live in `thread.md`. Instead, standardize a durable, per-repo `DEPLOYMENT.md` that the action simply *updates* for the specific deployment (version numbers, tags, env deltas, migration notes) rather than regenerating from scratch each time. First run scaffolds `DEPLOYMENT.md`; subsequent releases patch it. Decide whether it's a system-scaffolded instance file (like STATUS.md) or fully human/AI-owned. Multi-root: one `DEPLOYMENT.md` per deployed repo.
-
-- [ ] **"Not a Build" mode — maintenance chores below the Build threshold.** (Feedback 2026-08-09.) Some work isn't a Build at all: "fix the Dependabot alerts," bump a dependency, apply a security patch. Today the smallest unit is a `step-only` Build with a B-number, which is heavier than the task deserves and pollutes Build numbering. Design a lightweight track — a template/action (or a distinct entry mode) for chores that carry **no BUILD number**: read the alert/chore, make the fix, log it, done. Roughly the `step-only` class but without the Build wrapper. **Design pass:** decide whether it's a new `action_id` (e.g. `Staff.Chore` / `Maintenance.*`), how it records in state.json (does `build_id` become nullable / a sentinel?), where it logs (CHANGELOG? a maintenance log?), and how `next.ps1` / `status.ps1` / `commit.ps1` render an ID with no B-number. Add a DECISION entry.
-
-- [ ] **Configurable `PM.ThreadMaintenance` timing.** (Feedback 2026-08-09.) Add a config knob — `thread_maintenance: auto | every_milestone` (proposed **new default `every_milestone`**). `auto` preserves current mid-lifecycle prunability-gate behavior (D-026). Under `every_milestone`, maintenance runs *late* — right before `PM.AdvancePhase` / `PM.MilestoneCloseout` — instead of opportunistically mid-flight. **Sequencing note:** this interacts with the pending "AdvancePhase handles closeout inline" change and the closeout→ThreadMaintenance routing; settle those first (or design together) so the "run maintenance right before the transition" hook lands in the right place. Touches `config.schema.json`, `config.json`, `PM_StatusUpdate.txt` (routing gate), `PM_ThreadMaintenance.txt`, `PM_AdvancePhase.txt` / `PM_MilestoneCloseout.txt`, FORMATS.md, README Configuration table. Add a DECISION entry.
-
-- [ ] **Right-size the implementation validation loop — iterative vs. checkpoint scope.** (Feedback 2026-09-01.) SAM currently nudges coding agents to run expensive validation too often: a tiny edit triggers the full test suite + repo-wide Ruff/Black/flake8, then another tiny edit repeats the whole cycle. In repos with multi-minute suites, a ~45s change becomes a 10+ min loop. Distinguish **iterative validation** (during implementation: narrowest relevant tests for the code being touched, rerun those after local fixes; broaden only when the change is cross-cutting or targeted tests can't give confidence) from **checkpoint/final validation** (at phase/milestone boundaries and before declaring done: full suite + required lint/format/type gates, resolve failures before completing). Goal is *not* less verification — it's moving expensive verification to where it buys confidence. Target loop: edit → targeted → edit/fix → targeted → final broader; not edit → full+lint → repeat. **Design pass:** first decide whether a general behavioral rule suffices (preferred — something like "use the narrowest validation scope that gives meaningful feedback for the current change; reserve full-suite/repo-wide validation for checkpoints, final verification, or genuinely cross-cutting changes") rather than adding config. Only if repos genuinely need different policies, consider a `testing: { iteration, checkpoint, final }` knob — don't add config merely for configurability. Touches `Staff_ImplementationExecution.txt`, `Staff_ReviewReconciliation.txt`, `Principal_CodeReview.txt`, `Human_PhaseApproval.txt`, FORMATS.md; possibly `config.schema.json`/`config.json`/README if config is chosen. Add a DECISION entry.
+- [ ] **Configurable `PM.ThreadMaintenance` timing.** (Feedback 2026-08-09.) Add a config knob — `thread_maintenance: auto | every_milestone` (proposed **new default `every_milestone`**). `auto` preserves current mid-lifecycle prunability-gate behavior (D-026). Under `every_milestone`, maintenance runs *late* — right before `PM.AdvancePhase` / `PM.MilestoneCloseout` — instead of opportunistically mid-flight. **Sequencing note:** the inline-closeout change landed in v1.8.0 (D-028) — `PM_AdvancePhase.txt` step 4 is the single "right before the transition" hook, and closeout now always leaves an explicit "After ThreadMaintenance: proceed to <X>" note. Touches `config.schema.json`, `config.json`, `PM_StatusUpdate.txt` (routing gate), `PM_ThreadMaintenance.txt`, `PM_AdvancePhase.txt` / `PM_MilestoneCloseout.txt`, FORMATS.md, README Configuration table. Add a DECISION entry.
 
 ---
 
@@ -414,3 +407,40 @@ plus a `sam-update.py` output improvement. Manifest bumped to 1.7.0.
 ### Attribution
 
 - [x] "An mjt.pub project" (linked) added near the top of root `README.md` and `plans/README.md`.
+
+---
+
+## v1.8.0 — Completed (2026-10-07)
+
+Two new actions, a milestone-boundary simplification, and a validation-scope rule. Additive
+schema change only (`next_action_id` enum gains `PM.BuildRelease`). Manifest bumped to 1.8.0.
+See D-027 through D-030.
+
+### Right-sized validation loop (D-027)
+
+- [x] Iterative (targeted) vs. checkpoint (full suite + gates, once per code-changing action) validation, stated once in `plans/agent-instructions.md` § "Validation scope"; no config key.
+- [x] Checkpoint recorded as a `Validation:` line in thread.md (commands, result, commit). `Principal.CodeReview`, `Human.PhaseApproval`, and `PM.BuildRelease` reuse it instead of re-running — fixes ImplementationExecution's 10-minute suite being immediately repeated by CodeReview.
+- [x] Staleness judged by changed *code files* since the recorded commit, ignoring `plans/` and docs-only edits (plans-only commits don't invalidate). Stale/missing → the later action runs the narrowest covering checks itself rather than routing back.
+- [x] Wired into `Staff_ImplementationExecution`, `Staff_ReviewReconciliation`, `Staff_QuickImplement`, `Principal_CodeReview`, `Human_PhaseApproval`; FORMATS.md thread.md rule 8; README execution-model note.
+
+### `PM.AdvancePhase` handles milestone closeout inline (D-028)
+
+- [x] On the last phase (always, for `phase-only`), AdvancePhase executes the `PM_MilestoneCloseout.txt` procedure in the same action. `PM.MilestoneCloseout` stays for direct invocation.
+- [x] Already-closed guard (CHANGELOG entry present, or MILESTONE.md heading ≠ state position) — a repeat closeout is `skipped` and routes onward. CHANGELOG entry now carries the Build: "Milestone B1-M2 complete".
+- [x] Closeout always leaves an explicit "After ThreadMaintenance: proceed to <X>" note (`Principal.MilestonePlan` or `PM.BuildRelease`).
+
+### `PM.BuildRelease` + `DEPLOYMENT.md` (D-029)
+
+- [x] New last action of every Build, all sizes (closeout / QuickImplement → ThreadMaintenance → BuildRelease). Confirms validation, chooses semver, bumps manifests (unless release tooling owns the version), moves CHANGELOG Unreleased → `### vX.Y.Z — date (B<n>)`, commits release prep.
+- [x] Durable per-repo `DEPLOYMENT.md` at each deployed repo's root: standing sections + a rewritten "Current release" (PRs, env deltas, migrations, deploy deltas, tag, smoke tests, rollback). Scaffolded on first release, patched after. Never holds secrets; added to the shared-repo write surface. AI prepares, human ships — tagging is a runner step after final commits land.
+- [x] Opens the next Build (`build_id` → B<n+1>, next `Product.ProductVision`). ProductVision blocks if VISION.md still describes the released Build, and updates rather than regenerates the root README on later Builds.
+
+### `Staff.Patch` — out-of-band upkeep, not a Build (D-030)
+
+- [x] First out-of-band action (`"out_of_band": true`): invoked by name, never modifies state.json, consumes no Build number — an in-flight Build resumes untouched. Not in the `next_action_id` enum.
+- [x] Dependabot via `gh api …/dependabot/alerts`, falling back to ecosystem audit tools, then human paste. Triage brief (PATCH NOW / BACKLOG / NO ACTION) → explicit approval → apply patch-sized fixes only → PATCH bump → CHANGELOG `(patch)` Released section (never touches the Build's Unreleased) + BACKLOG for anything bigger → deployment runbook in chat.
+- [x] `step-only` is no longer described as "not a build"; README / FORMATS / ProductVision point pure upkeep to `Staff.Patch`.
+
+### Bug fix
+
+- [x] `state.schema.json`: added `Staff.QuickImplement` to the `next_action_id` enum — `Human.ApproveBuild` routes there for `step-only` builds, so that state previously failed schema validation (latent since v1.6.0).

@@ -7,6 +7,10 @@ This is the FIRST action in a new Build. The human has seeded their project idea
 **concept brief** in plans/VISION.md (or, for legacy setups, in plans/thread.md or
 verbally). Your job is to draft the foundational artifacts from that seed.
 
+Later Builds (B2, B3, …) arrive here from PM.BuildRelease, which has already set the new
+build_id. In that case the project already exists: update the root README rather than
+regenerating it, and make sure VISION.md describes the NEW Build (step 0).
+
 Inputs:
 - plans/state.json (routing + context)
 - plans/config.json (workflow configuration — read `status_updates` for STATUS init)
@@ -14,11 +18,18 @@ Inputs:
 - plans/thread.md (fallback seed location + any setup context)
 
 Instructions:
+0) Next-Build guard. If context.notes has a "<Build ID> released … write the <next Build
+   ID> concept brief in plans/VISION.md" note, compare plans/VISION.md with the released
+   Build (plans/BUILD.md still describes it). If VISION.md is unchanged — still the
+   released Build's brief — do NOT re-seed from it: set last_action.result = "blocked",
+   pause_type = "decision", next_action_id = Human.ResolveBlocker, and add a blocker
+   asking the human to write the new Build's concept brief in plans/VISION.md. Otherwise
+   remove that note from context.notes and continue.
 1) Read plans/VISION.md for the human's concept brief — this is the primary seed for
    the Build. If VISION.md is empty or absent (legacy setups), fall back to plans/thread.md
    for the project idea. Look for enough context to draft the artifacts:
    - A one-sentence project goal
-   - A Build B1 short name or description
+   - A short name or description for this Build (build_id from state.json)
    - A Milestone M1 goal
    If any of these are missing and cannot be inferred from the provided material,
    set last_action.result = "blocked", pause_type = "decision",
@@ -35,15 +46,19 @@ Instructions:
      - `full` — multi-milestone work (2+ milestones, typical 3+). Full prototype or major feature.
      - `single-milestone` — substantial feature, single milestone, multiple phases.
      - `phase-only` — small feature; exactly one phase, multiple steps.
-     - `step-only` — **not a build.** Cursory look, brief human check, implement.
+     - `step-only` — the smallest Build. Cursory look, brief human check, implement.
        Pick this when the change is mechanical, well-scoped, and the build process
-       would cost more than the work itself (patches, dependency bumps, small fixes,
-       wiring an existing library into a consumer). The signal is *intent and risk*,
+       would cost more than the work itself (small fixes, wiring an existing library
+       into a consumer). The signal is *intent and risk*,
        not step count — a 5-edit mechanical wire-up is `step-only`; a 2-step feature
        that needs design questions is `phase-only`.
+       Pure upkeep with no product change (dependency/security patches, Dependabot
+       alerts) doesn't need a Build at all — it belongs to the out-of-band
+       Staff.Patch. If that's all the brief asks for, say so in your output.
    - If genuinely ambiguous, prefer the smaller size; the human can grow it at
      Human.ApproveBuild or via Principal.PlanDiversion.
-3) Generate the root README.md:
+3) Generate the root README.md (later Builds: update the existing README only where
+   this Build changes what the project is or does — do not regenerate it):
    - Project name and one-line description
    - What the project does (2–4 sentences)
    - Key features / capabilities (bullet list)
@@ -68,7 +83,7 @@ Instructions:
      thread.md; it does not need prototype-grade framing.
    - **Otherwise** — full BUILD.md:
      - Frontmatter at the top: `---\nsize: <chosen size>\n---`
-     - Fill in the Build ID (from state.json, typically B1)
+     - Fill in the Build ID (from state.json — B1 for a new project)
      - Purpose: what is being built and why
      - Scope: in-scope and out-of-scope items
      - Success criteria: measurable outcomes

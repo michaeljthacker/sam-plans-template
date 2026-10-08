@@ -45,6 +45,8 @@ Instructions:
 3) Summarize (per in-scope phase under `every_milestone`; otherwise for the one phase):
    - What was implemented (from thread.md / STATUS.md)
    - Review outcome (from thread.md — was it APPROVED by Principal?)
+   - Validation (from the latest `Validation:` line in thread.md — what ran, result).
+     Report it; do NOT run tests yourself.
    - Key files changed
 4) Present acceptance criteria as a checklist for human verification (covering every
    in-scope phase under `every_milestone`).

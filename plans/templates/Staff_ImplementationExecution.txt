@@ -33,6 +33,12 @@ Instructions:
      uncovers a finding that genuinely belongs in shared standards, capture it in the
      primary repo's plans/DECISIONS.md or plans/STANDARDS.md and let the promotion
      protocol handle it.
+2a) Validate per plans/agent-instructions.md § "Validation scope":
+   - While implementing: targeted checks only (tests for the code you touched,
+     lint/format on changed files). Re-run just those after each fix.
+   - Before step 4: ONE checkpoint run — full suite + required lint/format/type gates.
+     Fix failures before completing.
+   - Do not re-run the full suite after every edit.
 3) Commit your work.
    - **NEVER prefix commit messages with `--AUTO-`.** That prefix is reserved
      exclusively for automated SAM commits made by `plans/commit.ps1`; a manual
@@ -53,6 +59,9 @@ Instructions:
        boundary is visible in the log)
      - Acceptance criteria checklist
      - Any known risks or trade-offs
+     - `Validation:` line — checkpoint commands, result (e.g., "412 passed; lint/types
+       clean"), and the commit they ran against. Principal.CodeReview relies on this
+       instead of re-running the suite.
 5) Update plans/STATUS.md (config-gated):
    - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
    - If `status_updates = "every_action"`:

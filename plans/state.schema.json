@@ -99,7 +99,7 @@
     },
     "next_action_id": {
       "type": "string",
-      "description": "The Role.Task action ID to execute next. Must be a registered action in registry.json.",
+      "description": "The Role.Task action ID to execute next. Must be a registered action in registry.json. Out-of-band actions (e.g., Staff.Patch) are invoked by name and never appear here.",
       "enum": [
         "Product.ProductVision",
         "Principal.BuildReview",
@@ -109,6 +109,7 @@
         "Staff.DraftQuestions",
         "Principal.AnswerQuestions",
         "Staff.ImplementationExecution",
+        "Staff.QuickImplement",
         "Principal.CodeReview",
         "Staff.ReviewReconciliation",
         "PM.StatusUpdate",
@@ -116,6 +117,7 @@
         "Human.PhaseApproval",
         "PM.AdvancePhase",
         "PM.MilestoneCloseout",
+        "PM.BuildRelease",
         "PM.ThreadMaintenance",
         "Principal.PlanDiversion",
         "Human.ResolveBlocker"

@@ -2,9 +2,9 @@ ROLE: Staff
 TASK: QuickImplement
 
 Goal:
-Implement, self-verify, and close out a `size: step-only` build in one action. This is the carve-out path for "not a build" work — small fixes, dependency bumps, mechanical edits — where the standard build process would cost more than the work itself.
+Implement, self-verify, and close out a `size: step-only` build in one action. This is the carve-out path for the smallest Builds — small fixes and mechanical edits where the standard build process would cost more than the work itself. (Pure upkeep with no product change — dependency/security patches — doesn't need a Build at all; that is the out-of-band Staff.Patch.)
 
-This action ONLY runs for `size: step-only` builds. It is reached from Human.ApproveBuild and ends the Build (no MilestonePlan, no per-phase loop, no MilestoneCloseout). If you arrive here with a non-step-only BUILD.md, STOP and route to Human.ResolveBlocker — something has gone wrong.
+This action ONLY runs for `size: step-only` builds. It is reached from Human.ApproveBuild and finishes the Build's work (no MilestonePlan, no per-phase loop, no MilestoneCloseout); PM.ThreadMaintenance and PM.BuildRelease follow. If you arrive here with a non-step-only BUILD.md, STOP and route to Human.ResolveBlocker — something has gone wrong.
 
 Inputs:
 - plans/state.json (routing + context)
@@ -46,10 +46,11 @@ Instructions:
      For step-only, written artifacts stay minimal — title + one-line note, no
      prototype-grade prose.
 
-4) Self-verify.
-   - Run whatever check is appropriate (type-check, lint, smoke test, manual exercise
-     of the path that changed). The formal Principal.CodeReview action is intentionally
-     skipped on this path, but the *act* of verifying is not.
+4) Self-verify per plans/agent-instructions.md § "Validation scope".
+   - Targeted checks while iterating; one checkpoint run (full suite + required gates)
+     when done — or less, if the change genuinely can't affect them (docs, config with
+     no code path). The formal Principal.CodeReview action is intentionally skipped on
+     this path, but the *act* of verifying is not.
    - If verification fails: fix it, do not punt to a review step. If you cannot fix
      it, set last_action.result = "blocked", pause_type = "decision",
      next_action_id = Human.ResolveBlocker, and add a blocker.
@@ -59,8 +60,8 @@ Instructions:
      exclusively for automated SAM commits made by `plans/commit.ps1`; a manual
      commit that carries it corrupts the organic-vs-automated distinction in
      `git log`. Write a plain, human-readable subject describing the change.
-       ✅ good:  `Bump lodash to 4.17.21 (security patch)`
-       ❌ WRONG: `--AUTO-B3-Staff.QuickImplement: bump lodash`
+       ✅ good:  `Add CSV export button to the report page`
+       ❌ WRONG: `--AUTO-B3-Staff.QuickImplement: add CSV export`
    - Minimum: ≥1 commit.
    - Shared-repo code edits commit inside the shared repo using its own conventions.
 
@@ -71,18 +72,18 @@ Instructions:
 
 7) Append a brief thread.md entry at the bottom:
    - Use the entry format: `---` then `### Staff.QuickImplement — <date>`
-   - One short paragraph: what was changed, key files touched, verification performed.
+   - One short paragraph: what was changed and key files touched, plus a
+     `Validation:` line (commands, result, commit).
    - Match step-only depth: a few sentences, not a review request.
 
 8) Update plans/STATUS.md (config-gated):
    - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
    - If `status_updates = "every_action"`:
      - Refresh the `**Update configuration:**` line at top
-     - Now: clear Phase ID (build complete)
+     - Now: clear Phase ID (build work complete)
      - Recent: "Staff.QuickImplement — <one-line summary>"
-     - Next: "Build complete"
-   - Otherwise: SKIP. PM.ThreadMaintenance (next action) will refresh STATUS as
-     part of build-close cleanup.
+     - Next: "PM.ThreadMaintenance, then PM.BuildRelease"
+   - Otherwise: SKIP. Product.ProductVision rewrites STATUS when the next Build starts.
 
 9) Update plans/state.json to close the Build:
    - last_action.action_id = Staff.QuickImplement
@@ -91,11 +92,11 @@ Instructions:
    - step_id = null
    - next_action_id = PM.ThreadMaintenance
    - pause_type = "continue"
-   - Add context note: "Build complete after ThreadMaintenance"
+   - Add context note: "After ThreadMaintenance: proceed to PM.BuildRelease"
 
-   This matches the end-of-build routing used by PM.MilestoneCloseout for the other
-   sizes — PM.ThreadMaintenance gets the last word so any decisions worth keeping
-   are promoted before the Build closes.
+   This matches the end-of-build routing used by milestone closeout for the other
+   sizes — PM.ThreadMaintenance promotes anything worth keeping, then PM.BuildRelease
+   prepares the release and opens the next Build.
 
 Constraints:
 - Do not run Principal.BuildReview, Principal.MilestonePlan, Principal.CodeReview,

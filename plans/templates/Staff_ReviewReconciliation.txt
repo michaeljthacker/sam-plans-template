@@ -71,6 +71,10 @@ Instructions:
    - **Every DECISIONS/STANDARDS entry MUST include a `**Why this matters long-term:**`
      line** capturing the rationale. If you can't write a meaningful one, the entry
      doesn't belong there. See plans/FORMATS.md for the entry format.
+3c) Validate code changes per plans/agent-instructions.md § "Validation scope":
+   - If you changed code: targeted checks while fixing, then ONE checkpoint run (full
+     suite + required gates) on your final changes.
+   - If you changed no code: run nothing — the existing `Validation:` record still holds.
 4) Commit any code changes.
    - **NEVER prefix commit messages with `--AUTO-`.** That prefix is reserved
      exclusively for automated SAM commits made by `plans/commit.ps1`; a manual
@@ -86,6 +90,8 @@ Instructions:
    - For each SUGGESTED item: note whether it was implemented or logged to BACKLOG.
    - If any code was changed, clearly describe what changed so that Principal can
      perform a targeted re-review (not a full Phase review).
+   - If code changed: a `Validation:` line (checkpoint commands, result, commit), so a
+     re-review can rely on it instead of re-running the suite.
    - For any change inside a `workspace.shared_repos[].path`, prefix that bullet with
      "shared scope (<repo name>):" so the workspace boundary is visible in the log.
    - Note any follow-up questions if something was unclear.

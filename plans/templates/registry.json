@@ -1,7 +1,7 @@
 {
   "version": "0.3",
   "action_id_convention": "Role.Task",
-  "note": "All 19 actions have templates. See plans/templates/ for individual action prompts.",
+  "note": "All 21 actions have templates. See plans/templates/ for individual action prompts. Actions with \"out_of_band\": true are invoked by name, never via next_action_id, and do not modify state.json.",
 
   "actions": [
     {
@@ -95,6 +95,17 @@
       "gates": { "update_status_required": true, "tests_required": true }
     },
     {
+      "action_id": "Staff.Patch",
+      "role": "Staff",
+      "task": "Patch",
+      "template_path": "plans/templates/Staff_Patch.txt",
+      "status": "ready",
+      "out_of_band": true,
+      "inputs": ["plans/config.json", "plans/state.json", "plans/STANDARDS.md", "plans/DECISIONS.md", "plans/CHANGELOG.md", "plans/BACKLOG.md", "DEPLOYMENT.md"],
+      "required_outputs": ["plans/CHANGELOG.md", "plans/BACKLOG.md"],
+      "gates": { "update_status_required": false, "tests_required": true }
+    },
+    {
       "action_id": "Principal.CodeReview",
       "role": "Principal",
       "task": "CodeReview",
@@ -150,8 +161,8 @@
       "task": "AdvancePhase",
       "template_path": "plans/templates/PM_AdvancePhase.txt",
       "status": "ready",
-      "inputs": ["plans/state.json", "plans/config.json", "plans/BUILD.md", "plans/MILESTONE.md", "plans/STATUS.md"],
-      "required_outputs": ["plans/state.json", "plans/STATUS.md"],
+      "inputs": ["plans/state.json", "plans/config.json", "plans/BUILD.md", "plans/MILESTONE.md", "plans/STATUS.md", "plans/BACKLOG.md", "plans/CHANGELOG.md", "plans/thread.md"],
+      "required_outputs": ["plans/state.json", "plans/STATUS.md", "plans/BACKLOG.md", "plans/CHANGELOG.md"],
       "gates": { "update_status_required": true, "tests_required": false }
     },
     {
@@ -163,6 +174,16 @@
       "inputs": ["plans/state.json", "plans/config.json", "plans/BUILD.md", "plans/MILESTONE.md", "plans/STATUS.md", "plans/BACKLOG.md", "plans/CHANGELOG.md", "plans/thread.md"],
       "required_outputs": ["plans/STATUS.md", "plans/BACKLOG.md", "plans/CHANGELOG.md", "plans/state.json"],
       "gates": { "update_status_required": true, "tests_required": false }
+    },
+    {
+      "action_id": "PM.BuildRelease",
+      "role": "PM",
+      "task": "BuildRelease",
+      "template_path": "plans/templates/PM_BuildRelease.txt",
+      "status": "ready",
+      "inputs": ["plans/state.json", "plans/config.json", "plans/BUILD.md", "plans/CHANGELOG.md", "plans/STATUS.md", "plans/thread.md", "DEPLOYMENT.md"],
+      "required_outputs": ["plans/CHANGELOG.md", "DEPLOYMENT.md", "plans/state.json"],
+      "gates": { "update_status_required": false, "tests_required": false }
     },
     {
       "action_id": "PM.ThreadMaintenance",

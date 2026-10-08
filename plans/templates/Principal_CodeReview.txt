@@ -35,6 +35,20 @@ Instructions:
      preferences and minor best-practice suggestions are SUGGESTED. (This is the default.)
    - "pragmatic": Only functional correctness and security issues are REQUIRED. Everything
      else (style, patterns, best practices, minor standard deviations) is SUGGESTED.
+1a) Validation evidence — do NOT re-run checks Staff already ran (see
+   plans/agent-instructions.md § "Validation scope"):
+   - Find the most recent `Validation:` line in plans/thread.md (from
+     ImplementationExecution or ReviewReconciliation).
+   - List files changed since its recorded commit (`git diff --name-only <commit>`
+     plus uncommitted changes), ignoring `plans/` and anything that can't affect the
+     checks. A different HEAD SHA from plans-only commits is NOT a code change.
+   - Record passed and no code changed since → treat as verified. Run nothing.
+     (Under `every_milestone`, a full-suite checkpoint on the latest code covers every
+     earlier phase too — do not re-validate phase by phase.)
+   - Code changed since, or no record → run the narrowest checks that cover the
+     unvalidated changes yourself. Do not route back just to get checks run.
+   - Note what you relied on or ran in your review entry. A failing check is a REQUIRED
+     finding (normal CHANGES REQUIRED path).
 2) Review the implementation (scoped per `code_review` — a single phase, or every
    phase of the milestone under `every_milestone`) against:
    - Acceptance criteria in plans/MILESTONE.md (all in-scope phases under `every_milestone`)
@@ -82,6 +96,7 @@ Instructions:
 
 Constraints:
 - Do not implement fixes yourself.
+- Do not re-run the full suite or repo-wide lint on code Staff already validated.
 - Do not silently accept deviations from plans.
 - If standards are unclear, call it out explicitly.
 

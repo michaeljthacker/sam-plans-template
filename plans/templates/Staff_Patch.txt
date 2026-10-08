@@ -1,0 +1,106 @@
+ROLE: Staff
+TASK: Patch
+
+Goal:
+Handle upkeep that isn't a Build — security and dependency patches (e.g., Dependabot alerts), small dependency bumps, other patch-sized chores. Brief the human, apply only what they approve, and hand back a short deployment runbook. Anything bigger than a patch goes to BACKLOG, not into this action.
+
+This action is OUT-OF-BAND:
+- The human invokes it by name ("Run Staff.Patch: <request>"). Run it regardless of
+  plans/state.json `next_action_id`.
+- It does NOT modify plans/state.json. It consumes no Build number; an in-flight Build
+  resumes exactly where it left off.
+- It does not write plans/thread.md or plans/STATUS.md — those belong to the Build.
+
+Inputs:
+- The human's request (chat). Empty, or about Dependabot / security / vulnerabilities /
+  dependencies → use the dependency-sweep playbook in step 2.
+- plans/config.json (read `workspace` — which repos to check)
+- plans/state.json (read-only — is a Build in flight?)
+- plans/STANDARDS.md (validation commands, conventions)
+- plans/DECISIONS.md (constraints on dependencies/versions)
+- plans/CHANGELOG.md
+- plans/BACKLOG.md
+- DEPLOYMENT.md at each affected repo's root (read-only, if present)
+- Version manifests and lockfiles
+
+Instructions:
+1) Preflight.
+   - Uncommitted changes in any participating repo → STOP and ask. They likely belong
+     to in-flight Build work and must not be mixed into a patch.
+   - Branch: if a Build is in flight (state.json is past Product.ProductVision) or
+     CHANGELOG "Unreleased" has items, the current branch may carry unreleased Build
+     work, and shipping a patch from it ships that work too. Unless plans/STANDARDS.md
+     already answers it, ask which branch the patch should land on (typically the
+     deployed branch or the last release tag).
+
+2) Gather findings.
+   Dependency-sweep playbook, per repo (primary + `workspace.shared_repos[]`):
+   a) Dependabot alerts via the GitHub CLI:
+      `gh api "repos/{owner}/{repo}/dependabot/alerts?state=open" --paginate`
+      (owner/repo from `git remote get-url origin`; needs `gh` authenticated with
+      access to the repo's security alerts).
+   b) If that's unavailable (no `gh`, no access, not GitHub, alerts disabled): the
+      ecosystem audit tools for the manifests present — `npm audit` / `pnpm audit`,
+      `pip-audit`, `cargo audit`, `dotnet list package --vulnerable --include-transitive`,
+      `bundle audit`, `govulncheck`, etc.
+   c) If neither works, ask the human to paste the alerts.
+   Say which source you used.
+   Any other chore: read the request and take a cursory look at the code it touches.
+
+3) Triage brief (in chat) — then STOP and wait for the human.
+   For each finding: package/issue, severity + advisory ID, repo, proposed fix, and one of:
+   - PATCH NOW — straightforward and non-breaking: a patch/minor bump within the current
+     major, a lockfile-only transitive update, a small config change.
+   - BACKLOG — major/breaking upgrade, API migration, meaningful refactor, or anything
+     needing design or more than a small, verifiable edit.
+   - NO ACTION — false positive, unreachable, or dev-only with no exposure (say why).
+   Close with the proposed version bump (usually PATCH) and: "Approve all PATCH NOW
+   items, a subset, or none?" Do not edit any file before explicit approval.
+
+4) Apply the approved items only.
+   - Smallest change that resolves each item. No opportunistic upgrades or refactors.
+   - Validate per plans/agent-instructions.md § "Validation scope": targeted checks
+     while iterating, one checkpoint run at the end.
+   - An approved item that turns out bigger than a patch (breaking change, failures you
+     can't fix narrowly): revert it, add it to BACKLOG, and tell the human.
+   - Multi-root: code and manifest edits in shared repos are allowed; never create
+     `plans/` there.
+
+5) Bump the PATCH version in each changed repo's manifest(s) — same rules as
+   PM.BuildRelease: if release tooling owns the version, leave it to the runbook. Skip
+   if nothing was applied or the human declines a release.
+
+6) Log it.
+   - plans/CHANGELOG.md: add `### vX.Y.Z — YYYY-MM-DD (patch)` at the top of "Released",
+     one line per applied fix. Do NOT touch "Unreleased" — it belongs to the in-flight
+     Build. No version bump → add the lines under "Unreleased" prefixed `Patch:` instead.
+   - plans/BACKLOG.md: one specific, actionable entry per BACKLOG item (package,
+     current → target version, advisory, why it isn't a patch). Prioritize by severity.
+
+7) Commit.
+   - **NEVER prefix commit messages with `--AUTO-`** (reserved for `plans/commit.ps1`).
+       ✅ good:  `Patch: bump lodash to 4.17.21 (GHSA-xxxx-xxxx-xxxx)`
+       ❌ WRONG: `--AUTO-B3-M1-Staff.Patch: bump lodash`
+   - Shared repos commit inside the shared repo using its own conventions.
+
+8) Deployment runbook (in chat) — as short as the project allows:
+   - How the commit reaches the deployed branch (PR / cherry-pick), and merging it back
+     into the in-flight Build branch if they differ.
+   - Tag `vX.Y.Z` once final commits land.
+   - Deploy and verify steps — reuse the standing steps in DEPLOYMENT.md when present.
+   - Smoke checks targeted at what changed.
+   - Rollback: revert the commit / redeploy the previous tag.
+   - Validation result (commands, result, commit).
+   - BACKLOG items added.
+
+Constraints:
+- No file edits before explicit human approval.
+- Never modify plans/state.json, thread.md, STATUS.md, VISION.md, BUILD.md,
+  MILESTONE.md, or DEPLOYMENT.md.
+- Do not push, merge, tag, or deploy. The human runs the runbook.
+- Nothing bigger than a patch — it goes to BACKLOG (or becomes a Build).
+
+Output:
+- Triage brief (step 3), then after approval:
+- Commit(s), CHANGELOG/BACKLOG edits
+- Deployment runbook

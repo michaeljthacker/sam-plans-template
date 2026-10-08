@@ -1,0 +1,118 @@
+ROLE: PM
+TASK: BuildRelease
+
+Goal: Release the completed Build. Prepare the release in the repo (CHANGELOG "Unreleased" → "Released", version bump), update each deployed repo's DEPLOYMENT.md with the runner the human will execute, then open the next Build.
+
+This is the LAST action of every Build, all sizes. It is reached from PM.ThreadMaintenance via the "After ThreadMaintenance: proceed to PM.BuildRelease" note left by the final milestone's closeout (or by Staff.QuickImplement for `step-only`).
+
+The AI prepares; the human ships. Never push, merge, tag, publish a release, run migrations, or deploy. Tagging is a runner step, not done here — closeout commits (small fixes, etc.) may still land before the human ships, and the tag must point at what is actually deployed.
+
+Inputs:
+- plans/state.json (routing + context)
+- plans/config.json (workflow configuration — read `workspace` and `status_updates`)
+- plans/BUILD.md (what this Build delivered; `size`)
+- plans/CHANGELOG.md (Unreleased items to release)
+- plans/STATUS.md (current snapshot)
+- plans/thread.md (latest `Validation:` line)
+- DEPLOYMENT.md at the root of each deployed repo (if present)
+- Version manifests (package.json, pyproject.toml, *.csproj, Cargo.toml, etc.) and any release tooling config
+
+Instructions:
+1) Verify the Build is finished: phase_id is null, plans/BUILD.md has no milestone after
+   the current one (always true for non-`full` sizes), and `blockers` is empty. If not,
+   set last_action.result = "blocked", pause_type = "decision",
+   next_action_id = Human.ResolveBlocker, and add a blocker describing what's unfinished.
+
+2) Identify release scope:
+   - The primary repo, plus any `workspace.shared_repos[]` that received changes during
+     this Build (from thread.md / CHANGELOG / git log).
+   - For each, decide whether it is deployed (deploy config, CI/CD workflow, hosting
+     config, an existing DEPLOYMENT.md, or the human said so). A non-deployed repo
+     (e.g., a library) gets a version bump and CHANGELOG entry but no DEPLOYMENT.md.
+   - If unsure whether or where something deploys, ask the human in chat.
+
+3) Confirm validation per plans/agent-instructions.md § "Validation scope": if the
+   latest `Validation:` record passed and no code changed since its commit (ignoring
+   `plans/`), rely on it. Otherwise run checkpoint validation now. If it fails, block
+   (Human.ResolveBlocker) — do not release failing code.
+
+4) Choose the version per repo:
+   - Current version from the manifest, else the latest tag
+     (`git describe --tags --abbrev=0`). No version anywhere → propose one and ask.
+   - Semver from what the Build delivered: MAJOR = breaking change to a public
+     interface, API, or stored data; MINOR = new capability; PATCH = fixes only.
+     Build `size` is not the version — a step-only Build can be a MINOR.
+   - State the version and a one-line reason in your chat output.
+
+5) Bump the version in each repo's manifest(s) when it's a plain edit. If release
+   tooling owns the version (changesets, semantic-release, release-please,
+   tag-derived versions like setuptools-scm), do NOT edit it — make it a runner step.
+
+6) Update plans/CHANGELOG.md:
+   - Move every "Unreleased" item into a new section at the top of "Released":
+     `### vX.Y.Z — YYYY-MM-DD (<Build ID>)`. Keep the items; you may collapse the
+     per-milestone "Milestone … complete" lines into the section's lead bullet.
+   - Leave the "Unreleased" heading in place, empty.
+   - This is the only action that moves Unreleased → Released (milestones are
+     completed, Builds are released — see plans/FORMATS.md § CHANGELOG.md).
+   - A shared repo that keeps its own CHANGELOG gets the matching entry in its own format.
+
+7) Update DEPLOYMENT.md at the root of each deployed repo (structure: plans/FORMATS.md
+   § DEPLOYMENT.md):
+   - Absent → scaffold it. Fill the standing sections from what you can discover
+     (CI/CD workflows, Dockerfiles, hosting config, scripts, README, `.env.example`).
+     Anything you can't determine becomes `TODO (human): …` — never invent hosts,
+     commands, or credentials.
+   - Present → patch it. Rewrite "Current release" for this release; touch standing
+     sections only where this Build changed them (new env var, service, migration tool).
+   - "Current release" covers only what applies:
+     - Version, and the tag to create once final commits land (tag the deployed commit
+       on `main`); GitHub release / package publish if the project uses them
+     - PR(s) to `main`
+     - Env var changes per environment — names and where to set them, never values
+     - Migrations — order, backup first, reversible or not
+     - Deploy steps — deltas from the standing steps only
+     - Smoke tests targeted at what this Build changed
+     - Rollback plan for this release, including migration/data caveats
+     - Multi-root: deploy order across repos (e.g., backend before frontend), in the
+       primary repo's DEPLOYMENT.md
+   - Keep it as short as the project allows — a static site may need five lines.
+
+8) Commit the release prep (version bumps, CHANGELOG, DEPLOYMENT.md).
+   - **NEVER prefix commit messages with `--AUTO-`** (reserved for `plans/commit.ps1`).
+       ✅ good:  `Prepare release v1.4.0`
+       ❌ WRONG: `--AUTO-B2-M3-PM.BuildRelease: prepare release`
+   - Shared repos commit their own release prep using their own conventions.
+
+9) Update plans/STATUS.md (config-gated):
+   - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
+   - If `status_updates = "every_action"`: refresh the `**Update configuration:**` line;
+     Now: "<Build ID> released as vX.Y.Z (runner in DEPLOYMENT.md)"; Next:
+     "Write the <next Build ID> concept brief in plans/VISION.md, then Product.ProductVision".
+   - Otherwise: SKIP. Product.ProductVision rewrites STATUS when the next Build starts.
+
+10) Open the next Build — update plans/state.json:
+   - last_action.action_id = PM.BuildRelease
+   - last_action.result = "ok"
+   - last_action.summary e.g. "Prepared B1 release v1.4.0; runner in DEPLOYMENT.md. Next: B2."
+   - build_id = <next Build ID> (B1 → B2)
+   - milestone_id = "M1"
+   - phase_id = null, step_id = null
+   - next_action_id = Product.ProductVision
+   - pause_type = "continue"
+   - context.notes: drop notes specific to the finished Build; add
+     "<Build ID> released as vX.Y.Z — write the <next Build ID> concept brief in
+     plans/VISION.md before running Product.ProductVision."
+
+Constraints:
+- Do not push, merge, tag, publish, run migrations, or deploy. The human runs DEPLOYMENT.md.
+- Never write secret values into DEPLOYMENT.md or any other file.
+- Do not modify plans/VISION.md, plans/BUILD.md, or plans/MILESTONE.md — they remain
+  the record of this Build until the next Build overwrites them.
+- Do not implement code changes. If release prep exposes a defect, block instead.
+
+Output:
+- Chosen version(s) and the one-line reason
+- Commit(s) for the release prep
+- A short chat briefing: "Run DEPLOYMENT.md § Current release" with its key steps listed
+- Exact edits to plans/CHANGELOG.md, DEPLOYMENT.md, plans/STATUS.md (if written), plans/state.json

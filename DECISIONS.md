@@ -380,3 +380,50 @@ If nothing qualifies, `PM.StatusUpdate` routes straight to its normal destinatio
 **Why this matters long-term:** the mid-lifecycle trigger (D-020) keyed on "thread has grown long," which under `every_milestone` config gates is a false positive for most of a milestone — the thread is long *and* everything in it is still needed. That produced a loop where SAM kept routing to ThreadMaintenance, which pruned nothing and routed back, wasting a whole action each phase. Gating the route on genuine prunability aligns the trigger with ThreadMaintenance's own config-aware constraints (D-021/D-020) so the two can't disagree.
 
 **Supersedes:** D-020's unconditional "if the thread has grown long or contains substantial resolved content" trigger — now qualified by the prunability gate.
+
+---
+
+## D-027 — Validation is scoped, recorded once, and reused across actions
+**Date:** 2026-10-07
+**Decision:** Split validation into **iterative** (narrowest relevant checks while implementing or fixing) and **checkpoint** (full suite + required lint/format/type gates, run once before a code-changing action finishes). The action that runs the checkpoint records a `Validation:` line in its thread.md entry (commands, result, commit). Later actions — `Principal.CodeReview`, `Human.PhaseApproval`, `PM.BuildRelease` — reuse that record instead of re-running checks. A record is stale only if **code** changed since its commit; `plans/`-only commits and docs-only edits don't count, so a new SHA alone means nothing. If code did change (or no record exists), the later action runs the narrowest covering checks itself rather than routing back to an earlier action; only a *failure* goes back through normal routing. The rule lives once in `plans/agent-instructions.md` § "Validation scope"; templates reference it. No config key.
+
+**Why this matters long-term:** In repos with multi-minute suites, SAM's loops were dominated by redundant verification — Staff re-ran the full suite after every tiny edit, then `Principal.CodeReview` immediately re-ran the exact same suite on the exact same code. Moving expensive checks to the points where they buy confidence (and making the evidence reusable) cuts that cost without reducing verification. Comparing changed *files* rather than SHAs keeps SAM's own bookkeeping commits from invalidating evidence, and letting the reviewer run checks itself avoids clunky route-backs. A `testing: { iteration, checkpoint, final }` config knob was rejected: STANDARDS.md already gives each repo a place for its own commands, and no repo has needed a different policy.
+
+**Supersedes:** N/A (the templates were previously silent on validation scope).
+
+---
+
+## D-028 — `PM.AdvancePhase` performs milestone closeout inline
+**Date:** 2026-10-07
+**Decision:** When the approved Phase is the last in the milestone (always, for `phase-only`), `PM.AdvancePhase` carries out the `PM_MilestoneCloseout.txt` procedure within the same action instead of routing to `PM.MilestoneCloseout`. The closeout template remains the single home of the procedure and stays registered for direct invocation (manual runs, legacy states). Closeout gained an already-closed guard — a "Milestone <Build>-<Milestone> complete" CHANGELOG entry, or a MILESTONE.md heading that no longer matches state.json — so it can never run twice; a redundant invocation is `skipped` and routes onward. Closeout now always leaves an explicit "After ThreadMaintenance: proceed to <X>" note (`Principal.MilestonePlan` or `PM.BuildRelease`) instead of relying on ThreadMaintenance to infer the lifecycle position.
+
+**Why this matters long-term:** Closeout is a small bookkeeping task, and bouncing to a separate action for it cost the human a full extra round-trip at every milestone boundary. Executing it inline — rather than merging templates — keeps one source of truth for the procedure, and the guard makes coexistence safe. The inline hook is also where future "run thread maintenance right before the transition" timing can attach.
+
+**Supersedes:** `PM.AdvancePhase` routing to `PM.MilestoneCloseout` on the last phase.
+
+---
+
+## D-029 — `PM.BuildRelease` ends every Build; `DEPLOYMENT.md` is the per-repo runner
+**Date:** 2026-10-07
+**Decision:** New action `PM.BuildRelease` is the last action of every Build, all sizes, reached from `PM.ThreadMaintenance` via the "After ThreadMaintenance: proceed to PM.BuildRelease" note left by the final closeout (or by `Staff.QuickImplement`). It:
+- confirms validation per D-027
+- chooses a semver version and bumps it in the manifests (unless release tooling owns the version)
+- moves CHANGELOG "Unreleased" into `### vX.Y.Z — YYYY-MM-DD (<Build ID>)` under "Released" — the D-024 Build-release move
+- scaffolds, then patches on later releases, a `DEPLOYMENT.md` at the **root of each deployed repo**: standing sections (environments, prerequisites, deploy steps, smoke tests, rollback) plus a rewritten "Current release" section (PRs, env deltas, migrations, deploy deltas, tag, targeted smoke tests, rollback)
+- commits the release prep, then opens the next Build: `build_id` → B<n+1>, `milestone_id` → M1, next `Product.ProductVision`, with a note to write the new concept brief in VISION.md. `Product.ProductVision` blocks if VISION.md still describes the released Build, and updates rather than regenerates the root README for later Builds.
+
+The AI prepares; the human ships. It never pushes, merges, tags, migrates, or deploys. Tagging is a runner step because closeout commits may land after release prep and the tag must point at the deployed commit. `DEPLOYMENT.md` lives at repo roots (shared repos can't have `plans/`; the doc is useful outside SAM), is human/AI-owned like README, never holds secret values, and is added to the shared-repo write surface.
+
+**Why this matters long-term:** Builds previously had no end. After the final closeout's ThreadMaintenance, `next_action_id` was undefined, nothing advanced `build_id`, and the CHANGELOG's Unreleased section grew forever because the D-024 release move had no owner. A durable, patched-per-release runner keeps deployment knowledge (env vars, migrations, rollback) in one maintained place instead of regenerated in chat or buried in thread.md.
+
+**Supersedes:** D-024's "future `*.BuildRelease` action (not yet defined)" — now defined; the "Build complete after ThreadMaintenance" end state.
+
+---
+
+## D-030 — `Staff.Patch`: out-of-band upkeep that is not a Build
+**Date:** 2026-10-07
+**Decision:** Upkeep with no product change — Dependabot/security alerts, small dependency bumps, other patch-sized chores — runs through `Staff.Patch`, SAM's first **out-of-band** action (`"out_of_band": true` in the registry). The human invokes it by name at any time, even mid-Build. It never modifies `state.json` (and is not in the `next_action_id` enum), consumes no Build number, and does not write thread.md or STATUS.md. Flow: preflight (clean tree; ask which branch if unreleased Build work is present) → findings (Dependabot via `gh api …/dependabot/alerts`, else ecosystem audit tools, else human paste) → triage brief in chat (PATCH NOW / BACKLOG / NO ACTION) → explicit approval → apply only approved patch-sized fixes with D-027 validation → PATCH version bump (consistent with `PM.BuildRelease`) → CHANGELOG `### vX.Y.Z — date (patch)` section (never touching the in-flight Build's Unreleased items) + BACKLOG entries for anything bigger → organic commit → short deployment runbook in chat, reusing DEPLOYMENT.md's standing steps. `step-only` remains the smallest *Build* and is no longer described as "not a build".
+
+**Why this matters long-term:** Chores were forced into `step-only` Builds, which consumed B-numbers, polluted Build history, and routed through VISION/BUILD/approval machinery the work didn't need. Keeping the action entirely out of state.json is what makes it safe mid-Build: no nullable `build_id`, no special ID rendering in the helper scripts, and no risk of overwriting routing context (e.g., a pending `changes_required`). The name states the scope boundary: anything bigger than a patch goes to BACKLOG or becomes a Build.
+
+**Supersedes:** Guidance that dependency bumps and patches are `step-only` Builds.
