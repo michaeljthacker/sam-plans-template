@@ -1,0 +1,6 @@
+This file marks the sam-plans-template SOURCE repository.
+
+sam-install.py / sam-update.py refuse to install into a directory containing
+it: the template repo versions every SAM file and must never receive the
+consumer-project ignore rules. It is not part of the manifest and is never
+copied into projects.

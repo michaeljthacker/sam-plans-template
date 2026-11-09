@@ -1,6 +1,8 @@
 #!/usr/bin/env pwsh
 # commit.ps1 — auto-commit with a SAM-formatted message.
 # Reads plans/state.json and runs `git add -A; git commit -m "<message>"`.
+# Exits 0 without committing when nothing is staged (e.g., only ignored SAM
+# runtime files changed).
 #
 # Message format:
 #   --AUTO-{build_id}-{milestone_id}-{phase_id}-{Role.Task}: {last_action.summary}
@@ -41,6 +43,14 @@ Write-Output ""
 
 git add -A
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+# SAM's runtime files (state.json, thread.md, STATUS.md, ...) are git-ignored,
+# so an action that only touched them leaves nothing to commit. That's success.
+git diff --cached --quiet
+if ($LASTEXITCODE -eq 0) {
+    Write-Output "Nothing to commit (only git-ignored SAM runtime files changed)."
+    exit 0
+}
 
 git commit -m $message
 exit $LASTEXITCODE

@@ -427,3 +427,31 @@ The AI prepares; the human ships. It never pushes, merges, tags, migrates, or de
 **Why this matters long-term:** Chores were forced into `step-only` Builds, which consumed B-numbers, polluted Build history, and routed through VISION/BUILD/approval machinery the work didn't need. Keeping the action entirely out of state.json is what makes it safe mid-Build: no nullable `build_id`, no special ID rendering in the helper scripts, and no risk of overwriting routing context (e.g., a pending `changes_required`). The name states the scope boundary: anything bigger than a patch goes to BACKLOG or becomes a Build.
 
 **Supersedes:** Guidance that dependency bumps and patches are `step-only` Builds.
+
+---
+
+## D-031 — Lean installs: SAM is a local tool; consumer repos track only the seven durable plans
+**Date:** 2026-11-08
+**Decision:** SAM is installed into a project by `plans/sam-install.py`, run from the project root out of an external sam-plans-template clone. In consumer projects Git tracks exactly seven SAM files: `plans/BACKLOG.md`, `BUILD.md`, `CHANGELOG.md`, `DECISIONS.md`, `MILESTONE.md`, `STANDARDS.md`, `VISION.md`. Everything else SAM installs stays in the working tree only. That covers system files and helpers, `STATUS.md`, `config.json`, `state.json`, `thread.md`, `thread.archive.md`, `.sam-version`, and the deployed root `CLAUDE.md` / `.github/copilot-instructions.md`.
+- **One manifest, two policies.** `plans/sync-manifest.json` is a per-destination inventory. Each entry has a `sync` policy (`overwrite` | `create_if_missing` | `stamp`) and an independent `gitignore` flag. Deploy mappings are ordinary entries.
+- **Generated ignore rules.** The `.gitignore` rules come from the manifest: `/plans/*`, a `!` exception for each tracked plan, and an explicit rule for each ignored target outside `plans/`. They are written into a delimited `# BEGIN/END SAM MANAGED` block of the project's existing `.gitignore`. The block is appended once, rewritten in place afterward, and verified with `git check-ignore`.
+- **One engine.** `plans/sam_sync.py` is shared by install (applies immediately; `--dry-run`) and update (dry run by default; `--apply`). Both load it from the **source** clone, so an update never runs a stale copy.
+- **Untracking.** Both commands list tracked files that the policy now ignores and, with consent (an interactive prompt or `--untrack`), `git rm --cached` exactly those paths. They never commit, never delete local files, and never rewrite history.
+- **Custom root files.** A root `CLAUDE.md` / `copilot-instructions.md` that differs from SAM's is treated as the project's own. It is kept, left tracked, and excluded from the ignore block unless `--force` is given.
+- **Template repo protection.** The sam-plans-template repo carries a `.sam-template-source` marker, and the installer refuses to target any directory containing it.
+- **Upgrading from 1.x.** The manifest keeps a minimal legacy `version` / `system_files` pair that lets a 1.x updater pull in the new engine. Its version string says "legacy-bootstrap" so the stamp isn't mistaken for a finished upgrade.
+- **`commit.ps1`.** It now treats "nothing staged" as success.
+
+**Why this matters long-term:** Previously every project committed a full copy of SAM. Project histories filled up with SAM upgrades and runtime churn (state.json, thread.md, STATUS.md, and many `--AUTO-` commits that changed nothing else), and the seven files that describe the project got lost in `plans/`. Installing like a tool keeps the repo view about the project, while the full toolchain stays one command away. The Git policy is derived from the same inventory that drives sync, so there is no hand-kept allowlist to drift. Loading the engine from the source fixes the old self-update chicken-and-egg problem.
+
+**Supersedes:** "Copy `plans/` into your project" bootstrapping; the `system_files` / `instance_files` / `deploy_mappings` manifest shape; `sam-update.py` as a self-contained script.
+
+---
+
+## D-032 — Runtime state is local and disposable; fresh clones start a new Build
+**Date:** 2026-11-08
+**Decision:** `state.json`, `config.json`, `thread.md`, `thread.archive.md`, and `STATUS.md` are not version-controlled. After a fresh clone (or on another machine), running the installer scaffolds them from template defaults: `state.json` starts at `next_action_id: Product.ProductVision`, and the user updates `plans/VISION.md` for the new Build. SAM does not try to reconstruct exact routing state, build counters, thread history, or `Validation:` records. A state file that is already present is always preserved. Being untracked says nothing about how important a file is at runtime: `state.json` is still the routing source of truth on the machine where work happens.
+
+**Why this matters long-term:** Recovery machinery (exporting state into tracked files, or inferring position from git history) would add complexity and a second source of truth for little benefit. Work in progress is continued on the machine that holds it, and the durable outcomes are already promoted into the seven tracked plans. Losing the thread and validation records on a re-clone means only re-running checks. If cross-machine continuity becomes a real need, it should be designed explicitly instead of happening as a side effect of committing runtime files.
+
+**Supersedes:** The implicit assumption that runtime files were backed up by being committed.

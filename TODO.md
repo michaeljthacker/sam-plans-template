@@ -85,6 +85,7 @@ Items parked until a clear trigger or sufficient friction warrants action.
   - Possible directions: separate system files from instance files, or group by function (e.g., `plans/schemas/`, `plans/scripts/`).
   - **Constraints:** Every template hardcodes `plans/` paths — restructuring means updating all templates, registry.json, copilot-instructions.md, and the sync manifest. Instance-level files must remain easy for the AI to find.
   - **Trigger:** Reassess after v1.6.0 adds more scripts. If the file count still isn't causing friction, keep deferring.
+  - **Update (v2.0.0, D-031):** the *repository-view* half of this is solved — consumer repos now track only the seven durable plans, so GitHub's `plans/` no longer looks like a copy of SAM. What remains is purely local working-tree clutter; lower priority. If pursued, the manifest's `target` paths and the generated `.gitignore` block move with it (tracked plans must stay directly in their folder).
 
 ### CLI tool — `sam <command>` (v3+)
 
@@ -444,3 +445,32 @@ See D-027 through D-030.
 ### Bug fix
 
 - [x] `state.schema.json`: added `Staff.QuickImplement` to the `next_action_id` enum — `Human.ApproveBuild` routes there for `step-only` builds, so that state previously failed schema validation (latent since v1.6.0).
+
+---
+
+## v2.0.0 — Completed (2026-11-08)
+
+Lean installs and clean Git histories: SAM installs like a tool, and consumer repos track only
+the seven durable plans. Distribution-model change (hence the major version); no workflow,
+routing, or schema change. See D-031 and D-032.
+
+### Install / update tooling (D-031)
+
+- [x] `plans/sync-manifest.json`: per-destination `files` inventory with independent `sync` (`overwrite` / `create_if_missing` / `stamp`) and `gitignore` policies; deploy mappings are ordinary entries (`root_bootstrap`). Legacy `version` + engine-only `system_files` kept so 1.x updaters bootstrap the new engine.
+- [x] `plans/sam_sync.py` (new): shared stdlib engine — manifest validation, file sync, manifest-derived `.gitignore` block (appended once, rewritten in place, newline style preserved), `git check-ignore` verification, tracked-file audit + `git rm --cached` untracking, `.sam-version` stamp, config audit, summary.
+- [x] `plans/sam-install.py` (new): run from the project root out of an external clone; applies immediately (`--dry-run`), idempotent, `--untrack`, `--force`. Refuses the template repo (`.sam-template-source` marker) and its own source directory.
+- [x] `plans/sam-update.py`: now a thin entry point that loads the engine from the **source**; dry-run default / `--apply` kept; source falls back to `.sam-version` `source_path`; `--untrack` / `--force`. Exit `2` now also covers ineffective ignore rules and untrack failures.
+- [x] Custom root `CLAUDE.md` / `.github/copilot-instructions.md` (differs from SAM's) are kept, left tracked, and excluded from the ignore block unless `--force`.
+- [x] Console output no longer crashes on non-ASCII diffs under a cp1252 console (latent in 1.x).
+- [x] `plans/commit.ps1`: nothing staged → "Nothing to commit", exit 0 (actions touching only ignored runtime files).
+
+### Docs
+
+- [x] Root `README.md`: installer-based getting started, tracking policy, 1.x upgrade note, `tests/` and marker rows.
+- [x] `plans/README.md`: file lists, "What Git tracks in a SAM project", installer Quickstart, helper-script notes (local `chmod +x`), new "Installing and updating SAM" section (install, update, managed block, untracking, manifest, upgrading from 1.x), `commit.ps1` nothing-to-commit note.
+- [x] `Product_ProductVision.txt`: root README gets a short "Planning with SAM" note telling cloners to run the installer first.
+- [x] `plans/FORMATS.md`: DEPLOYMENT.md ownership line names both scripts.
+
+### Tests
+
+- [x] `tests/test_sam_sync.py` (template-repo only, not installed): fresh install, only seven plans trackable, idempotency, block preservation/placement/CRLF, defeating-rule warning, malformed markers, dry runs, instance-file preservation, legacy-layout migration (`--untrack`, non-interactive, dry-run, via install), the real v1.8.0 updater bootstrapping into 2.0, custom/forced root files, guards, non-Git target, fresh clone → `Product.ProductVision`, manifest covers every template file, `commit.ps1` nothing-to-commit.

@@ -205,7 +205,7 @@ _(STATUS updates disabled via config: status_updates=never)_
 
 ## DEPLOYMENT.md
 
-**What it is:** The deployment runner for a deployed repo — what the human executes to ship a release. Lives at the **repo root** (not in `plans/`): one per deployed repo, including deployed shared repos in a multi-root workspace. Human/AI-owned like README; not synced or scaffolded by `sam-update.py`.
+**What it is:** The deployment runner for a deployed repo — what the human executes to ship a release. Lives at the **repo root** (not in `plans/`): one per deployed repo, including deployed shared repos in a multi-root workspace. Human/AI-owned like README; not synced or scaffolded by `sam-install.py` / `sam-update.py`, and tracked in Git normally.
 **Updated by:** `PM.BuildRelease` — scaffolds it on the first release, then patches it each release. `Staff.Patch` reads it (for standing steps) but does not edit it.
 
 **Key rules:**

@@ -64,6 +64,13 @@ Instructions:
    - Key features / capabilities (bullet list)
    - Tech stack (if determinable from the idea)
    - Getting started placeholder
+   - A short "Planning with SAM" note (keep it on later Builds; add it if missing).
+     Contributors need it because SAM is installed locally, not committed: only the
+     seven durable plans in plans/ are tracked. The note says that after cloning, they
+     restore SAM with
+     `python <path-to-sam-plans-template>/plans/sam-install.py` run from the repo root
+     (SAM: https://github.com/michaeljthacker/sam-plans-template). Don't tell readers
+     to run `plans/sam-update.py` or the helper scripts before they have installed SAM.
    - Keep it concise — this is a living document that will be refined
 4) Generate plans/BUILD.md. Match prose depth to `size` per FORMATS.md
    § "Prose depth scales with size" — an over-detailed BUILD.md for a small size is
