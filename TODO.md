@@ -18,7 +18,8 @@ Future chat sessions: read `DECISIONS.md` for rationale, `plans/README.md` for t
 
 Small, prompt-and-script-only changes. No schema, routing, or config additions. Pick up when the current batch lands; not promised to a specific version.
 
-_Nothing queued._
+- [ ] **`Human.ApproveBuild` knows where to send edits.** The current system is designed so `changes required` will route tasks back to `Product.ProductVision` to update the `BUILD.md` plan, and in fact, `Principal.BuildReview` is unable to make edits to `BUILD.md` at all. But `Human.ApproveBuild` doesn't understand this workflow and frequently sends things back to `Principal.BuildReview`.
+- [ ] **`Principal.BuildReview` must record suggestsions and risks outside `thread.md`.** `thread.md` gets pruned throughout the `BUILD` process. As a result, any suggestions and risks that need to be logged (for Milestone planning) must be attached to a more permanent location, e.g., an appendix to `BUILD.md` rather than just a `thread.md` entry.
 
 ---
 
@@ -26,6 +27,7 @@ _Nothing queued._
 
 Items that need a small design pass before implementation. Not committed to a version or sequenced as a batch — each can move to Next independently once its shape is clear.
 
+- [ ] **Make it more clear how to end a BUILD.** Coding assistants are currently getting confused at the end of a `BUILD`; what should happen, what are the handoffs, is deployment a milestone (no), is deployment a human task after all milestones are complete (yes), where do I write `DEPLOYMENT.md` (single file in primary repo; not one per repo), etc. This should be made clear in prompts. All code is done and `BuildRelease` does what it does to set the human up to complete the deployment. No more code needs to be pushed (unless, e.g., CI fails or whatever).
 - [ ] **Buy-vs-build lens covers free / OSS / asset-library options, not just paid services.** Current v1.4.1 Principal "engineering judgment" lens nudges toward managed-service consideration, but the AI still defaults to building when the alternative is *free* (Kenney / OpenGameArt / itch.io for game assets, public APIs, free tiers, OSS libraries that solve large chunks of the problem). Update `Principal_BuildReview.txt`, `Principal_MilestonePlan.txt`, `Principal_AnswerQuestions.txt` to explicitly call out *free / public / community* options alongside paid services. Concrete examples in the prompt help (the asset-library case is a good one).
 - [ ] **`Human.HumanOnlyPhase` (or guidance for `Human.ResolveBlocker` as full-phase scope).** When an entire phase is human work (Cloudflare account + R2 bucket + domain + token setup; substantial system provisioning; account/billing setup), the AI gets confused about routing around / after the human work. Two paths:
   - Add a new `Human.HumanOnlyPhase` task-action with explicit "this phase is entirely human work, here's what to do, here's when to come back" semantics.
