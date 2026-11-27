@@ -11,7 +11,7 @@ This is a SINGLE micro-chunk of execution, not an entire milestone.
 
 Inputs:
 - plans/state.json (routing + context)
-- plans/config.json (workflow configuration — read `code_review`, `workspace`, and `status_updates`)
+- plans/config.json (workflow configuration — read `code_review`, `full_suite_validation`, `workspace`, and `status_updates`)
 - plans/MILESTONE.md (what to build, acceptance criteria)
 - plans/thread.md (answers to questions; constraints)
 - plans/DECISIONS.md (project-specific architectural choices)
@@ -36,9 +36,16 @@ Instructions:
 2a) Validate per plans/agent-instructions.md § "Validation scope":
    - While implementing: targeted checks only (tests for the code you touched,
      lint/format on changed files). Re-run just those after each fix.
-   - Before step 4: ONE checkpoint run — full suite + required lint/format/type gates.
-     Fix failures before completing.
-   - Do not re-run the full suite after every edit.
+   - Before step 4: ONE checkpoint run. Read `full_suite_validation` from
+     plans/config.json (default: "every_milestone" if missing):
+     - "every_action": full checkpoint (full suite + required gates).
+     - "every_milestone": full checkpoint if this is the LAST phase in the milestone
+       (check plans/MILESTONE.md); otherwise proximate checkpoint.
+     - "every_build" / "never": proximate checkpoint.
+     Escalate a proximate checkpoint to full only if your change modifies existing
+     shared behavior (see the rule and examples in agent-instructions.md) — not
+     because it merely touches a shared file. Fix failures before completing.
+   - Do not run the full suite after every edit or on non-gate phases.
 3) Commit your work.
    - **NEVER prefix commit messages with `--AUTO-`.** That prefix is reserved
      exclusively for automated SAM commits made by `plans/commit.ps1`; a manual
@@ -59,9 +66,10 @@ Instructions:
        boundary is visible in the log)
      - Acceptance criteria checklist
      - Any known risks or trade-offs
-     - `Validation:` line — checkpoint commands, result (e.g., "412 passed; lint/types
-       clean"), and the commit they ran against. Principal.CodeReview relies on this
-       instead of re-running the suite.
+     - `Validation (proximate):` or `Validation (full):` line — checkpoint commands,
+       result (e.g., "96 passed; lint/types clean"), and the commit they ran against.
+       If you escalated to full on a non-gate phase, say why in a few words.
+       Principal.CodeReview relies on this instead of re-running checks.
 5) Update plans/STATUS.md (config-gated):
    - Read `status_updates` from plans/config.json (default: "pm_only" if missing).
    - If `status_updates = "every_action"`:

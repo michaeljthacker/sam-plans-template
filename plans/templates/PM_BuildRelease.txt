@@ -9,11 +9,11 @@ The AI prepares; the human ships. Never push, merge, tag, publish a release, run
 
 Inputs:
 - plans/state.json (routing + context)
-- plans/config.json (workflow configuration — read `workspace` and `status_updates`)
+- plans/config.json (workflow configuration — read `full_suite_validation`, `workspace`, and `status_updates`)
 - plans/BUILD.md (what this Build delivered; `size`)
 - plans/CHANGELOG.md (Unreleased items to release)
 - plans/STATUS.md (current snapshot)
-- plans/thread.md (latest `Validation:` line)
+- plans/thread.md (latest `Validation (proximate|full):` lines)
 - DEPLOYMENT.md at the root of each deployed repo (if present)
 - Version manifests (package.json, pyproject.toml, *.csproj, Cargo.toml, etc.) and any release tooling config
 
@@ -31,10 +31,18 @@ Instructions:
      (e.g., a library) gets a version bump and CHANGELOG entry but no DEPLOYMENT.md.
    - If unsure whether or where something deploys, ask the human in chat.
 
-3) Confirm validation per plans/agent-instructions.md § "Validation scope": if the
-   latest `Validation:` record passed and no code changed since its commit (ignoring
-   `plans/`), rely on it. Otherwise run checkpoint validation now. If it fails, block
-   (Human.ResolveBlocker) — do not release failing code.
+3) Confirm validation per plans/agent-instructions.md § "Validation scope". Read
+   `full_suite_validation` from plans/config.json (default: "every_milestone"):
+   - "every_action" / "every_milestone" / "every_build": the release needs the full
+     gate met on the final code — a passing `Validation (full):` record from this Build
+     (older untagged `Validation:` lines count as full) plus passing proximate records
+     covering every code change since (ignoring `plans/`). If met, rely on it. If not
+     (always the case under "every_build" unless a change escalated early), run the
+     full checkpoint now and report its commands and result in your output.
+   - "never": CI is the gate. Rely on proximate records; run proximate checks only for
+     uncovered code changes. In the chat handoff, remind the human that CI must pass
+     before deploying.
+   If any check fails, block (Human.ResolveBlocker) — do not release failing code.
 
 4) Choose the version per repo:
    - Current version from the manifest, else the latest tag

@@ -17,7 +17,7 @@ file is missing or the key is absent, use the default `every_milestone`):
 Inputs:
 - Code changes (git diff / commits) — scoped per `code_review` (single phase, or the
   whole milestone under `every_milestone`)
-- plans/config.json (workflow configuration — read `code_review`, `review_strictness`, and `status_updates`)
+- plans/config.json (workflow configuration — read `code_review`, `full_suite_validation`, `review_strictness`, and `status_updates`)
 - plans/MILESTONE.md (acceptance criteria)
 - plans/DECISIONS.md (project-specific architectural choices)
 - plans/STANDARDS.md (team-level rules portable across projects)
@@ -37,16 +37,24 @@ Instructions:
      else (style, patterns, best practices, minor standard deviations) is SUGGESTED.
 1a) Validation evidence — do NOT re-run checks Staff already ran (see
    plans/agent-instructions.md § "Validation scope"):
-   - Find the most recent `Validation:` line in plans/thread.md (from
-     ImplementationExecution or ReviewReconciliation).
+   - Find the most recent `Validation (proximate|full):` lines in plans/thread.md (from
+     ImplementationExecution or ReviewReconciliation). Older untagged `Validation:`
+     lines count as full.
    - List files changed since its recorded commit (`git diff --name-only <commit>`
      plus uncommitted changes), ignoring `plans/` and anything that can't affect the
      checks. A different HEAD SHA from plans-only commits is NOT a code change.
    - Record passed and no code changed since → treat as verified. Run nothing.
-     (Under `every_milestone`, a full-suite checkpoint on the latest code covers every
-     earlier phase too — do not re-validate phase by phase.)
+     (Under `code_review = "every_milestone"`, the last phase's checkpoint — full under
+     the default `full_suite_validation` — covers every earlier phase too; do not
+     re-validate phase by phase.)
+   - The full gate (per `full_suite_validation`) is met by a passing full record plus
+     passing proximate records covering every code change since. Do NOT run the full
+     suite just because proximate records follow the full one. If the gate requires a
+     full record by now (e.g., last phase under `every_milestone`) and none exists, run
+     the full checkpoint yourself once.
    - Code changed since, or no record → run the narrowest checks that cover the
-     unvalidated changes yourself. Do not route back just to get checks run.
+     unvalidated changes yourself (proximate scope). Do not route back just to get
+     checks run.
    - Note what you relied on or ran in your review entry. A failing check is a REQUIRED
      finding (normal CHANGES REQUIRED path).
 2) Review the implementation (scoped per `code_review` — a single phase, or every

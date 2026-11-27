@@ -95,6 +95,7 @@ state and the thread are not recovered).
 | `code_review` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | When Principal.CodeReview runs after implementation (under `every_milestone`, reviews all phases of the milestone) |
 | `formal_approval` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | When Human.PhaseApproval runs (under `every_milestone`, briefs the whole milestone) |
 | `documentation_update` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | When Writer.DocumentationUpdate runs |
+| `full_suite_validation` | `every_action` \| `every_milestone` \| `every_build` \| `never` | `every_milestone` | When the full test suite runs; every other code-changing action runs proximate checks only. `never` = CI is the gate (see **Execution model assumptions**) |
 | `review_strictness` | `strict` \| `balanced` \| `pragmatic` | `balanced` | Threshold for REQUIRED vs. SUGGESTED in code review |
 | `re_review_trigger` | `required` \| `auto` | `auto` | Whether code changes in reconciliation always trigger re-review |
 | `status_updates` | `every_action` \| `pm_only` \| `every_milestone` \| `never` | `pm_only` | How often `STATUS.md` is written (see **STATUS.md updates** below) |
@@ -290,7 +291,7 @@ When a Phase completes or the thread gets long/noisy, `PM.ThreadMaintenance` pru
 ## Execution model assumptions
 - **Single-threaded.** One Phase is active at a time. `state.json` tracks a single active `build_id`, `milestone_id`, and `phase_id`.
 - If a bug in a previous milestone is found, handle it as an unplanned Step in the current Phase, document in `thread.md` and `CHANGELOG.md`, and resume.
-- **Validation is scoped, and recorded once.** Targeted tests while iterating; one full checkpoint (suite + lint/format/type gates) before an action that changed code finishes, recorded as a `Validation:` line in thread.md. Review, approval, and release reuse that record instead of re-running checks on unchanged code — `plans/`-only commits don't count as changes. See `plans/agent-instructions.md` § "Validation scope".
+- **Validation is scoped, and recorded once.** Targeted tests while iterating; a *proximate* checkpoint (changed code's tests + its owning app/package, dependents only if a public interface changed) before every code-changing action finishes; the *full* suite only at the gate set by `full_suite_validation` (default: once per milestone). Each checkpoint is recorded as a `Validation (proximate|full):` line in thread.md. Review, approval, and release reuse those records instead of re-running checks on unchanged code — `plans/`-only commits don't count as changes. Changes that modify existing shared behavior escalate to a full run early. See `plans/agent-instructions.md` § "Validation scope".
 - **Branching** is a project decision, not SAM-prescribed. Record your branching convention in `STANDARDS.md` or your project README.
 
 ## ID conventions (recommended)

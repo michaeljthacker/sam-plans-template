@@ -455,3 +455,25 @@ The AI prepares; the human ships. It never pushes, merges, tags, migrates, or de
 **Why this matters long-term:** Recovery machinery (exporting state into tracked files, or inferring position from git history) would add complexity and a second source of truth for little benefit. Work in progress is continued on the machine that holds it, and the durable outcomes are already promoted into the seven tracked plans. Losing the thread and validation records on a re-clone means only re-running checks. If cross-machine continuity becomes a real need, it should be designed explicitly instead of happening as a side effect of committing runtime files.
 
 **Supersedes:** The implicit assumption that runtime files were backed up by being committed.
+
+---
+
+## D-033 — Proximate checks per action; the full suite runs at a configurable gate
+**Date:** 2026-11-26
+**Decision:** Every code-changing action ends with a **proximate checkpoint**:
+- tests for the changed files;
+- the suite of the owning unit (nearest app, package, or crate with its own test/build config);
+- direct dependents, only if a public interface changed;
+- lint/format on changed files and a type check on the owning unit.
+
+The **full checkpoint** (full suite plus every required gate) runs only at the point set by the new `full_suite_validation` key:
+- `every_action`: D-027 behavior.
+- `every_milestone` (default): at the end of the milestone's last-phase `Staff.ImplementationExecution` / `Staff.QuickImplement`.
+- `every_build`: at `PM.BuildRelease`.
+- `never`: CI is the gate.
+
+A change escalates to a full run early only when it **modifies existing shared behavior**, not when it merely touches a shared file. Adding a route is additive. Changing existing routes, middleware, auth/DB/framework defaults, core models, shared dependencies, or test/CI config is not. When unsure, run full and say why. `Validation:` lines are tagged `(proximate)` or `(full)`. The full gate is met by a passing full record plus passing proximate records covering every later code change, so a review fix doesn't force a second full run. "Proximate" is defined by code shape in `agent-instructions.md`, with short examples (shared Django backend, JS monorepo, single app). No commands need to be written up front; Staff may record real commands in STANDARDS.md once they exist. `PM.ThreadMaintenance` carries the latest full record and later proximate records forward when it prunes.
+
+**Why this matters long-term:** In large shared repos (a central Django backend with ~1900 tests, where one prototype's app owns ~100), D-027's "full suite once per code-changing action" still dominated cycle time: five or more full runs per milestone, almost all on code that couldn't affect the other apps. Proximate checks catch what a change can realistically break. The full suite still runs at a point the project chooses, so regressions are caught before release rather than after every edit. A rule based on code shape works before any tests exist and adapts as the codebase grows, which per-repo command lists can't. Tying escalation to behavior change rather than file names keeps routine additive edits to shared files cheap.
+
+**Supersedes:** D-027's "full suite + gates once per code-changing action" and its rejection of a validation config key. D-027's record-once/reuse and code-not-commits staleness rules stand.

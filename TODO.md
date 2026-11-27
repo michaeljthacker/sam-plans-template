@@ -27,7 +27,7 @@ Small, prompt-and-script-only changes. No schema, routing, or config additions. 
 
 Items that need a small design pass before implementation. Not committed to a version or sequenced as a batch — each can move to Next independently once its shape is clear.
 
-- [ ] **Configurable full-suite validation gate.** (Feedback 2026-11-26.) D-027 reduced redundant test runs, but still requires the full test suite once per code-changing action — increasingly burdensome in large shared repos (e.g., api.mjt.pub). Run only the most proximate tests (affected app, module, and relevant dependencies) at the end of each code-changing action. Run the full suite at a configurable gate, defaulting to `every_milestone`. Preserve validation-result reuse so subsequent review and approval actions don't repeat tests unnecessarily. Update `config.json`, `config.schema.json`, `agent-instructions.md`, relevant action templates, FORMATS.md, and README. Add a DECISION entry superseding the relevant portion of D-027.
+- [x] **Configurable full-suite validation gate.** (Feedback 2026-11-26.) D-027 reduced redundant test runs, but still requires the full test suite once per code-changing action — increasingly burdensome in large shared repos (e.g., api.mjt.pub). Run only the most proximate tests (affected app, module, and relevant dependencies) at the end of each code-changing action. Run the full suite at a configurable gate, defaulting to `every_milestone`. Preserve validation-result reuse so subsequent review and approval actions don't repeat tests unnecessarily. Update `config.json`, `config.schema.json`, `agent-instructions.md`, relevant action templates, FORMATS.md, and README. Add a DECISION entry superseding the relevant portion of D-027.
 - [ ] **Make it more clear how to end a BUILD.** Coding assistants are currently getting confused at the end of a `BUILD`; what should happen, what are the handoffs, is deployment a milestone (no), is deployment a human task after all milestones are complete (yes), where do I write `DEPLOYMENT.md` (single file in primary repo; not one per repo), etc. This should be made clear in prompts. All code is done and `BuildRelease` does what it does to set the human up to complete the deployment. No more code needs to be pushed (unless, e.g., CI fails or whatever).
 - [ ] **Buy-vs-build lens covers free / OSS / asset-library options, not just paid services.** Current v1.4.1 Principal "engineering judgment" lens nudges toward managed-service consideration, but the AI still defaults to building when the alternative is *free* (Kenney / OpenGameArt / itch.io for game assets, public APIs, free tiers, OSS libraries that solve large chunks of the problem). Update `Principal_BuildReview.txt`, `Principal_MilestonePlan.txt`, `Principal_AnswerQuestions.txt` to explicitly call out *free / public / community* options alongside paid services. Concrete examples in the prompt help (the asset-library case is a good one).
 - [ ] **`Human.HumanOnlyPhase` (or guidance for `Human.ResolveBlocker` as full-phase scope).** When an entire phase is human work (Cloudflare account + R2 bucket + domain + token setup; substantial system provisioning; account/billing setup), the AI gets confused about routing around / after the human work. Two paths:
@@ -477,3 +477,18 @@ routing, or schema change. See D-031 and D-032.
 ### Tests
 
 - [x] `tests/test_sam_sync.py` (template-repo only, not installed): fresh install, only seven plans trackable, idempotency, block preservation/placement/CRLF, defeating-rule warning, malformed markers, dry runs, instance-file preservation, legacy-layout migration (`--untrack`, non-interactive, dry-run, via install), the real v1.8.0 updater bootstrapping into 2.0, custom/forced root files, guards, non-Git target, fresh clone → `Product.ProductVision`, manifest covers every template file, `commit.ps1` nothing-to-commit.
+
+---
+
+## v2.1.0 — Completed (2026-11-26)
+
+Test time: proximate checks per action, full suite at a configurable gate. Additive config
+key only; no routing or schema change to state.json. Manifest bumped to 2.1.0. See D-033.
+
+### Configurable full-suite validation gate (D-033)
+
+- [x] `full_suite_validation` config key (`every_action` | `every_milestone` | `every_build` | `never`; default `every_milestone`) in `config.schema.json`, `config.json`, FORMATS.md, and README Configuration table.
+- [x] `agent-instructions.md` § "Validation scope" rewritten: iterative / proximate / full tiers; code-shape definition of proximate (no up-front commands; optional STANDARDS.md commands once they exist); escalate early only when existing shared behavior changes; short examples (shared Django backend, JS monorepo, single app); full gate met by a full record plus proximate records for later changes.
+- [x] Scope-tagged `Validation (proximate|full):` lines (FORMATS.md rule 8; untagged legacy lines count as full).
+- [x] Wired into `Staff_ImplementationExecution`, `Staff_QuickImplement`, `Staff_ReviewReconciliation`, `Principal_CodeReview`, `Human_PhaseApproval`, `PM_BuildRelease`; `PM_ThreadMaintenance` preserves the latest full record and later proximate records when pruning. `Staff_Patch` unchanged.
+- [x] `tests/test_sam_sync.py` reads the expected stamp version from the manifest instead of hard-coding it.

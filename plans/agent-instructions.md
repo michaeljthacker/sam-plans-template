@@ -31,23 +31,68 @@ the Build, consume no Build number, and leave an in-flight Build exactly where i
 Verification is required; repeating it is not. Spend expensive checks where they buy
 confidence.
 
-- **Iterative validation** — while implementing or fixing, run the narrowest checks that
-  give meaningful feedback on the code you are touching (targeted tests; lint/format on
-  changed files). After a local fix, re-run only those. Broaden only when the change is
-  cross-cutting or targeted checks can't give confidence.
-- **Checkpoint validation** — once, before an action that changed code declares its work
-  done: the full suite plus the lint/format/type gates the project requires. Fix failures
-  before completing. If `plans/STANDARDS.md` names the commands, use them.
-- **Record it once, reuse it.** The action that ran the checkpoint records a
-  `Validation:` line in its thread.md entry — commands, result, and the commit it ran
-  against. Later actions (review, approval, release) do **not** re-run checks on code that
-  hasn't changed since that record.
+Three tiers:
+
+- **Iterative** — while implementing or fixing, run the narrowest checks that give
+  meaningful feedback on the code you are touching. After a local fix, re-run only those.
+- **Proximate checkpoint** — once, before *every* action that changed code declares its
+  work done. Fix failures before completing. Proximate means:
+  1. tests for the changed files (beside them, named after them, or importing them);
+  2. the test suite of the **owning unit** — the nearest directory with its own app,
+     package, crate, or test/build config;
+  3. direct dependents — **only** if a public interface changed (exported signatures,
+     API contracts, shared types/schemas);
+  4. lint/format on changed files; type check on the owning unit.
+- **Full checkpoint** — the full suite plus every lint/format/type gate the project
+  requires. Runs only at the gate set by `full_suite_validation` in `plans/config.json`
+  (default `every_milestone`):
+  - `every_action` — at the end of every code-changing action (proximate is skipped).
+  - `every_milestone` — at the end of the milestone's last-phase
+    Staff.ImplementationExecution (or Staff.QuickImplement).
+  - `every_build` — at PM.BuildRelease.
+  - `never` — never; CI is the gate. SAM runs proximate checks only.
+
+**Run the full suite early when a change modifies existing shared behavior — not merely
+because it touches a shared file.** Additive changes to shared files (a new route, a new
+installed app, a new setting or dependency only the new code uses) stay proximate: the
+owning unit's tests plus a load check (the app boots, the router resolves). Escalate to
+full when the change alters what other code already relies on: changed/removed/reordered
+existing routes (or a new one that can shadow existing ones, e.g. via a catch-all);
+middleware, auth, database, framework-wide defaults, CORS; core/shared models; bumping or
+removing a dependency several units use, or an install that moves other packages in the
+lockfile; test/build/CI config. If you can't tell from the diff, run full and say why.
+
+Examples:
+- **Shared Django backend** (many apps, one `pytest.ini`): edited
+  `apps/textgames/views.py` → `pytest apps/textgames` (~100 tests), not all ~1900. Added
+  a new `path("newapp/", include(...))` to root `urls.py` → the new app's tests + URLconf
+  loads. Changed an existing route, middleware, auth/DB/DRF settings, `core` (custom
+  user), or bumped a shared dependency → full suite.
+- **JS monorepo**: edited `packages/ui/Button.tsx` → that package's tests + type check;
+  add dependent packages only if `Button`'s props/exports changed.
+- **Single small app**: the owning unit is the whole app — proximate ≈ full, and that's fine.
+
+No commands need to be written up front — infer them from the repo's test setup. Once
+real commands exist, Staff may record them in `plans/STANDARDS.md` under Testing; if they
+are there, use them.
+
+Recording and reuse:
+
+- **Record it once, reuse it.** The action that ran a checkpoint records a scope-tagged
+  line in its thread.md entry — `Validation (proximate): …` or `Validation (full): …` —
+  with commands, result, and the commit it ran against. Later actions (review, approval,
+  release) do **not** re-run checks on code that hasn't changed since that record.
+- **The full gate is met by a passing full record plus passing proximate records covering
+  every code change since.** A review fix after the full run does not trigger a second
+  full run unless the fix itself modifies shared behavior (rule above) or the setting is
+  `every_action`.
 - **"Changed" means code, not commits.** Decide whether a record still holds by looking at
   which files changed since its commit (`git diff --name-only <commit>` plus uncommitted
   changes). Ignore `plans/` and anything that can't affect the checks (SAM bookkeeping,
   docs-only edits). A new commit SHA by itself means nothing.
-- **If code did change, or there is no record, run the checks yourself** — the narrowest
-  ones that cover the change — rather than routing back to an earlier action just to get
+- **If code did change, or there is no record, run the checks yourself** — proximate
+  checks covering the change (full only if the gate requires it and no valid full record
+  exists) — rather than routing back to an earlier action just to get
   them run. Only a *failure* goes back through normal routing.
 
 ### Key files

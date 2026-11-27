@@ -11,7 +11,7 @@ This action always runs after Principal.CodeReview. Check plans/state.json
 Inputs:
 - plans/thread.md (review feedback)
 - Code changes / repository state
-- plans/config.json (workflow configuration — read `re_review_trigger`, `workspace`, and `status_updates`)
+- plans/config.json (workflow configuration — read `re_review_trigger`, `full_suite_validation`, `workspace`, and `status_updates`)
 - plans/MILESTONE.md (acceptance criteria)
 - plans/DECISIONS.md (project-specific architectural choices)
 - plans/STANDARDS.md (team-level rules portable across projects)
@@ -72,9 +72,12 @@ Instructions:
      line** capturing the rationale. If you can't write a meaningful one, the entry
      doesn't belong there. See plans/FORMATS.md for the entry format.
 3c) Validate code changes per plans/agent-instructions.md § "Validation scope":
-   - If you changed code: targeted checks while fixing, then ONE checkpoint run (full
-     suite + required gates) on your final changes.
-   - If you changed no code: run nothing — the existing `Validation:` record still holds.
+   - If you changed code: targeted checks while fixing, then ONE proximate checkpoint
+     on your final changes. Run a full checkpoint instead only if
+     `full_suite_validation = "every_action"`, or your fix modifies existing shared
+     behavior (rule in agent-instructions.md). Otherwise an earlier `Validation (full):`
+     record plus your proximate record still satisfies the full gate.
+   - If you changed no code: run nothing — the existing `Validation` records still hold.
 4) Commit any code changes.
    - **NEVER prefix commit messages with `--AUTO-`.** That prefix is reserved
      exclusively for automated SAM commits made by `plans/commit.ps1`; a manual
@@ -90,8 +93,9 @@ Instructions:
    - For each SUGGESTED item: note whether it was implemented or logged to BACKLOG.
    - If any code was changed, clearly describe what changed so that Principal can
      perform a targeted re-review (not a full Phase review).
-   - If code changed: a `Validation:` line (checkpoint commands, result, commit), so a
-     re-review can rely on it instead of re-running the suite.
+   - If code changed: a `Validation (proximate):` or `Validation (full):` line
+     (checkpoint commands, result, commit), so a re-review can rely on it instead of
+     re-running checks.
    - For any change inside a `workspace.shared_repos[].path`, prefix that bullet with
      "shared scope (<repo name>):" so the workspace boundary is visible in the log.
    - Note any follow-up questions if something was unclear.

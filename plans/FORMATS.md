@@ -350,11 +350,14 @@ with permanent sections. Each action that writes to `thread.md` appends a new en
    request; Principal appends the feedback as the next entry, referencing the request.
 7. **Keep entries concise and actionable.** The thread will be pruned periodically,
    but shorter entries delay the need for maintenance.
-8. **Record validation once.** An action that runs checkpoint validation (full suite +
-   required gates) ends its entry with a `Validation:` line — commands, result, and the
-   commit it ran against. Later actions reuse it rather than re-running checks on
-   unchanged code (see `plans/agent-instructions.md` § "Validation scope").
-   e.g. `Validation: pytest (412 passed), ruff + mypy clean — at a1b2c3d`
+8. **Record validation once, tagged by scope.** An action that runs a checkpoint ends its
+   entry with a `Validation (proximate):` or `Validation (full):` line — commands,
+   result, and the commit it ran against. Later actions reuse it rather than re-running
+   checks on unchanged code; a full record plus proximate records for later changes
+   meets the full-suite gate (see `plans/agent-instructions.md` § "Validation scope").
+   Untagged `Validation:` lines from before v2.1.0 count as full.
+   e.g. `Validation (proximate): pytest apps/textgames (96 passed), ruff clean — at a1b2c3d`
+   e.g. `Validation (full): pytest (1904 passed), ruff + mypy clean — at e4f5a6b`
 
 ---
 
@@ -369,6 +372,7 @@ with permanent sections. Each action that writes to `thread.md` appends a new en
   "code_review": "every_milestone",
   "formal_approval": "every_milestone",
   "documentation_update": "every_milestone",
+  "full_suite_validation": "every_milestone",
   "review_strictness": "balanced",
   "re_review_trigger": "auto",
   "status_updates": "pm_only",
@@ -390,6 +394,7 @@ with permanent sections. Each action that writes to `thread.md` appends a new en
 | `code_review` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | When Principal.CodeReview runs after implementation (under `every_milestone`, reviews all phases of the milestone) |
 | `formal_approval` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | When Human.PhaseApproval runs (under `every_milestone`, briefs the whole milestone) |
 | `documentation_update` | `every_phase` \| `every_milestone` \| `never` | `every_milestone` | When Writer.DocumentationUpdate runs |
+| `full_suite_validation` | `every_action` \| `every_milestone` \| `every_build` \| `never` | `every_milestone` | When the full test suite runs. Every code-changing action runs proximate checks; the full suite runs only at this gate (`every_build` = at PM.BuildRelease; `never` = CI is the gate). See `agent-instructions.md` § "Validation scope" |
 | `review_strictness` | `strict` \| `balanced` \| `pragmatic` | `balanced` | Threshold for REQUIRED vs. SUGGESTED in code review |
 | `re_review_trigger` | `required` \| `auto` | `auto` | Whether code changes in reconciliation always trigger re-review |
 | `status_updates` | `every_action` \| `pm_only` \| `every_milestone` \| `never` | `pm_only` | How often STATUS.md is written. `pm_only` and below write only via `PM.StatusUpdate` (routing fans approvals/diversions through it so major transitions are still captured) |

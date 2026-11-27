@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SAM config.json",
-  "description": "Project-level workflow configuration for SAM. Tune process weight without breaking the state machine. Defaults favor milestone-level gates: code_review, formal_approval, and documentation_update all default to every_milestone, and re_review_trigger defaults to auto. Missing file or missing key = default.",
+  "description": "Project-level workflow configuration for SAM. Tune process weight without breaking the state machine. Defaults favor milestone-level gates: code_review, formal_approval, documentation_update, and full_suite_validation all default to every_milestone, and re_review_trigger defaults to auto. Missing file or missing key = default.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -25,6 +25,12 @@
       "type": "string",
       "description": "How often Writer.DocumentationUpdate runs. 'every_phase' = always. 'every_milestone' = only on the last phase of each milestone (default). 'never' = skip documentation updates entirely.",
       "enum": ["every_phase", "every_milestone", "never"],
+      "default": "every_milestone"
+    },
+    "full_suite_validation": {
+      "type": "string",
+      "description": "When the full test suite (plus all required lint/format/type gates) runs. Every code-changing action always runs proximate checks (tests for changed files, the owning unit's suite, dependents only if a public interface changed); this key sets when the FULL suite runs on top of that. 'every_action' = at the end of every code-changing action (pre-2.1.0 behavior). 'every_milestone' = once, at the end of the milestone's last-phase Staff.ImplementationExecution or Staff.QuickImplement (default). 'every_build' = only at PM.BuildRelease. 'never' = SAM never runs the full suite; CI is the gate. Regardless of setting, a change that modifies existing shared behavior escalates to a full run early. See plans/agent-instructions.md § 'Validation scope'.",
+      "enum": ["every_action", "every_milestone", "every_build", "never"],
       "default": "every_milestone"
     },
     "review_strictness": {

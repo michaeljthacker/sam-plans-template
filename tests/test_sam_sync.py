@@ -245,7 +245,8 @@ class Migration(ProjectCase):
         r = update(self.proj, "--apply", "--untrack")  # source now read from .sam-version
         self.assertIn("SAM update", r.stdout)
         stamp = json.loads((self.proj / "plans/.sam-version").read_text(encoding="utf-8"))
-        self.assertEqual(stamp["manifest_version"], "2.0.0")
+        self.assertEqual(stamp["manifest_version"],
+                         json.loads((REPO / "plans/sync-manifest.json").read_text(encoding="utf-8"))["sam_version"])
         self.assertEqual(tracked(self.proj), {".gitignore", "app.py", ".github/workflows.yml", *SEVEN})
 
 

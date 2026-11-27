@@ -1,6 +1,6 @@
 {
   "$schema_comment": "Manifest for plans/sam-install.py and plans/sam-update.py (shared engine: plans/sam_sync.py). `files` is the per-destination inventory: each entry maps a template `source` to an installed `target` and carries two independent policies. `sync`: `overwrite` (system file, refreshed from the template), `create_if_missing` (instance file, scaffolded from the template only when absent, never overwritten), or `stamp` (plans/.sam-version, regenerated on every apply). `gitignore`: whether the installed target is ignored by Git in the consuming project. The SAM-managed .gitignore block is derived from this inventory: `/plans/*` plus a `!` exception per plans/ target with gitignore=false (these must sit directly in plans/), plus an explicit rule per ignored target outside plans/. `sam_version` is the SAM release. `version` and `system_files` exist ONLY so a pre-2.0.0 sam-update.py (which reads those keys) pulls in the new engine; rerun the update afterward to finish. New tooling ignores both.",
-  "sam_version": "2.0.0",
+  "sam_version": "2.1.0",
 
   "version": "legacy-bootstrap (engine only; rerun sam-update.py to finish the 2.0.0 upgrade)",
   "system_files": [

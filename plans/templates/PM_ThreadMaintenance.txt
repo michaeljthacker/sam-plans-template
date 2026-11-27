@@ -26,6 +26,10 @@ Instructions:
    - If `documentation_update = "every_milestone"`: do NOT prune implementation
      details that Writer.DocumentationUpdate will need.
    - If any setting is `"every_phase"` or `"never"`, prune normally for those concerns.
+   - Always (any config): when pruning, carry forward the latest `Validation (full):`
+     line and every `Validation (proximate):` line after it, verbatim, into the
+     condensed summary — later reviews and PM.BuildRelease rely on them to avoid
+     re-running the suite. Older Validation lines may be pruned.
 1a) **No-op guard.** After reading config, check whether there is actually anything to
     do. If, once the gates above are applied, there is NO prunable resolved content, NO
     durable decision/standard worth promoting, and NO structural cleanup needed (i.e.,

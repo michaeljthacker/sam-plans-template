@@ -8,7 +8,7 @@ This action ONLY runs for `size: step-only` builds. It is reached from Human.App
 
 Inputs:
 - plans/state.json (routing + context)
-- plans/config.json (workflow configuration — read `workspace` and `status_updates`)
+- plans/config.json (workflow configuration — read `full_suite_validation`, `workspace`, and `status_updates`)
 - plans/BUILD.md (the minimal step-only Build — title, one-line goal, `size: step-only`)
 - plans/VISION.md (the concept brief — the human's original request; the real spec for a step-only build. Read-only — never modify it)
 - plans/thread.md (any ApproveBuild notes and setup context)
@@ -47,9 +47,12 @@ Instructions:
      prototype-grade prose.
 
 4) Self-verify per plans/agent-instructions.md § "Validation scope".
-   - Targeted checks while iterating; one checkpoint run (full suite + required gates)
-     when done — or less, if the change genuinely can't affect them (docs, config with
-     no code path). The formal Principal.CodeReview action is intentionally skipped on
+   - Targeted checks while iterating; one checkpoint run when done. Read
+     `full_suite_validation` from plans/config.json (default: "every_milestone"):
+     "every_action" / "every_milestone" → full checkpoint (this action is the whole
+     Build's implementation); "every_build" / "never" → proximate checkpoint, escalating
+     to full only if the change modifies existing shared behavior. Run less if the
+     change genuinely can't affect the checks (docs, config with no code path). The formal Principal.CodeReview action is intentionally skipped on
      this path, but the *act* of verifying is not.
    - If verification fails: fix it, do not punt to a review step. If you cannot fix
      it, set last_action.result = "blocked", pause_type = "decision",
@@ -73,7 +76,7 @@ Instructions:
 7) Append a brief thread.md entry at the bottom:
    - Use the entry format: `---` then `### Staff.QuickImplement — <date>`
    - One short paragraph: what was changed and key files touched, plus a
-     `Validation:` line (commands, result, commit).
+     `Validation (proximate):` or `Validation (full):` line (commands, result, commit).
    - Match step-only depth: a few sentences, not a review request.
 
 8) Update plans/STATUS.md (config-gated):

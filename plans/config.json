@@ -3,6 +3,7 @@
   "code_review": "every_milestone",
   "formal_approval": "every_milestone",
   "documentation_update": "every_milestone",
+  "full_suite_validation": "every_milestone",
   "review_strictness": "balanced",
   "re_review_trigger": "auto",
   "status_updates": "pm_only",
